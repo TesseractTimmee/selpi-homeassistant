@@ -1,0 +1,47 @@
+# Host-platform build for testing against the simulator:
+#   (selpi) .venv/bin/python tools/sim_sppro.py captures/sl-20261117-071605.jsonl serve 18899 testpass
+#   esphome run sppro-sim.yaml
+esphome:
+  name: sppro-sim
+
+host:
+logger:
+  level: VERBOSE
+  logs:
+    tcp_client_link: DEBUG
+    scheduler: DEBUG
+
+external_components:
+  - source:
+      type: local
+      path: components
+
+time:
+  - platform: host
+    id: host_time
+
+tcp_uart:
+  id: sppro_link
+  role: client
+  host: 127.0.0.1
+  port: 18899
+
+sppro:
+  uart_id: sppro_link
+  password: testpass
+  update_interval: 5s
+  proxy:
+    port: 18900
+    allowed_ips: [127.0.0.1/32]   # read-only
+    write_ips: [127.0.0.2/32]     # may write
+  clock:
+    time_id: host_time
+    interval: 20s
+    drift:
+      name: Clock drift
+  status:
+    name: Link status
+  versions:
+    name: Unit versions
+  errors:
+    name: Link errors

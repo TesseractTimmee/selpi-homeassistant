@@ -1,0 +1,112 @@
+# Espressif ESP32-S3-USB-OTG board, set up like includes/xiao.yaml (same secrets, api/ota, wifi, diagnostics).
+# The S3's native USB pins drive the USB-A host socket, so logs go to UART0 / OTA / the API.
+esphome:
+  name: ${node_name}
+  name_add_mac_suffix: false
+  friendly_name: ${friendly_name}
+  on_boot:
+    - priority: 900   # before usb_host starts: route and power the USB-A host port
+      then:
+        - output.turn_on: usb_sel
+        - output.turn_on: dev_vbus_en
+        - output.turn_on: limit_en
+
+
+esp32:
+  board: esp32-s3-devkitc-1
+  variant: ESP32S3
+  framework:
+    type: esp-idf
+
+
+logger:
+  hardware_uart: UART0
+  level: DEBUG
+#  level: VERBOSE
+
+
+api:
+  encryption:
+    key: !secret api_password
+
+
+ota:
+  - platform: esphome
+    encryption:
+
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  power_save_mode: NONE
+  ap:   # In case wifi fails
+    ssid: "${friendly_name} Hotspot"
+    password: !secret ap_password
+
+
+captive_portal:
+
+
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: "Australia/Perth"
+    servers:
+      - 0.pool.ntp.org
+      - 1.pool.ntp.org
+    on_time_sync:
+      then:
+        - logger.log: "Synchronized system clock to SNTP"
+
+
+# Board power routing (ESP32-S3-USB-OTG user guide; check against the board revision):
+# USB_SEL GPIO18 high = USB-A host socket on the S3's USB pins; DEV_VBUS_EN GPIO12 high = USB-A 5 V
+# from the USB_DEV (power) input; LIMIT_EN GPIO17 high = its current limiter on.
+output:
+  - platform: gpio
+    id: usb_sel
+    pin: GPIO18
+  - platform: gpio
+    id: dev_vbus_en
+    pin: GPIO12
+  - platform: gpio
+    id: limit_en
+    pin: GPIO17
+
+
+button:
+  - id: restart_device
+    platform: restart
+    name: "Restart Device"
+
+
+sensor:
+  - id: internal_temp
+    platform: internal_temperature
+    name: "Internal Temp"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+    entity_category: diagnostic
+
+  - id: dev_uptime
+    platform: uptime
+    name: "Uptime"
+    unit_of_measurement: "h"
+    accuracy_decimals: 2
+    update_interval: 60s
+    filters:
+      - lambda: return x / 3600.0;
+    entity_category: diagnostic
+
+  - id: wifi_rssi
+    platform: wifi_signal
+    name: "WiFi Signal"
+    update_interval: 60s
+    entity_category: diagnostic
+
+
+binary_sensor:
+  - id: device_status
+    platform: status
+    name: "Device Status"

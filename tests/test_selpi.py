@@ -1,0 +1,165 @@
+"""selpi integration against a mocked add-on API."""
+from unittest.mock import patch
+
+from homeassistant import config_entries
+from homeassistant.const import CONF_HOST, CONF_PORT
+from homeassistant.core import HomeAssistant
+from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.helpers import device_registry as dr, entity_registry as er
+from homeassistant.helpers.service_info.hassio import HassioServiceInfo
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+from custom_components.selpi.const import CONF_ADDON_SLUG, CONF_SCAN_INTERVAL, CONF_TOKEN, DOMAIN
+
+BASE = "http://local-selpi:8100/api/v1"
+INFO = {"id": "unit123", "connection": "SelectLive", "scan_interval": 60, "model": "SP PRO",
+        "manufacturer": "Selectronic", "firmware": "15.47", "versions": {"memory_map": 31}, "version_problems": []}
+FIELDS = [
+    {"key": "load_ac_power", "name": "Load power", "unit": "kW", "kind": "number", "default": True,
+     "device_class": "power", "state_class": "measurement", "precision": 3, "category": None, "note": ""},
+    {"key": "ac_out_status", "name": "Inverter mode", "unit": "", "kind": "enum", "default": True,
+     "device_class": "enum", "state_class": None, "precision": None, "category": None, "note": "",
+     "options": ["Econo", "Idle", "On", "Sync"]},
+    {"key": "ac_loadk_wh_acc", "name": "Load energy today", "unit": "kWh", "kind": "number", "default": True,
+     "device_class": "energy", "state_class": "total_increasing", "precision": 2, "category": None, "note": ""},
+    {"key": "country_code", "name": "Country Code", "unit": "", "kind": "raw", "default": False,
+     "device_class": None, "state_class": "measurement", "precision": 0, "category": "diagnostic", "note": ""},
+]
+VALUES = {"at": "2026-11-17T18:00:00", "stale": False, "version_problems": [],
+          "values": {"load_ac_power": 2.026, "ac_out_status": "Sync", "ac_loadk_wh_acc": 17.88, "country_code": 36}}
+DIAG = {"last_ok": "2026-11-17T18:00:00+08:00", "last_error": None, "busy": None,
+        "clock": {"drift": 3}, "backup_running": False,
+        "last_backup": {"name": "2026-11-17_03-30-00", "reason": "scheduled", "at": "2026-11-17T03:30:00+08:00"}}
+DATA = {CONF_HOST: "local-selpi", CONF_PORT: 8100, CONF_TOKEN: "tok", CONF_ADDON_SLUG: "local_selpi"}
+
+
+def mock_api(aioclient_mock, values=VALUES, info=INFO):
+    aioclient_mock.clear_requests()
+    aioclient_mock.get(f"{BASE}/info", json=info)
+    aioclient_mock.get(f"{BASE}/fields", json={"fields": FIELDS})
+    aioclient_mock.get(f"{BASE}/values", json=values)
+    aioclient_mock.get(f"{BASE}/diagnostics", json=DIAG)
+    aioclient_mock.post(f"{BASE}/backup", json={"started": True})
+
+
+async def setup(hass, aioclient_mock, **kw):
+    mock_api(aioclient_mock, **kw)
+    entry = MockConfigEntry(domain=DOMAIN, data=DATA, unique_id="unit123")
+    entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    return entry
+
+
+async def test_sensors_and_device(hass: HomeAssistant, aioclient_mock):
+    entry = await setup(hass, aioclient_mock)
+    assert entry.state is config_entries.ConfigEntryState.LOADED
+    assert hass.states.get("sensor.sp_pro_load_power").state == "2.026"
+    st = hass.states.get("sensor.sp_pro_inverter_mode")
+    assert st.state == "Sync" and st.attributes["options"] == ["Econo", "Idle", "On", "Sync"]
+    energy = hass.states.get("sensor.sp_pro_load_energy_today")
+    assert energy.attributes["state_class"] == "total_increasing" and energy.attributes["unit_of_measurement"] == "kWh"
+    assert hass.states.get("sensor.sp_pro_clock_drift").state == "3"
+    assert hass.states.get("sensor.sp_pro_last_config_backup").state == "2026-11-16T19:30:00+00:00"
+    assert hass.states.get("sensor.sp_pro_link_status").state == "OK"
+    # non-default fields exist but are disabled, and aren't polled
+    reg = er.async_get(hass).async_get("sensor.sp_pro_country_code")
+    assert reg.disabled_by is er.RegistryEntryDisabler.INTEGRATION
+    polled = [str(url.query.get("keys")) for method, url, *_ in aioclient_mock.mock_calls if url.path.endswith("/values")]
+    assert polled and "country_code" not in polled[-1] and "load_ac_power" in polled[-1]
+    dev = dr.async_get(hass).async_get_device_by_identifier((DOMAIN, "unit123"), entry.entry_id)
+    assert dev.sw_version == "15.47" and dev.manufacturer == "Selectronic"
+    assert dev.configuration_url == "homeassistant://hassio/ingress/local_selpi"
+
+
+async def test_scan_interval_from_addon_and_options(hass: HomeAssistant, aioclient_mock):
+    entry = await setup(hass, aioclient_mock)
+    assert entry.runtime_data.coordinator.update_interval.total_seconds() == 60
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(result["flow_id"], {CONF_SCAN_INTERVAL: 15})
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    await hass.async_block_till_done()
+    assert entry.runtime_data.coordinator.update_interval.total_seconds() == 15
+
+
+async def test_local_connection_default_is_faster(hass: HomeAssistant, aioclient_mock):
+    entry = await setup(hass, aioclient_mock, info={**INFO, "connection": "TCP", "scan_interval": 10})
+    assert entry.runtime_data.coordinator.update_interval.total_seconds() == 10
+
+
+async def test_version_gate(hass: HomeAssistant, aioclient_mock):
+    bad = {**VALUES, "version_problems": ["memory_map 32 (verified 31)"]}
+    entry = await setup(hass, aioclient_mock, values=bad)
+    assert entry.state is config_entries.ConfigEntryState.SETUP_RETRY
+
+
+async def test_stale_values_still_shown(hass: HomeAssistant, aioclient_mock):
+    entry = await setup(hass, aioclient_mock)
+    mock_api(aioclient_mock, values={**VALUES, "stale": True})
+    await entry.runtime_data.coordinator.async_refresh()
+    await hass.async_block_till_done()
+    assert hass.states.get("sensor.sp_pro_load_power").attributes.get("stale") is True
+    assert hass.states.get("sensor.sp_pro_link_status").state.startswith("busy")
+
+
+async def test_unknown_enum_code(hass: HomeAssistant, aioclient_mock):
+    entry = await setup(hass, aioclient_mock)
+    mock_api(aioclient_mock, values={**VALUES, "values": {**VALUES["values"], "ac_out_status": "code 9"}})
+    await entry.runtime_data.coordinator.async_refresh()
+    await hass.async_block_till_done()
+    assert hass.states.get("sensor.sp_pro_inverter_mode").state == "code 9"
+
+
+async def test_addon_down_makes_entities_unavailable(hass: HomeAssistant, aioclient_mock):
+    entry = await setup(hass, aioclient_mock)
+    aioclient_mock.clear_requests()
+    aioclient_mock.get(f"{BASE}/values", status=502, json={"error": "select.live timeout"})
+    await entry.runtime_data.coordinator.async_refresh()
+    await hass.async_block_till_done()
+    assert hass.states.get("sensor.sp_pro_load_power").state == "unavailable"
+    assert "select.live timeout" in hass.states.get("sensor.sp_pro_link_status").state
+
+
+async def test_backup_button(hass: HomeAssistant, aioclient_mock):
+    await setup(hass, aioclient_mock)
+    await hass.services.async_call("button", "press", {"entity_id": "button.sp_pro_back_up_settings"}, blocking=True)
+    assert any(m == "POST" and u.path.endswith("/backup") for m, u, *_ in aioclient_mock.mock_calls)
+
+
+async def test_flow_hassio_discovery(hass: HomeAssistant, aioclient_mock):
+    mock_api(aioclient_mock)
+    info = HassioServiceInfo(config={"host": "local-selpi", "port": 8100, "token": "tok"},
+                             name="selpi", slug="local_selpi", uuid="x")
+    with patch("custom_components.selpi.async_setup_entry", return_value=True):
+        result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_HASSIO},
+                                                           data=info)
+        assert result["type"] is FlowResultType.FORM and result["step_id"] == "hassio_confirm"
+        result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["data"] == DATA and result["result"].unique_id == "unit123"
+
+
+async def test_flow_manual_bad_token(hass: HomeAssistant, aioclient_mock):
+    aioclient_mock.get(f"{BASE}/info", status=401, json={"error": "bad or missing token"})
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_USER})
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_HOST: "local-selpi", CONF_PORT: 8100, CONF_TOKEN: "wrong"})
+    assert result["errors"] == {"base": "invalid_auth"}
+    mock_api(aioclient_mock)
+    with patch("custom_components.selpi.async_setup_entry", return_value=True):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_HOST: "local-selpi", CONF_PORT: 8100, CONF_TOKEN: "tok"})
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+
+
+async def test_discovery_of_configured_unit_updates_entry(hass: HomeAssistant, aioclient_mock):
+    entry = MockConfigEntry(domain=DOMAIN, data={**DATA, CONF_TOKEN: "old"}, unique_id="unit123")
+    entry.add_to_hass(hass)
+    mock_api(aioclient_mock)
+    info = HassioServiceInfo(config={"host": "local-selpi", "port": 8100, "token": "tok"},
+                             name="selpi", slug="local_selpi", uuid="x")
+    with patch("custom_components.selpi.async_setup_entry", return_value=True):
+        result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_HASSIO},
+                                                           data=info)
+    assert result["type"] is FlowResultType.ABORT and result["reason"] == "already_configured"
+    assert entry.data[CONF_TOKEN] == "tok"

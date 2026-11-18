@@ -1,0 +1,50 @@
+# Selectronic SP PRO on its USB port (ESP32-S3-USB-OTG + ADuM3160 isolator). Component: selpi/esphome.
+packages:
+  board: !include
+    file: includes/esp32s3-usb-otg.yaml
+    vars:
+      node_name: sppro
+      friendly_name: SP PRO
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/TesseractTimmee/selpi-homeassistant
+      ref: v0.4.0
+      path: esphome/components
+    components: [ sppro ]
+
+usb_host:
+
+usb_uart:
+  - type: cdc_acm
+    vid: 0x04D8       # Microchip, as SP LINK's driver lists the SP PRO ("SPPRO_ACC")
+    pid: 0x000A
+    channels:
+      - id: sppro_usb
+        buffer_size: 1024
+# Older units with an FTDI chip: type: ft232 and `baud_rate: 57600` on the channel.
+
+sppro:
+  uart_id: sppro_usb
+  password: !secret sppro_password    # SP PRO login password (same as selpi's)
+  update_interval: 10s
+  # fields: [...]          # default: 39 (see esphome/components/sppro/__init__.py in this repo)
+  proxy:                   # raw SP PRO frames over TCP, one client at a time
+    port: 8899
+    allowed_ips:           # read-only (login frames pass): Home Assistant (the selpi app)
+      - !secret sppro_proxy_read_ip
+    write_ips:             # may also write: the computer running SP LINK
+      - !secret sppro_proxy_write_ip
+  clock:                   # keep the SP PRO clock on SNTP time (replaces HA's weekly selpi settime)
+    time_id: sntp_time
+    interval: 1h
+    max_drift: 10s
+    drift:
+      name: Clock Drift
+  status:
+    name: Link Status
+  versions:
+    name: Unit Versions
+  errors:
+    name: Link Errors

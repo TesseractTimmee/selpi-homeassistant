@@ -1,0 +1,67 @@
+name: selpi
+version: "0.4.0"
+slug: selpi
+description: Selectronic SP PRO - live values, settings, config backups and log downloads (local, no SP LINK)
+url: https://github.com/TesseractTimmee/selpi-homeassistant
+arch:
+  - amd64
+init: false
+startup: application
+boot: auto
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:solar-power-variant
+panel_title: SP PRO
+uart: true
+# /share is only used once, to import data from an earlier install (see DOCS: Moving from another install)
+map:
+  - share:rw
+# The selpi integration finds the add-on through Supervisor discovery and polls its API on 8100
+# (internal network, bearer token). Map the port only to use the integration from another HA install.
+discovery:
+  - selpi
+ports:
+  8100/tcp: null
+  8899/tcp: null
+ports_description:
+  8100/tcp: selpi API for the Home Assistant integration (not needed for this HA)
+  8899/tcp: SP LINK proxy (set a port here and turn on the proxy option to use it)
+options:
+  connection: select_live
+  tcp_host: ""
+  tcp_port: 8899
+  serial_baudrate: 57600
+  sppro_password: ""
+  select_live_username: ""
+  select_live_password: ""
+  select_live_device: ""
+  backup_time: "03:30"
+  backup_keep: 30
+  clock_sync: false
+  clock_max_drift: 10
+  log_level: info
+  proxy: false
+  proxy_allowed: []
+  proxy_write: []
+  proxy_log_downloads: true
+schema:
+  connection: list(select_live|tcp|serial)
+  tcp_host: str?
+  tcp_port: port
+  serial_device: device(subsystem=tty)?
+  serial_baudrate: list(1200|2400|4800|9600|19200|38400|57600|115200)
+  sppro_password: password
+  select_live_username: str?
+  select_live_password: password?
+  select_live_device: str?
+  backup_time: match(^(([01][0-9]|2[0-3]):[0-5][0-9])?$)
+  backup_keep: int(1,365)
+  clock_sync: bool
+  clock_max_drift: int(2,3600)
+  log_level: list(debug|info|warning)
+  proxy: bool
+  proxy_allowed:
+    - str
+  proxy_write:
+    - str
+  proxy_log_downloads: bool

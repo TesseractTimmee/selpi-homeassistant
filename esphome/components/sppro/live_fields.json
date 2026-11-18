@@ -1,0 +1,4507 @@
+{
+ "source": "SP LINK 15.40 display code, memory map version 31",
+ "fields": [
+  {
+   "key": "multi_battery_so_c",
+   "name": "Multi Battery SoC",
+   "field": "MultiBatterySoC",
+   "label": "Battery SoC",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa31d"
+   ],
+   "formula": "{0xa31d} / 256.0",
+   "unit": "%",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedPercentageValueToString"
+  },
+  {
+   "key": "multi_battery_charger_stage",
+   "name": "Multi Battery Charger Stage",
+   "field": "MultiBatteryChargerStage",
+   "label": "Battery Charger Stage",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa31b"
+   ],
+   "formula": "{0xa31b}",
+   "unit": "",
+   "kind": "enum",
+   "table": "charger_status",
+   "converter": "fnConvertChargerStatusValueToString"
+  },
+  {
+   "key": "multi_ac_source_status_l1",
+   "name": "Multi AC Source Status L 1",
+   "field": "MultiACSourceStatusL1",
+   "label": "AC Source Status L1",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa2b5"
+   ],
+   "formula": "{0xa2b5}",
+   "unit": "",
+   "kind": "enum",
+   "table": "ac_source_status",
+   "converter": "fnConvertAcSourceStatusValueToString"
+  },
+  {
+   "key": "multi_phase_load_ac_volts_l1",
+   "name": "Multi Phase Load AC Volts L 1",
+   "field": "MultiPhaseLoadAcVolts_L1",
+   "label": "Load Voltage L1",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa2b6",
+    "0xa2b7"
+   ],
+   "formula": "{0xa2b6} * {scale:AcVolts} / 327680.0",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACLoadVoltageValueClampedToSourceVoltageInSyncToString"
+  },
+  {
+   "key": "multi_phase_ac_source_volts_l1",
+   "name": "Multi Phase AC Source Volts L 1",
+   "field": "MultiPhaseAcSourceVolts_L1",
+   "label": "AC on L1",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa2b7"
+   ],
+   "formula": "({0xa2b7} * ({scale:AcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACVoltageValueToString"
+  },
+  {
+   "key": "multi_ac_out_status",
+   "name": "Multi AC Out Status",
+   "field": "MultiAcOutStatus",
+   "label": "Output Mode",
+   "screen": "DataMultiPhase2",
+   "words": [
+    "0xa07d"
+   ],
+   "formula": "{0xa07d}",
+   "unit": "",
+   "kind": "enum",
+   "table": "inverter_mode",
+   "converter": "fnConvertInverterModeValueToString"
+  },
+  {
+   "key": "multi_input_ac_hz",
+   "name": "Multi Input AC Hz",
+   "field": "MultiInputAcHz",
+   "label": "AC Source Frequency",
+   "screen": "DataMultiPhase2",
+   "words": [
+    "0xa08d"
+   ],
+   "formula": "(s16({0xa08d}) / 100.0)",
+   "unit": "Hz",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACFrequencyValueInCentiHzToString"
+  },
+  {
+   "key": "multi_inv_freq",
+   "name": "Multi Inverter Freq",
+   "field": "MultiInvFreq",
+   "label": "AC Load Frequency",
+   "screen": "DataMultiPhase2",
+   "words": [
+    "0xa092"
+   ],
+   "formula": "(s16({0xa092}) / 100.0)",
+   "unit": "Hz",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACFrequencyValueInCentiHzToString"
+  },
+  {
+   "key": "ac_loadk_wh_previous_acc",
+   "name": "AC Load kWh Previous",
+   "field": "ACLoadkWhPreviousAcc",
+   "label": "AC Load Energy",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1cb"
+   ],
+   "formula": "abs(({0xa1cb} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_load_kwh7_day_acc",
+   "name": "AC Load kWh 7 Day",
+   "field": "ACLoadKWH7DayAcc",
+   "label": "7 Day Total",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1cc",
+    "0xa1cd"
+   ],
+   "formula": "abs((u32({0xa1cc},{0xa1cd}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_loadk_wh7_day_acc_avg",
+   "name": "AC Load kWh 7 Day Avg",
+   "field": "ACLoadkWh7DayAccAvg",
+   "label": "7 Day Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1ce"
+   ],
+   "formula": "abs(({0xa1ce} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_load_kwh30_day_acc",
+   "name": "AC Load kWh 30 Day",
+   "field": "ACLoadKWH30DayAcc",
+   "label": "30 Day Total",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1cf",
+    "0xa1d0"
+   ],
+   "formula": "abs((u32({0xa1cf},{0xa1d0}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_loadk_wh30_day_acc_avg",
+   "name": "AC Load kWh 30 Day Avg",
+   "field": "ACLoadkWh30DayAccAvg",
+   "label": "30 Day Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1d1"
+   ],
+   "formula": "abs(({0xa1d1} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_load_kwh365_day_acc",
+   "name": "AC Load kWh 365 Day",
+   "field": "ACLoadKWH365DayAcc",
+   "label": "365 Day Total",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1d2",
+    "0xa1d3"
+   ],
+   "formula": "abs((u32({0xa1d2},{0xa1d3}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_load_kwh365_day_acc_avg",
+   "name": "AC Load kWh 365 Day Avg",
+   "field": "ACLoadKWH365DayAccAvg",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1d4"
+   ],
+   "formula": "abs(({0xa1d4} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_loadk_wh_year_acc",
+   "name": "AC Load kWh Year",
+   "field": "ACLoadkWhYearAcc",
+   "label": "Year to Date",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1d5",
+    "0xa1d6"
+   ],
+   "formula": "abs((u32({0xa1d5},{0xa1d6}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_loadk_wh_year_acc_avg",
+   "name": "AC Load kWh Year Avg",
+   "field": "ACLoadkWhYearAccAvg",
+   "label": "Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1d7"
+   ],
+   "formula": "abs(({0xa1d7} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_loadk_wh_resetable_acc",
+   "name": "AC Load kWh Resetable",
+   "field": "ACLoadkWhResetableAcc",
+   "label": "Resettable",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1d8",
+    "0xa1d9"
+   ],
+   "formula": "abs((u32({0xa1d8},{0xa1d9}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_loadk_wh_resetable_acc_avg",
+   "name": "AC Load kWh Resetable Avg",
+   "field": "ACLoadkWhResetableAccAvg",
+   "label": "Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1da"
+   ],
+   "formula": "abs(({0xa1da} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_inputk_wh_previous",
+   "name": "AC Input kWh Previous",
+   "field": "ACInputkWhPrevious",
+   "label": "AC Input Energy",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1e0"
+   ],
+   "formula": "abs(({0xa1e0} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_input_kwh7_day_acc",
+   "name": "AC Input kWh 7 Day",
+   "field": "ACInputKWH7DayAcc",
+   "label": "7 Day Total",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1e1",
+    "0xa1e2"
+   ],
+   "formula": "abs((u32({0xa1e1},{0xa1e2}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_input_kwh7_day_acc_avg",
+   "name": "AC Input kWh 7 Day Avg",
+   "field": "ACInputKWH7DayAccAvg",
+   "label": "7 Day Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1e3"
+   ],
+   "formula": "abs(({0xa1e3} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_input_kwh30_day_acc",
+   "name": "AC Input kWh 30 Day",
+   "field": "ACInputKWH30DayAcc",
+   "label": "30 Day Total",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1e4",
+    "0xa1e5"
+   ],
+   "formula": "abs((u32({0xa1e4},{0xa1e5}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_input_kwh30_day_acc_avg",
+   "name": "AC Input kWh 30 Day Avg",
+   "field": "ACInputKWH30DayAccAvg",
+   "label": "30 Day Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1e6"
+   ],
+   "formula": "abs(({0xa1e6} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_input_kwh365_day_acc",
+   "name": "AC Input kWh 365 Day",
+   "field": "ACInputKWH365DayAcc",
+   "label": "365 Day Total",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1e7",
+    "0xa1e8"
+   ],
+   "formula": "abs((u32({0xa1e7},{0xa1e8}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_input_kwh365_day_acc_avg",
+   "name": "AC Input kWh 365 Day Avg",
+   "field": "ACInputKWH365DayAccAvg",
+   "label": "365 Day Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1e9"
+   ],
+   "formula": "abs(({0xa1e9} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_input_kwh_year_acc",
+   "name": "AC Input kWh Year",
+   "field": "ACInputKWHYearAcc",
+   "label": "Year to Date",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1ea",
+    "0xa1eb"
+   ],
+   "formula": "abs((u32({0xa1ea},{0xa1eb}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_inputk_wh_year_acc_avg",
+   "name": "AC Input kWh Year Avg",
+   "field": "ACInputkWhYearAccAvg",
+   "label": "Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1ec"
+   ],
+   "formula": "abs(({0xa1ec} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_input_kwh_resetable_acc",
+   "name": "AC Input kWh Resetable",
+   "field": "ACInputKWHResetableAcc",
+   "label": "Resettable",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1ed",
+    "0xa1ee"
+   ],
+   "formula": "abs((u32({0xa1ed},{0xa1ee}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_inputk_wh_resetable_acc_avg",
+   "name": "AC Input kWh Resetable Avg",
+   "field": "ACInputkWhResetableAccAvg",
+   "label": "Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1ef"
+   ],
+   "formula": "abs(({0xa1ef} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_input_hrs_previous_acc",
+   "name": "AC Input Hours Previous",
+   "field": "ACInputHrsPreviousAcc",
+   "label": "Hours of AC Input",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1f5"
+   ],
+   "formula": "({0xa1f5} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "ac_input_hrs7_day_acc",
+   "name": "AC Input Hours 7 Day",
+   "field": "ACInputHrs7DayAcc",
+   "label": "7 Day Total",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1f6"
+   ],
+   "formula": "({0xa1f6} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "ac_input_hrs7_day_acc_avg",
+   "name": "AC Input Hours 7 Day Avg",
+   "field": "ACInputHrs7DayAccAvg",
+   "label": "7 Day Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1f7"
+   ],
+   "formula": "({0xa1f7} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "ac_input_hrs30_day_acc",
+   "name": "AC Input Hours 30 Day",
+   "field": "ACInputHrs30DayAcc",
+   "label": "30 Day Total",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1f8"
+   ],
+   "formula": "({0xa1f8} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "ac_input_hrs30_day_acc_avg",
+   "name": "AC Input Hours 30 Day Avg",
+   "field": "ACInputHrs30DayAccAvg",
+   "label": "30 Day Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1f9"
+   ],
+   "formula": "({0xa1f9} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "ac_input_hrs365_day_acc",
+   "name": "AC Input Hours 365 Day",
+   "field": "ACInputHrs365DayAcc",
+   "label": "365 Day Total",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1fa",
+    "0xa1fb"
+   ],
+   "formula": "(u32({0xa1fa},{0xa1fb}) / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "ac_input_hrs365_day_acc_avg",
+   "name": "AC Input Hours 365 Day Avg",
+   "field": "ACInputHrs365DayAccAvg",
+   "label": "365 Day Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1fc"
+   ],
+   "formula": "({0xa1fc} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "ac_input_hrs_year_acc",
+   "name": "AC Input Hours Year",
+   "field": "ACInputHrsYearAcc",
+   "label": "Year to Date",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1fd",
+    "0xa1fe"
+   ],
+   "formula": "(u32({0xa1fd},{0xa1fe}) / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "ac_input_hrs_year_acc_avg",
+   "name": "AC Input Hours Year Avg",
+   "field": "ACInputHrsYearAccAvg",
+   "label": "Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1ff"
+   ],
+   "formula": "({0xa1ff} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "ac_input_hrs_resetable_acc",
+   "name": "AC Input Hours Resetable",
+   "field": "ACInputHrsResetableAcc",
+   "label": "Resettable",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa200",
+    "0xa201"
+   ],
+   "formula": "(u32({0xa200},{0xa201}) / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "ac_input_hrs_resetable_acc_avg",
+   "name": "AC Input Hours Resetable Avg",
+   "field": "ACInputHrsResetableAccAvg",
+   "label": "Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa202"
+   ],
+   "formula": "({0xa202} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "ac_input_hrs_total_acc",
+   "name": "AC Input Hours Total",
+   "field": "ACInputHrsTotalAcc",
+   "label": "Total Accumulated",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa206",
+    "0xa207"
+   ],
+   "formula": "(u32({0xa206},{0xa207}) / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "ac_exportk_wh_previous",
+   "name": "AC Export kWh Previous",
+   "field": "ACExportkWhPrevious",
+   "label": "AC Export Energy",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa208"
+   ],
+   "formula": "abs(({0xa208} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_exportk_wh7_day_acc",
+   "name": "AC Export kWh 7 Day",
+   "field": "ACExportkWh7DayAcc",
+   "label": "7 Day Total",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa209",
+    "0xa20a"
+   ],
+   "formula": "abs((u32({0xa209},{0xa20a}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_exportk_wh7_day_acc_avg",
+   "name": "AC Export kWh 7 Day Avg",
+   "field": "ACExportkWh7DayAccAvg",
+   "label": "7 Day Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa20b"
+   ],
+   "formula": "abs(({0xa20b} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_exportk_wh30_day_acc",
+   "name": "AC Export kWh 30 Day",
+   "field": "ACExportkWh30DayAcc",
+   "label": "30 Day Total",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa20c",
+    "0xa20d"
+   ],
+   "formula": "abs((u32({0xa20c},{0xa20d}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_exportk_wh30_day_acc_avg",
+   "name": "AC Export kWh 30 Day Avg",
+   "field": "ACExportkWh30DayAccAvg",
+   "label": "30 Day Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa20e"
+   ],
+   "formula": "abs(({0xa20e} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_exportk_wh365_day_acc",
+   "name": "AC Export kWh 365 Day",
+   "field": "ACExportkWh365DayAcc",
+   "label": "365 Day Total",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa20f",
+    "0xa210"
+   ],
+   "formula": "abs((u32({0xa20f},{0xa210}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_exportk_wh365_day_acc_avg",
+   "name": "AC Export kWh 365 Day Avg",
+   "field": "ACExportkWh365DayAccAvg",
+   "label": "365 Day Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa211"
+   ],
+   "formula": "abs(({0xa211} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_exportk_wh_year_acc",
+   "name": "AC Export kWh Year",
+   "field": "ACExportkWhYearAcc",
+   "label": "Year to Date",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa212",
+    "0xa213"
+   ],
+   "formula": "abs((u32({0xa212},{0xa213}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_exportk_wh_year_acc_avg",
+   "name": "AC Export kWh Year Avg",
+   "field": "ACExportkWhYearAccAvg",
+   "label": "Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa214"
+   ],
+   "formula": "abs(({0xa214} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_exportk_wh_resetable_acc",
+   "name": "AC Export kWh Resetable",
+   "field": "ACExportkWhResetableAcc",
+   "label": "Resettable",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa215",
+    "0xa216"
+   ],
+   "formula": "abs((u32({0xa215},{0xa216}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_exportk_wh_resetable_acc_avg",
+   "name": "AC Export kWh Resetable Avg",
+   "field": "ACExportkWhResetableAccAvg",
+   "label": "Daily Average",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa217"
+   ],
+   "formula": "abs(({0xa217} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_solar_kacok_wh_previous",
+   "name": "AC Solar kWh Previous",
+   "field": "ACSolarKacokWhPrevious",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1ca"
+   ],
+   "formula": "abs(({0xa1ca} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_solar_kacok_wh7_day_acc",
+   "name": "AC Solar kWh 7 Day",
+   "field": "ACSolarKacokWh7DayAcc",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa21d",
+    "0xa21e"
+   ],
+   "formula": "abs((u32({0xa21d},{0xa21e}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_solar_kacok_wh7_day_acc_avg",
+   "name": "AC Solar kWh 7 Day Avg",
+   "field": "ACSolarKacokWh7DayAccAvg",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa21f"
+   ],
+   "formula": "abs(({0xa21f} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_solar_kacok_wh30_day_acc",
+   "name": "AC Solar kWh 30 Day",
+   "field": "ACSolarKacokWh30DayAcc",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa220",
+    "0xa221"
+   ],
+   "formula": "abs((u32({0xa220},{0xa221}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_solar_kacok_wh30_day_acc_avg",
+   "name": "AC Solar kWh 30 Day Avg",
+   "field": "ACSolarKacokWh30DayAccAvg",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa222"
+   ],
+   "formula": "abs(({0xa222} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_solar_kacok_wh365_day_acc",
+   "name": "AC Solar kWh 365 Day",
+   "field": "ACSolarKacokWh365DayAcc",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa223",
+    "0xa224"
+   ],
+   "formula": "abs((u32({0xa223},{0xa224}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_solar_kacok_wh365_day_acc_avg",
+   "name": "AC Solar kWh 365 Day Avg",
+   "field": "ACSolarKacokWh365DayAccAvg",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa225"
+   ],
+   "formula": "abs(({0xa225} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_solar_kacok_wh_year_acc",
+   "name": "AC Solar kWh Year",
+   "field": "ACSolarKacokWhYearAcc",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa226",
+    "0xa227"
+   ],
+   "formula": "abs((u32({0xa226},{0xa227}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_solar_kacok_wh_year_acc_avg",
+   "name": "AC Solar kWh Year Avg",
+   "field": "ACSolarKacokWhYearAccAvg",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa228"
+   ],
+   "formula": "abs(({0xa228} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_solar_kacok_wh_resetable_acc",
+   "name": "AC Solar kWh Resetable",
+   "field": "ACSolarKacokWhResetableAcc",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa229",
+    "0xa22a"
+   ],
+   "formula": "abs((u32({0xa229},{0xa22a}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_solar_kacok_wh_resetable_acc_avg",
+   "name": "AC Solar kWh Resetable Avg",
+   "field": "ACSolarKacokWhResetableAccAvg",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa22b"
+   ],
+   "formula": "abs(({0xa22b} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_load_kwh_total_acc",
+   "name": "AC Load kWh Total",
+   "field": "ACLoadKWHTotalAcc",
+   "label": "Total Accumulated",
+   "screen": "ACHistorySubTab2",
+   "words": [
+    "0xa37e",
+    "0xa37f"
+   ],
+   "formula": "abs((u32({0xa37e},{0xa37f}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_input_kwh_total_acc",
+   "name": "AC Input kWh Total",
+   "field": "ACInputKWHTotalAcc",
+   "label": "Total Accumulated",
+   "screen": "ACHistorySubTab2",
+   "words": [
+    "0xa36e",
+    "0xa36f"
+   ],
+   "formula": "abs((u32({0xa36e},{0xa36f}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_exportk_wh_total_acc",
+   "name": "AC Export kWh Total",
+   "field": "ACExportkWhTotalAcc",
+   "label": "Total Accumulated",
+   "screen": "ACHistorySubTab2",
+   "words": [
+    "0xa370",
+    "0xa371"
+   ],
+   "formula": "abs((u32({0xa370},{0xa371}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_solar_kacok_wh_total_acc",
+   "name": "AC Solar kWh Total",
+   "field": "ACSolarKacokWhTotalAcc",
+   "label": "",
+   "screen": "ACHistorySubTab2",
+   "words": [
+    "0xa372",
+    "0xa373"
+   ],
+   "formula": "abs((u32({0xa372},{0xa373}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "d_ck_wh_in",
+   "name": "DC kWh In",
+   "field": "DCkWhIn",
+   "label": "Total In",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa127",
+    "0xa128"
+   ],
+   "formula": "(u32({0xa127},{0xa128}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "d_ck_wh_out",
+   "name": "DC kWh Out",
+   "field": "DCkWhOut",
+   "label": "Total Out",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa129",
+    "0xa12a"
+   ],
+   "formula": "(u32({0xa129},{0xa12a}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "d_ck_wh_net",
+   "name": "DC kWh NET",
+   "field": "DCkWhNET",
+   "label": "Total Net",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa12b",
+    "0xa12c"
+   ],
+   "formula": "(0.0 - (s32(u32({0xa12b},{0xa12c})) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCEnergyValueInKwhToStringAndFlipSign"
+  },
+  {
+   "key": "inverter_d_ck_wh_previous_acc",
+   "name": "Inverter DC kWh Previous",
+   "field": "InverterDCkWhPreviousAcc",
+   "label": "DC Inverter Energy",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa130"
+   ],
+   "formula": "abs((s16({0xa130}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "inverter_d_ck_wh7_day_acc",
+   "name": "Inverter DC kWh 7 Day",
+   "field": "InverterDCkWh7DayAcc",
+   "label": "7 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa131",
+    "0xa132"
+   ],
+   "formula": "(s32(u32({0xa131},{0xa132})) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "inverter_d_ck_wh7_day_acc_avg",
+   "name": "Inverter DC kWh 7 Day Avg",
+   "field": "InverterDCkWh7DayAccAvg",
+   "label": "7 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa133"
+   ],
+   "formula": "abs((s16({0xa133}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "inverter_d_ck_wh30_day_acc",
+   "name": "Inverter DC kWh 30 Day",
+   "field": "InverterDCkWh30DayAcc",
+   "label": "30 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa134",
+    "0xa135"
+   ],
+   "formula": "(s32(u32({0xa134},{0xa135})) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "inverter_d_ck_wh30_day_acc_avg",
+   "name": "Inverter DC kWh 30 Day Avg",
+   "field": "InverterDCkWh30DayAccAvg",
+   "label": "30 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa136"
+   ],
+   "formula": "abs((s16({0xa136}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "inverter_d_ck_wh365_day_acc",
+   "name": "Inverter DC kWh 365 Day",
+   "field": "InverterDCkWh365DayAcc",
+   "label": "365 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa137",
+    "0xa138"
+   ],
+   "formula": "(s32(u32({0xa137},{0xa138})) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "inverter_d_ck_wh365_day_acc_avg",
+   "name": "Inverter DC kWh 365 Day Avg",
+   "field": "InverterDCkWh365DayAccAvg",
+   "label": "365 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa139"
+   ],
+   "formula": "abs((s16({0xa139}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "inverter_d_ck_wh_year_acc",
+   "name": "Inverter DC kWh Year",
+   "field": "InverterDCkWhYearAcc",
+   "label": "Year to Date",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa13a",
+    "0xa13b"
+   ],
+   "formula": "(s32(u32({0xa13a},{0xa13b})) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "inverter_d_ck_wh_year_acc_avg",
+   "name": "Inverter DC kWh Year Avg",
+   "field": "InverterDCkWhYearAccAvg",
+   "label": "Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa13c"
+   ],
+   "formula": "abs((s16({0xa13c}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "inverter_d_ck_wh_resetable_acc",
+   "name": "Inverter DC kWh Resetable",
+   "field": "InverterDCkWhResetableAcc",
+   "label": "Resettable",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa13d",
+    "0xa13e"
+   ],
+   "formula": "(s32(u32({0xa13d},{0xa13e})) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "inverter_d_ck_wh_resetable_acc_avg",
+   "name": "Inverter DC kWh Resetable Avg",
+   "field": "InverterDCkWhResetableAccAvg",
+   "label": "Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa13f"
+   ],
+   "formula": "abs((s16({0xa13f}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "inverter_d_ck_wh_total_acc",
+   "name": "Inverter DC kWh Total",
+   "field": "InverterDCkWhTotalAcc",
+   "label": "Total Accumulated",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa143",
+    "0xa144"
+   ],
+   "formula": "(s32(u32({0xa143},{0xa144})) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt1k_wh_previous_acc",
+   "name": "Shunt 1 kWh Previous",
+   "field": "Shunt1kWhPreviousAcc",
+   "label": "DC Shunt 1 Energy",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa145"
+   ],
+   "formula": "s16({0xa145}) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "dc_shunt1_peak_power_previous",
+   "name": "DC Shunt 1 Peak Power Previous",
+   "field": "DCShunt1PeakPowerPrevious",
+   "label": "Previous Day's Peak Power",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa146"
+   ],
+   "formula": "s16({0xa146}) * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCPeakShuntPowerValueToString"
+  },
+  {
+   "key": "shunt1k_wh7_day_acc",
+   "name": "Shunt 1 kWh 7 Day",
+   "field": "Shunt1kWh7DayAcc",
+   "label": "7 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa147",
+    "0xa148"
+   ],
+   "formula": "s32(u32({0xa147}, {0xa148})) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt1k_wh7_day_acc_avg",
+   "name": "Shunt 1 kWh 7 Day Avg",
+   "field": "Shunt1kWh7DayAccAvg",
+   "label": "7 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa149"
+   ],
+   "formula": "s16({0xa149}) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt1k_wh30_day_acc",
+   "name": "Shunt 1 kWh 30 Day",
+   "field": "Shunt1kWh30DayAcc",
+   "label": "30 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa14a",
+    "0xa14b"
+   ],
+   "formula": "s32(u32({0xa14a}, {0xa14b})) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt1k_wh30_day_acc_avg",
+   "name": "Shunt 1 kWh 30 Day Avg",
+   "field": "Shunt1kWh30DayAccAvg",
+   "label": "30 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa14c"
+   ],
+   "formula": "s16({0xa14c}) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt1k_wh365_day_acc",
+   "name": "Shunt 1 kWh 365 Day",
+   "field": "Shunt1kWh365DayAcc",
+   "label": "365 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa14d",
+    "0xa14e"
+   ],
+   "formula": "s32(u32({0xa14d}, {0xa14e})) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt1k_wh365_day_acc_avg",
+   "name": "Shunt 1 kWh 365 Day Avg",
+   "field": "Shunt1kWh365DayAccAvg",
+   "label": "365 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa14f"
+   ],
+   "formula": "s16({0xa14f}) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt1k_wh_year_acc",
+   "name": "Shunt 1 kWh Year",
+   "field": "Shunt1kWhYearAcc",
+   "label": "Year to Date",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa150",
+    "0xa151"
+   ],
+   "formula": "s32(u32({0xa150}, {0xa151})) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt1k_wh_year_acc_avg",
+   "name": "Shunt 1 kWh Year Avg",
+   "field": "Shunt1kWhYearAccAvg",
+   "label": "Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa152"
+   ],
+   "formula": "s16({0xa152}) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt1k_wh_resetable_acc",
+   "name": "Shunt 1 kWh Resetable",
+   "field": "Shunt1kWhResetableAcc",
+   "label": "Resettable",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa153",
+    "0xa154"
+   ],
+   "formula": "s32(u32({0xa153}, {0xa154})) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt1k_wh_resetable_acc_avg",
+   "name": "Shunt 1 kWh Resetable Avg",
+   "field": "Shunt1kWhResetableAccAvg",
+   "label": "Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa155"
+   ],
+   "formula": "s16({0xa155}) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt1k_wh_total_acc",
+   "name": "Shunt 1 kWh Total",
+   "field": "Shunt1kWhTotalAcc",
+   "label": "Total Accumulated",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa159",
+    "0xa15a"
+   ],
+   "formula": "s32(u32({0xa159}, {0xa15a})) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt2k_wh_previous_acc",
+   "name": "Shunt 2 kWh Previous",
+   "field": "Shunt2kWhPreviousAcc",
+   "label": "DC Shunt 2 Energy",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa15c"
+   ],
+   "formula": "s16({0xa15c}) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "dc_shunt2_peak_power_previous",
+   "name": "DC Shunt 2 Peak Power Previous",
+   "field": "DCShunt2PeakPowerPrevious",
+   "label": "Previous Day's Peak Power",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa15b"
+   ],
+   "formula": "s16({0xa15b}) * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCPeakShuntPowerValueToString"
+  },
+  {
+   "key": "shunt2k_wh7_day_acc",
+   "name": "Shunt 2 kWh 7 Day",
+   "field": "Shunt2kWh7DayAcc",
+   "label": "7 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa15d",
+    "0xa15e"
+   ],
+   "formula": "s32(u32({0xa15d}, {0xa15e})) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt2k_wh7_day_acc_avg",
+   "name": "Shunt 2 kWh 7 Day Avg",
+   "field": "Shunt2kWh7DayAccAvg",
+   "label": "7 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa15f"
+   ],
+   "formula": "s16({0xa15f}) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt2k_wh30_day_acc",
+   "name": "Shunt 2 kWh 30 Day",
+   "field": "Shunt2kWh30DayAcc",
+   "label": "30 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa160",
+    "0xa161"
+   ],
+   "formula": "s32(u32({0xa160}, {0xa161})) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt2k_wh30_day_acc_avg",
+   "name": "Shunt 2 kWh 30 Day Avg",
+   "field": "Shunt2kWh30DayAccAvg",
+   "label": "30 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa162"
+   ],
+   "formula": "s16({0xa162}) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt2k_wh365_day_acc",
+   "name": "Shunt 2 kWh 365 Day",
+   "field": "Shunt2kWh365DayAcc",
+   "label": "365 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa163",
+    "0xa164"
+   ],
+   "formula": "s32(u32({0xa163}, {0xa164})) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt2k_wh365_day_acc_avg",
+   "name": "Shunt 2 kWh 365 Day Avg",
+   "field": "Shunt2kWh365DayAccAvg",
+   "label": "365 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa165"
+   ],
+   "formula": "s16({0xa165}) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt2k_wh_year_acc",
+   "name": "Shunt 2 kWh Year",
+   "field": "Shunt2kWhYearAcc",
+   "label": "Year to Date",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa166",
+    "0xa167"
+   ],
+   "formula": "s32(u32({0xa166}, {0xa167})) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt2k_wh_year_acc_avg",
+   "name": "Shunt 2 kWh Year Avg",
+   "field": "Shunt2kWhYearAccAvg",
+   "label": "Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa168"
+   ],
+   "formula": "s16({0xa168}) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt2k_wh_resetable_acc",
+   "name": "Shunt 2 kWh Resetable",
+   "field": "Shunt2kWhResetableAcc",
+   "label": "Resettable",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa169",
+    "0xa16a"
+   ],
+   "formula": "s32(u32({0xa169}, {0xa16a})) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt2k_wh_resetable_acc_avg",
+   "name": "Shunt 2 kWh Resetable Avg",
+   "field": "Shunt2kWhResetableAccAvg",
+   "label": "Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa16b"
+   ],
+   "formula": "s16({0xa16b}) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt2k_wh_total_acc",
+   "name": "Shunt 2 kWh Total",
+   "field": "Shunt2kWhTotalAcc",
+   "label": "Total Accumulated",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa16f",
+    "0xa170"
+   ],
+   "formula": "s32(u32({0xa16f}, {0xa170})) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_in_kwh_previous_acc",
+   "name": "Battery In kWh Previous",
+   "field": "BattInKWHPreviousAcc",
+   "label": "Battery Input Energy",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa171",
+    "0xa172"
+   ],
+   "formula": "(u32({0xa171},{0xa172}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_in_kwh7_day_acc",
+   "name": "Battery In kWh 7 Day",
+   "field": "BattInKWH7DayAcc",
+   "label": "7 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa173",
+    "0xa174"
+   ],
+   "formula": "(u32({0xa173},{0xa174}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_in_kwh7_day_acc_avg",
+   "name": "Battery In kWh 7 Day Avg",
+   "field": "BattInKWH7DayAccAvg",
+   "label": "7 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa175",
+    "0xa176"
+   ],
+   "formula": "(u32({0xa175},{0xa176}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_in_kwh30_day_acc",
+   "name": "Battery In kWh 30 Day",
+   "field": "BattInKWH30DayAcc",
+   "label": "30 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa177",
+    "0xa178"
+   ],
+   "formula": "(u32({0xa177},{0xa178}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_in_kwh30_day_acc_avg",
+   "name": "Battery In kWh 30 Day Avg",
+   "field": "BattInKWH30DayAccAvg",
+   "label": "30 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa179",
+    "0xa17a"
+   ],
+   "formula": "(u32({0xa179},{0xa17a}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_in_kwh365_day_acc",
+   "name": "Battery In kWh 365 Day",
+   "field": "BattInKWH365DayAcc",
+   "label": "365 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa17b",
+    "0xa17c"
+   ],
+   "formula": "(u32({0xa17b},{0xa17c}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_in_kwh365_day_acc_avg",
+   "name": "Battery In kWh 365 Day Avg",
+   "field": "BattInKWH365DayAccAvg",
+   "label": "365 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa17d",
+    "0xa17e"
+   ],
+   "formula": "(u32({0xa17d},{0xa17e}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_in_kwh_year_acc",
+   "name": "Battery In kWh Year",
+   "field": "BattInKWHYearAcc",
+   "label": "Year to Date",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa17f",
+    "0xa180"
+   ],
+   "formula": "(u32({0xa17f},{0xa180}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_in_kwh_year_acc_avg",
+   "name": "Battery In kWh Year Avg",
+   "field": "BattInKWHYearAccAvg",
+   "label": "Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa181",
+    "0xa182"
+   ],
+   "formula": "(u32({0xa181},{0xa182}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_in_kwh_resetable_acc",
+   "name": "Battery In kWh Resetable",
+   "field": "BattInKWHResetableAcc",
+   "label": "Resettable",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa183",
+    "0xa184"
+   ],
+   "formula": "(u32({0xa183},{0xa184}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_in_kwh_resetable_acc_avg",
+   "name": "Battery In kWh Resetable Avg",
+   "field": "BattInKWHResetableAccAvg",
+   "label": "Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa185",
+    "0xa186"
+   ],
+   "formula": "(u32({0xa185},{0xa186}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_in_kwh_total_acc",
+   "name": "Battery In kWh Total",
+   "field": "BattInKWHTotalAcc",
+   "label": "Total Accumulated",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa18a",
+    "0xa18b"
+   ],
+   "formula": "(u32({0xa18a},{0xa18b}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_out_kwh_previous_acc",
+   "name": "Battery Out kWh Previous",
+   "field": "BattOutKWHPreviousAcc",
+   "label": "Battery Output Energy",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa18c",
+    "0xa18d"
+   ],
+   "formula": "(u32({0xa18c},{0xa18d}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_out_kwh7_day_acc",
+   "name": "Battery Out kWh 7 Day",
+   "field": "BattOutKWH7DayAcc",
+   "label": "7 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa18e",
+    "0xa18f"
+   ],
+   "formula": "(u32({0xa18e},{0xa18f}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_out_kwh7_day_acc_avg",
+   "name": "Battery Out kWh 7 Day Avg",
+   "field": "BattOutKWH7DayAccAvg",
+   "label": "7 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa190",
+    "0xa191"
+   ],
+   "formula": "(u32({0xa190},{0xa191}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_out_kwh30_day_acc",
+   "name": "Battery Out kWh 30 Day",
+   "field": "BattOutKWH30DayAcc",
+   "label": "30 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa192",
+    "0xa193"
+   ],
+   "formula": "(u32({0xa192},{0xa193}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_out_kwh30_day_acc_avg",
+   "name": "Battery Out kWh 30 Day Avg",
+   "field": "BattOutKWH30DayAccAvg",
+   "label": "30 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa194",
+    "0xa195"
+   ],
+   "formula": "(u32({0xa194},{0xa195}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_out_kwh365_day_acc",
+   "name": "Battery Out kWh 365 Day",
+   "field": "BattOutKWH365DayAcc",
+   "label": "365 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa196",
+    "0xa197"
+   ],
+   "formula": "(u32({0xa196},{0xa197}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_out_kwh365_day_acc_avg",
+   "name": "Battery Out kWh 365 Day Avg",
+   "field": "BattOutKWH365DayAccAvg",
+   "label": "365 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa198",
+    "0xa199"
+   ],
+   "formula": "(u32({0xa198},{0xa199}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_out_kwh_year_acc",
+   "name": "Battery Out kWh Year",
+   "field": "BattOutKWHYearAcc",
+   "label": "Year to Date",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa19a",
+    "0xa19b"
+   ],
+   "formula": "(u32({0xa19a},{0xa19b}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_out_kwh_year_acc_avg",
+   "name": "Battery Out kWh Year Avg",
+   "field": "BattOutKWHYearAccAvg",
+   "label": "Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa19c",
+    "0xa19d"
+   ],
+   "formula": "(u32({0xa19c},{0xa19d}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_out_kwh_resetable_acc",
+   "name": "Battery Out kWh Resetable",
+   "field": "BattOutKWHResetableAcc",
+   "label": "Resettable",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa19e",
+    "0xa19f"
+   ],
+   "formula": "(u32({0xa19e},{0xa19f}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_out_kwh_resetable_acc_avg",
+   "name": "Battery Out kWh Resetable Avg",
+   "field": "BattOutKWHResetableAccAvg",
+   "label": "Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa1a0",
+    "0xa1a1"
+   ],
+   "formula": "(u32({0xa1a0},{0xa1a1}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_out_kwh_total_acc",
+   "name": "Battery Out kWh Total",
+   "field": "BattOutKWHTotalAcc",
+   "label": "Total Accumulated",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa1a5",
+    "0xa1a6"
+   ],
+   "formula": "(u32({0xa1a5},{0xa1a6}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "float_hrs_previous_acc",
+   "name": "Float Hours Previous",
+   "field": "FloatHrsPreviousAcc",
+   "label": "Hours of Float",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa1a7"
+   ],
+   "formula": "({0xa1a7} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "float_hrs7_day_acc",
+   "name": "Float Hours 7 Day",
+   "field": "FloatHrs7DayAcc",
+   "label": "7 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa1a8"
+   ],
+   "formula": "({0xa1a8} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "float_hrs7_day_acc_avg",
+   "name": "Float Hours 7 Day Avg",
+   "field": "FloatHrs7DayAccAvg",
+   "label": "7 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa1a9"
+   ],
+   "formula": "({0xa1a9} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "float_hrs30_day_acc",
+   "name": "Float Hours 30 Day",
+   "field": "FloatHrs30DayAcc",
+   "label": "30 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa1aa"
+   ],
+   "formula": "({0xa1aa} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "float_hrs30_day_acc_avg",
+   "name": "Float Hours 30 Day Avg",
+   "field": "FloatHrs30DayAccAvg",
+   "label": "30 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa1ab"
+   ],
+   "formula": "({0xa1ab} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "float_hrs365_day_acc",
+   "name": "Float Hours 365 Day",
+   "field": "FloatHrs365DayAcc",
+   "label": "365 Day Total",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa1ac",
+    "0xa1ad"
+   ],
+   "formula": "(u32({0xa1ac},{0xa1ad}) / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "float_hrs365_day_acc_avg",
+   "name": "Float Hours 365 Day Avg",
+   "field": "FloatHrs365DayAccAvg",
+   "label": "365 Day Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa1ae"
+   ],
+   "formula": "({0xa1ae} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "float_hrs_year_acc",
+   "name": "Float Hours Year",
+   "field": "FloatHrsYearAcc",
+   "label": "Year to Date",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa1af",
+    "0xa1b0"
+   ],
+   "formula": "(u32({0xa1af},{0xa1b0}) / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "float_hrs_year_acc_avg",
+   "name": "Float Hours Year Avg",
+   "field": "FloatHrsYearAccAvg",
+   "label": "Daily Average",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa1b1"
+   ],
+   "formula": "({0xa1b1} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "time_float_achieved_previous",
+   "name": "Time Float Achieved Previous",
+   "field": "TimeFloatAchievedPrevious",
+   "label": "Previous Da",
+   "screen": "DCHistorySubTab",
+   "words": [
+    "0xa1b2"
+   ],
+   "formula": "{0xa1b2}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvertTimethatfloatwasachievedToString"
+  },
+  {
+   "key": "ac_out_status",
+   "name": "AC Out Status",
+   "field": "ACOutStatus",
+   "label": "Output Mode",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa07d"
+   ],
+   "formula": "{0xa07d}",
+   "unit": "",
+   "kind": "enum",
+   "table": "inverter_mode",
+   "converter": "fnConvertInverterModeValueToString"
+  },
+  {
+   "key": "ac_source_status",
+   "name": "AC Source Status",
+   "field": "AcSourceStatus",
+   "label": "",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa080"
+   ],
+   "formula": "{0xa080}",
+   "unit": "",
+   "kind": "enum",
+   "table": "ac_source_status",
+   "converter": "fnConvertAcSourceStatusValueToString"
+  },
+  {
+   "key": "generator_status_from_led",
+   "name": "Generator Status From Led",
+   "field": "GeneratorStatusFromLed",
+   "label": "Status",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa096"
+   ],
+   "formula": "{0xa096}",
+   "unit": "",
+   "kind": "enum",
+   "table": "generator_status",
+   "converter": "fnConvertGeneratorStatusValueToString"
+  },
+  {
+   "key": "generator_start_reason",
+   "name": "Generator Start Reason",
+   "field": "GeneratorStartReason",
+   "label": "Generator Started by",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa07e"
+   ],
+   "formula": "{0xa07e}",
+   "unit": "",
+   "kind": "enum",
+   "table": "generator_reason",
+   "converter": "fnConvertGeneratorStartedBySlashRunningReasonValueToString"
+  },
+  {
+   "key": "load_ac_power",
+   "name": "Load AC Power",
+   "field": "LoadAcPower",
+   "label": "AC Load Power",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa07a",
+    "0xa07b"
+   ],
+   "formula": "abs((s32(u32({0xa07a},{0xa07b})) * ({scale:AcVolts} * (({scale:AcCurrent} / 26214400.0) / 1000.0))))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedACPowerValueToString"
+  },
+  {
+   "key": "ac_inverter_rms_volts",
+   "name": "AC Inverter RMS Volts",
+   "field": "ACInverterRmsVolts",
+   "label": "AC Load Voltage",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa090",
+    "0xa095"
+   ],
+   "formula": "{0xa090} * {scale:AcVolts} / 327680.0",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACLoadVoltageValueClampedToSourceVoltageInSyncToString"
+  },
+  {
+   "key": "inv_freq",
+   "name": "Inverter Freq",
+   "field": "InvFreq",
+   "label": "AC Load Frequency",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa092"
+   ],
+   "formula": "(s16({0xa092}) / 100.0)",
+   "unit": "Hz",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACFrequencyValueInCentiHzToString"
+  },
+  {
+   "key": "generator_running_reason",
+   "name": "Generator Running Reason",
+   "field": "GeneratorRunningReason",
+   "label": "Generator Runnin",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa07f"
+   ],
+   "formula": "{0xa07f}",
+   "unit": "",
+   "kind": "enum",
+   "table": "generator_reason",
+   "converter": "fnConvertGeneratorStartedBySlashRunningReasonValueToString"
+  },
+  {
+   "key": "batt_soc_percent",
+   "name": "Battery SoC Percent",
+   "field": "BattSocPercent",
+   "label": "Battery SoC %",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa081"
+   ],
+   "formula": "{0xa081} / 256.0",
+   "unit": "%",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedSOCPercentageValueToString"
+  },
+  {
+   "key": "battery_volts",
+   "name": "Battery Volts",
+   "field": "BatteryVolts",
+   "label": "Battery Voltage",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa05c"
+   ],
+   "formula": "(s16({0xa05c}) * ({scale:DcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCVoltageValueToString"
+  },
+  {
+   "key": "dc_battery_current",
+   "name": "DC Battery Current",
+   "field": "DCBatteryCurrent",
+   "label": "Battery Current",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa084",
+    "0xa085"
+   ],
+   "formula": "(s32(u32({0xa084},{0xa085})) * ({scale:DcCurrent} / 327680.0))",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCBatteryCurrentValueToString"
+  },
+  {
+   "key": "dc_current",
+   "name": "DC Current",
+   "field": "DCCurrent",
+   "label": "Inverter Current",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa083"
+   ],
+   "formula": "(s16({0xa083}) * ({scale:DcCurrent} / 327680.0))",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCCurrentValueToString"
+  },
+  {
+   "key": "shunt1_amps",
+   "name": "Shunt 1 Amps",
+   "field": "Shunt1Amps",
+   "label": "",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa086"
+   ],
+   "formula": "s16({0xa086}) * {scale:DcCurrent} / 327680.0",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntCurrentValueToString"
+  },
+  {
+   "key": "shunt1_power",
+   "name": "Shunt 1 Power",
+   "field": "Shunt1Power",
+   "label": "",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa088"
+   ],
+   "formula": "s16({0xa088}) * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntPowerValueToString"
+  },
+  {
+   "key": "shunt2_amps",
+   "name": "Shunt 2 Amps",
+   "field": "Shunt2Amps",
+   "label": "",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa087"
+   ],
+   "formula": "s16({0xa087}) * {scale:DcCurrent} / 327680.0",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntCurrentValueToString"
+  },
+  {
+   "key": "shunt2_power",
+   "name": "Shunt 2 Power",
+   "field": "Shunt2Power",
+   "label": "",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa089"
+   ],
+   "formula": "s16({0xa089}) * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntPowerValueToString"
+  },
+  {
+   "key": "5_min_batt_load",
+   "name": "5 Min Battery Load",
+   "field": "5MinBattLoad",
+   "label": "5 min Battery Load",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa097",
+    "0xa098"
+   ],
+   "formula": "s32(u32({0xa097}, {0xa098})) * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCBatteryPowerValueToStringSupressingNegValues"
+  },
+  {
+   "key": "15_min_batt_load",
+   "name": "15 Min Battery Load",
+   "field": "15MinBattLoad",
+   "label": "15 min Battery Load",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa099",
+    "0xa09a"
+   ],
+   "formula": "s32(u32({0xa099}, {0xa09a})) * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCBatteryPowerValueToStringSupressingNegValues"
+  },
+  {
+   "key": "charge_status_now",
+   "name": "Charge Status Now",
+   "field": "ChargeStatusNow",
+   "label": "Charging Mode",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa07c"
+   ],
+   "formula": "{0xa07c}",
+   "unit": "",
+   "kind": "enum",
+   "table": "charger_status",
+   "converter": "fnConvertChargerStatusValueToString"
+  },
+  {
+   "key": "ac_generator_power",
+   "name": "AC Generator Power",
+   "field": "ACGeneratorPower",
+   "label": "Power",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa0ab"
+   ],
+   "formula": "(s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToString"
+  },
+  {
+   "key": "ac_generator_power5min_avg",
+   "name": "AC Generator Power 5min Avg",
+   "field": "ACGeneratorPower5minAvg",
+   "label": "Power (5 min Average)",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa08b"
+   ],
+   "formula": "(s16({0xa08b}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToString"
+  },
+  {
+   "key": "ac_generator_rms_volts",
+   "name": "AC Generator RMS Volts",
+   "field": "ACGeneratorRmsVolts",
+   "label": "AC Source",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa095"
+   ],
+   "formula": "({0xa095} * ({scale:AcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACVoltageValueToString"
+  },
+  {
+   "key": "ac_generator_rms_amps",
+   "name": "AC Generator RMS Amps",
+   "field": "ACGeneratorRmsAmps",
+   "label": "Current",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa08c"
+   ],
+   "formula": "abs((s16({0xa08c}) * ({scale:AcCurrent} / 327680.0)))",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACCurrentValueToString"
+  },
+  {
+   "key": "input_ac_hz",
+   "name": "Input AC Hz",
+   "field": "InputACHz",
+   "label": "Frequency",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa08d"
+   ],
+   "formula": "(s16({0xa08d}) / 100.0)",
+   "unit": "Hz",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACFrequencyValueInCentiHzToString"
+  },
+  {
+   "key": "max_available_inputk_w",
+   "name": "Max Available Input kW",
+   "field": "MaxAvailableInputkW",
+   "label": "Available Power",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa08e",
+    "0xa08f"
+   ],
+   "formula": "abs((s32(u32({0xa08e},{0xa08f})) * ({scale:AcVolts} * (({scale:AcCurrent} / 26214400.0) / 1000.0))))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedACPowerValueToString"
+  },
+  {
+   "key": "ac_inverter_power",
+   "name": "AC Inverter Power",
+   "field": "ACInverterPower",
+   "label": "Power",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa058",
+    "0xa059"
+   ],
+   "formula": "(s32(u32({0xa058},{0xa059})) * ({scale:AcVolts} * (({scale:AcCurrent} / 26214400.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedACPowerValueToStringUsingRnDSignConv"
+  },
+  {
+   "key": "ac_inverter_rms_amps",
+   "name": "AC Inverter RMS Amps",
+   "field": "ACInverterRmsAmps",
+   "label": "Inverter AC",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa091"
+   ],
+   "formula": "(s16({0xa091}) * ({scale:AcCurrent} / 327680.0))",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACCurrentValueToStringUsingRnDSignConvention"
+  },
+  {
+   "key": "now_total_ac_power_kaco",
+   "name": "Now Total AC Power AC Solar",
+   "field": "NowTotalAcPowerKaco",
+   "label": "Total Power",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa09b"
+   ],
+   "formula": "({0xa09b} * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign"
+  },
+  {
+   "key": "now_ac_power_kaco1",
+   "name": "Now AC Power AC Solar 1",
+   "field": "NowAcPowerKaco1",
+   "label": "Power #1",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa09c"
+   ],
+   "formula": "({0xa09c} * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign"
+  },
+  {
+   "key": "now_ac_power_kaco2",
+   "name": "Now AC Power AC Solar 2",
+   "field": "NowAcPowerKaco2",
+   "label": "AC Coupled Solar",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa09d"
+   ],
+   "formula": "({0xa09d} * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign"
+  },
+  {
+   "key": "now_ac_power_kaco3",
+   "name": "Now AC Power AC Solar 3",
+   "field": "NowAcPowerKaco3",
+   "label": "Power #3",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa09e"
+   ],
+   "formula": "({0xa09e} * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign"
+  },
+  {
+   "key": "now_ac_power_kaco4",
+   "name": "Now AC Power AC Solar 4",
+   "field": "NowAcPowerKaco4",
+   "label": "Power #4",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa09f"
+   ],
+   "formula": "({0xa09f} * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign"
+  },
+  {
+   "key": "now_ac_power_kaco5",
+   "name": "Now AC Power AC Solar 5",
+   "field": "NowAcPowerKaco5",
+   "label": "Power #5",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa0a0"
+   ],
+   "formula": "({0xa0a0} * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign"
+  },
+  {
+   "key": "sys_reg_export_power_limit",
+   "name": "System Regulation Export Power Limit",
+   "field": "SysRegExportPowerLimit",
+   "label": "System Regulation Status",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa072"
+   ],
+   "formula": "(s16({0xa072}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToString"
+  },
+  {
+   "key": "sys_reg_charge_power_limit",
+   "name": "System Regulation Charge Power Limit",
+   "field": "SysRegChargePowerLimit",
+   "label": "Charge Limit",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa073"
+   ],
+   "formula": "(s16({0xa073}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToString"
+  },
+  {
+   "key": "country_code",
+   "name": "Country Code",
+   "field": "CountryCode",
+   "label": "Country",
+   "screen": "Now_Today_Tech_KacoModelsCapacityAndOEM",
+   "words": [
+    "0xa38c"
+   ],
+   "formula": "{0xa38c}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvertCountryCodeValueToString"
+  },
+  {
+   "key": "power_control_mode_enabled",
+   "name": "Power Control Mode Enabled",
+   "field": "PowerControlModeEnabled",
+   "label": "Factory Set Options",
+   "screen": "Now_Today_Tech_KacoModelsCapacityAndOEM",
+   "words": [
+    "0xa38d"
+   ],
+   "formula": "{0xa38d}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvertFactorySettingBooleanValueToString"
+  },
+  {
+   "key": "disable_splink_login_password",
+   "name": "Disable SPLINK Login Password",
+   "field": "DisableSPLINKLoginPassword",
+   "label": "SOFTWARE Logi",
+   "screen": "Now_Today_Tech_KacoModelsCapacityAndOEM",
+   "words": [
+    "0xa38e"
+   ],
+   "formula": "{0xa38e}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvertFactorySettingBooleanValueToString"
+  },
+  {
+   "key": "build_time",
+   "name": "Build Time",
+   "field": "BuildTime",
+   "label": "SP PRO Firmware Build Time",
+   "screen": "RAndDOnlyDataSubTab",
+   "words": [
+    "0xa035"
+   ],
+   "formula": "{0xa035}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvertTimeThatWasStoredInBCDToString"
+  },
+  {
+   "key": "version_number_in_rd",
+   "name": "Version Number In RD",
+   "field": "VersionNumberInRD",
+   "label": "Advanced Version Information",
+   "screen": "RAndDOnlyDataSubTab",
+   "words": [
+    "0xa032",
+    "0xa015"
+   ],
+   "formula": "({0xa032} / 100.0)",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSoftwareVersionAndSringInverterSupportValueToString"
+  },
+  {
+   "key": "battery_current",
+   "name": "Battery Current",
+   "field": "BatteryCurrent",
+   "label": "Current",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa084",
+    "0xa085"
+   ],
+   "formula": "(s32(u32({0xa084},{0xa085})) * ({scale:DcCurrent} / 327680.0))",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCBatteryCurrentValueToString"
+  },
+  {
+   "key": "battery_volts_in_tech_tab",
+   "name": "Battery Volts In Tech Tab",
+   "field": "BatteryVolts_InTechTab",
+   "label": "Sense Voltage",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa05b"
+   ],
+   "formula": "(s16({0xa05b}) * ({scale:DcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCVoltageValueToString"
+  },
+  {
+   "key": "dc_volts",
+   "name": "DC Volts",
+   "field": "DCVolts",
+   "label": "DC Inverter Voltage",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa02e"
+   ],
+   "formula": "(s16({0xa02e}) * ({scale:DcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCVoltageValueToString"
+  },
+  {
+   "key": "battery_mid_point",
+   "name": "Battery Mid Point",
+   "field": "BatteryMidPoint",
+   "label": "Midpoint Voltage",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa046"
+   ],
+   "formula": "(s16({0xa046}) * ({scale:DcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCVoltageValueToString",
+   "note": "not wired on a managed (BMS) battery; value meaningless there"
+  },
+  {
+   "key": "battery_soc_tech",
+   "name": "Battery SoC Tech",
+   "field": "BatterySocTech",
+   "label": "State Of Charge %",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa081"
+   ],
+   "formula": "{0xa081} / 256.0",
+   "unit": "%",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedSOCPercentageValueToString"
+  },
+  {
+   "key": "charge_index",
+   "name": "Charge Index",
+   "field": "ChargeIndex",
+   "label": "Charge Eff. Index",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa049"
+   ],
+   "formula": "{0xa049}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvertChargeIndexValueToString"
+  },
+  {
+   "key": "charge_status",
+   "name": "Charge Status",
+   "field": "ChargeStatus",
+   "label": "Battery",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa045"
+   ],
+   "formula": "{0xa045}",
+   "unit": "",
+   "kind": "enum",
+   "table": "charger_status",
+   "converter": "fnConvertChargerStatusValueToString"
+  },
+  {
+   "key": "dc_battery_power",
+   "name": "DC Battery Power",
+   "field": "DCBatteryPower",
+   "label": "Power",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa02f",
+    "0xa030"
+   ],
+   "formula": "s32(u32({0xa02f}, {0xa030})) * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCBatteryPowerValueToString"
+  },
+  {
+   "key": "battery_cable_loss",
+   "name": "Battery Cable Loss",
+   "field": "BatteryCableLoss",
+   "label": "Cable Loss",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa04a"
+   ],
+   "formula": "abs(({0xa04a} * ({scale:DcVolts} * ({scale:DcCurrent} / 3276800.0))))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedDCPowerValueToStringInWatts"
+  },
+  {
+   "key": "daysto_recharge",
+   "name": "Days to Recharge",
+   "field": "DaystoRecharge",
+   "label": "Days to Recharge",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa06e"
+   ],
+   "formula": "{0xa06e}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertDaysToEqualiseValueToString"
+  },
+  {
+   "key": "days_since_recharge",
+   "name": "Days Since Recharge",
+   "field": "DaysSinceRecharge",
+   "label": "Days Since Recharge",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa06f"
+   ],
+   "formula": "{0xa06f}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "daysto_equalise",
+   "name": "Days to Equalise",
+   "field": "DaystoEqualise",
+   "label": "Days to Equalise",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa048"
+   ],
+   "formula": "{0xa048}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertDaysToEqualiseValueToString"
+  },
+  {
+   "key": "days_since_equalise",
+   "name": "Days Since Equalise",
+   "field": "DaysSinceEqualise",
+   "label": "Days Since Equalise",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa047"
+   ],
+   "formula": "{0xa047}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "inverter_ac_power",
+   "name": "Inverter AC Power",
+   "field": "InverterACPower",
+   "label": "AC Power",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa058",
+    "0xa059"
+   ],
+   "formula": "(s32(u32({0xa058},{0xa059})) * ({scale:AcVolts} * (({scale:AcCurrent} / 26214400.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedACPowerValueToStringUsingRnDSignConv"
+  },
+  {
+   "key": "inverter_reactive_power",
+   "name": "Inverter Reactive Power",
+   "field": "InverterReactivePower",
+   "label": "Reactive Power",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa05a"
+   ],
+   "formula": "(s16({0xa05a}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kvar",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACReactivePowerValueToString"
+  },
+  {
+   "key": "inverter_apparent_power",
+   "name": "Inverter Apparent Power",
+   "field": "InverterApparentPower",
+   "label": "Inverter Power",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa058",
+    "0xa059",
+    "0xa05a"
+   ],
+   "formula": "abs(sqrt((((s32(u32({0xa058},{0xa059})) * ({scale:AcVolts} * (({scale:AcCurrent} / 26214400.0) / 1000.0))) * (s32(u32({0xa058},{0xa059})) * ({scale:AcVolts} * (({scale:AcCurrent} / 26214400.0) / 1000.0)))) + ((s16({0xa05a}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0))) * (s16({0xa05a}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))))",
+   "unit": "kVA",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACApparentPowerValueToString"
+  },
+  {
+   "key": "ac_source_power",
+   "name": "AC Source Power",
+   "field": "AcSourcePower",
+   "label": "AC Source Power",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa0ab"
+   ],
+   "formula": "(s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToString"
+  },
+  {
+   "key": "ac_source_reactive_power",
+   "name": "AC Source Reactive Power",
+   "field": "AcSourceReactivePower",
+   "label": "AC Source Reactive Power",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa082"
+   ],
+   "formula": "((s16({0xa082}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0))) * -1.0)",
+   "unit": "kvar",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACSourceReactivePowerValueToString"
+  },
+  {
+   "key": "transformer_temperature",
+   "name": "Transformer Temperature",
+   "field": "TransformerTemperature",
+   "label": "Temperature Control",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa03d"
+   ],
+   "formula": "s16({0xa03d}) * {scale:Temperature} / 32768.0",
+   "unit": "\u00b0C",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedTemperatureValueToString"
+  },
+  {
+   "key": "heatsink_temperature",
+   "name": "Heatsink Temperature",
+   "field": "HeatsinkTemperature",
+   "label": "Heatsink Temperature",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa037",
+    "0xa038"
+   ],
+   "formula": "max(s16({0xa037}), s16({0xa038})) * {scale:Temperature} / 32768.0",
+   "unit": "\u00b0C",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedHottestTemperatureValueToString"
+  },
+  {
+   "key": "control_board_temperature",
+   "name": "Control Board Temperature",
+   "field": "ControlBoardTemperature",
+   "label": "Internal Temperature",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa03b"
+   ],
+   "formula": "s16({0xa03b}) * {scale:Temperature} / 32768.0",
+   "unit": "\u00b0C",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedTemperatureValueToString"
+  },
+  {
+   "key": "inlet_air_temperature",
+   "name": "Inlet Air Temperature",
+   "field": "InletAirTemperature",
+   "label": "Power Module Temp.",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa03e"
+   ],
+   "formula": "s16({0xa03e}) * {scale:Temperature} / 32768.0",
+   "unit": "\u00b0C",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedTemperatureValueToString"
+  },
+  {
+   "key": "battery_temperature",
+   "name": "Battery Temperature",
+   "field": "BatteryTemperature",
+   "label": "Battery Temperature",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa03c"
+   ],
+   "formula": "s16({0xa03c}) * {scale:Temperature} / 32768.0",
+   "unit": "\u00b0C",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedBattTemperatureValueToString"
+  },
+  {
+   "key": "fan_speed",
+   "name": "Fan Speed",
+   "field": "FanSpeed",
+   "label": "Fan Speed",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa042"
+   ],
+   "formula": "{0xa042} / 256.0",
+   "unit": "%",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedPercentageValueToString"
+  },
+  {
+   "key": "digital_in_status1",
+   "name": "Digital In Status 1",
+   "field": "DigitalInStatus1",
+   "label": "Inputs",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa052"
+   ],
+   "formula": "{0xa052}",
+   "unit": "",
+   "kind": "enum",
+   "table": "digital_io",
+   "converter": "fnConvertDigInput_OutputStatusValueToString"
+  },
+  {
+   "key": "digital_in_status2",
+   "name": "Digital In Status 2",
+   "field": "DigitalInStatus2",
+   "label": "Digital Control 2 Status",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa053"
+   ],
+   "formula": "{0xa053}",
+   "unit": "",
+   "kind": "enum",
+   "table": "digital_io",
+   "converter": "fnConvertDigInput_OutputStatusValueToString"
+  },
+  {
+   "key": "digital_in_status3",
+   "name": "Digital In Status 3",
+   "field": "DigitalInStatus3",
+   "label": "Digital Control 3 Status",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa054"
+   ],
+   "formula": "{0xa054}",
+   "unit": "",
+   "kind": "enum",
+   "table": "digital_io",
+   "converter": "fnConvertDigInput_OutputStatusValueToString"
+  },
+  {
+   "key": "digital_in_status4",
+   "name": "Digital In Status 4",
+   "field": "DigitalInStatus4",
+   "label": "Digital Control 4 Status",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa055"
+   ],
+   "formula": "{0xa055}",
+   "unit": "",
+   "kind": "enum",
+   "table": "digital_io",
+   "converter": "fnConvertDigInput_OutputStatusValueToString"
+  },
+  {
+   "key": "general_purpose1",
+   "name": "General Purpose 1",
+   "field": "GeneralPurpose1",
+   "label": "Analogue 1 DC Voltage",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa056"
+   ],
+   "formula": "(s16({0xa056}) * ({scale:DcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedExpCardDCVoltageValueToString"
+  },
+  {
+   "key": "general_purpose2",
+   "name": "General Purpose 2",
+   "field": "GeneralPurpose2",
+   "label": "Analogue 2 DC Voltage",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa057"
+   ],
+   "formula": "(s16({0xa057}) * ({scale:DcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedExpCardDCVoltageValueToString"
+  },
+  {
+   "key": "digital_out_status1",
+   "name": "Digital Out Status 1",
+   "field": "DigitalOutStatus1",
+   "label": "Outputs",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa04b"
+   ],
+   "formula": "{0xa04b}",
+   "unit": "",
+   "kind": "enum",
+   "table": "digital_io",
+   "converter": "fnConvertDigInput_OutputStatusValueToString"
+  },
+  {
+   "key": "digital_out_status2",
+   "name": "Digital Out Status 2",
+   "field": "DigitalOutStatus2",
+   "label": "Digital Control 2 Status",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa04c"
+   ],
+   "formula": "{0xa04c}",
+   "unit": "",
+   "kind": "enum",
+   "table": "digital_io",
+   "converter": "fnConvertDigInput_OutputStatusValueToString"
+  },
+  {
+   "key": "digital_out_status3",
+   "name": "Digital Out Status 3",
+   "field": "DigitalOutStatus3",
+   "label": "Digital Control 3 Status",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa04d"
+   ],
+   "formula": "{0xa04d}",
+   "unit": "",
+   "kind": "enum",
+   "table": "digital_io",
+   "converter": "fnConvertDigInput_OutputStatusValueToString"
+  },
+  {
+   "key": "digital_out_status4",
+   "name": "Digital Out Status 4",
+   "field": "DigitalOutStatus4",
+   "label": "Relay 1 Status",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa04e"
+   ],
+   "formula": "{0xa04e}",
+   "unit": "",
+   "kind": "enum",
+   "table": "digital_io",
+   "converter": "fnConvertDigInput_OutputStatusValueToString"
+  },
+  {
+   "key": "digital_out_status5",
+   "name": "Digital Out Status 5",
+   "field": "DigitalOutStatus5",
+   "label": "Relay 2 Status",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa04f"
+   ],
+   "formula": "{0xa04f}",
+   "unit": "",
+   "kind": "enum",
+   "table": "digital_io",
+   "converter": "fnConvertDigInput_OutputStatusValueToString"
+  },
+  {
+   "key": "digital_out_status6",
+   "name": "Digital Out Status 6",
+   "field": "DigitalOutStatus6",
+   "label": "Relay 3 Status",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa050"
+   ],
+   "formula": "{0xa050}",
+   "unit": "",
+   "kind": "enum",
+   "table": "digital_io",
+   "converter": "fnConvertDigInput_OutputStatusValueToString"
+  },
+  {
+   "key": "digital_out_status7",
+   "name": "Digital Out Status 7",
+   "field": "DigitalOutStatus7",
+   "label": "Relay 4 Status",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa051"
+   ],
+   "formula": "{0xa051}",
+   "unit": "",
+   "kind": "enum",
+   "table": "digital_io",
+   "converter": "fnConvertDigInput_OutputStatusValueToString"
+  },
+  {
+   "key": "unit_model_number",
+   "name": "Unit Model Number",
+   "field": "UnitModelNumber",
+   "label": "SP PRO Model",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa05d"
+   ],
+   "formula": "{0xa05d}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvertInverterModelValueToModelNumberString"
+  },
+  {
+   "key": "unit_model_ratings",
+   "name": "Unit Model Ratings",
+   "field": "UnitModelRatings",
+   "label": "Model Ratings",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa05d",
+    "0xa060"
+   ],
+   "formula": "{0xa05d}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvertInverterModelValueToModelDescriptionString"
+  },
+  {
+   "key": "unit_serial_number",
+   "name": "Unit Serial Number",
+   "field": "UnitSerialNumber",
+   "label": "SP PRO Serial",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa05e",
+    "0xa05f"
+   ],
+   "formula": "{0xa05e}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvert32BitSerialNumberValueToString"
+  },
+  {
+   "key": "unit_rev_number",
+   "name": "Unit Rev Number",
+   "field": "UnitRevNumber",
+   "label": "Hardware Revision",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa060"
+   ],
+   "formula": "{0xa060}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "unit_mod_status",
+   "name": "Unit Mod Status",
+   "field": "UnitModStatus",
+   "label": "Hardware Mod Status",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa061"
+   ],
+   "formula": "{0xa061}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvertModStatusNumberToString"
+  },
+  {
+   "key": "version_number",
+   "name": "Version Number",
+   "field": "VersionNumber",
+   "label": "Software Version",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa032",
+    "0xa015"
+   ],
+   "formula": "({0xa032} / 100.0)",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSoftwareVersionAndSringInverterSupportValueToString"
+  },
+  {
+   "key": "string_inverter_support",
+   "name": "String Inverter Support",
+   "field": "StringInverterSupport",
+   "label": "String Inverters Supported",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa032",
+    "0xa015"
+   ],
+   "formula": "{0xa032}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvertStringInverterSupportValueToString"
+  },
+  {
+   "key": "inverter_run_hrs_total_acc",
+   "name": "Inverter Run Hours Total",
+   "field": "InverterRunHrsTotalAcc",
+   "label": "Inverter Run Hours Total",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa03f",
+    "0xa040"
+   ],
+   "formula": "(u32({0xa03f},{0xa040}) / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "control_pca_serial_number",
+   "name": "Control PCA Serial Number",
+   "field": "ControlPCASerialNumber",
+   "label": "Inverter",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa062",
+    "0xa063"
+   ],
+   "formula": "{0xa062}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvert32BitSerialNumberValueToString"
+  },
+  {
+   "key": "control_pca_rev_number",
+   "name": "Control PCA Rev Number",
+   "field": "ControlPCARevNumber",
+   "label": "Control Board Revision",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa064"
+   ],
+   "formula": "{0xa064}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "control_pca_mod_status",
+   "name": "Control PCA Mod Status",
+   "field": "ControlPCAModStatus",
+   "label": "Control Board Mod Status",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa065"
+   ],
+   "formula": "{0xa065}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvertModStatusNumberToString"
+  },
+  {
+   "key": "pm1_serial_number",
+   "name": "PM 1 Serial Number",
+   "field": "PM1SerialNumber",
+   "label": "Power Board 1 Serial",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa066",
+    "0xa067"
+   ],
+   "formula": "{0xa066}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvert32BitSerialNumberValueToString"
+  },
+  {
+   "key": "pm1_rev_number",
+   "name": "PM 1 Rev Number",
+   "field": "PM1RevNumber",
+   "label": "Power Board 1 Revision",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa068"
+   ],
+   "formula": "{0xa068}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "pm1_mod_status",
+   "name": "PM 1 Mod Status",
+   "field": "PM1ModStatus",
+   "label": "Power Board 1 Mod Status",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa069"
+   ],
+   "formula": "{0xa069}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvertModStatusNumberToString"
+  },
+  {
+   "key": "pm2_serial_number",
+   "name": "PM 2 Serial Number",
+   "field": "PM2SerialNumber",
+   "label": "Power Board 2 Serial",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa06a",
+    "0xa06b"
+   ],
+   "formula": "{0xa06a}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvert32BitSerialNumberValueToString"
+  },
+  {
+   "key": "pm2_rev_number",
+   "name": "PM 2 Rev Number",
+   "field": "PM2RevNumber",
+   "label": "Power Board 2 Revision",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa06c"
+   ],
+   "formula": "{0xa06c}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "pm2_mod_status",
+   "name": "PM 2 Mod Status",
+   "field": "PM2ModStatus",
+   "label": "Power Board 2 Mod Status",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa06d"
+   ],
+   "formula": "{0xa06d}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvertModStatusNumberToString"
+  },
+  {
+   "key": "capacitor_life_consumed_pm1",
+   "name": "Capacitor Life Consumed PM 1",
+   "field": "CapacitorLifeConsumedPM1",
+   "label": "Power Board 1 Capacitors",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa043"
+   ],
+   "formula": "{0xa043} / 256.0",
+   "unit": "%",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedPercentageValueToString"
+  },
+  {
+   "key": "capacitor_life_consumed_pm2",
+   "name": "Capacitor Life Consumed PM 2",
+   "field": "CapacitorLifeConsumedPM2",
+   "label": "Power Board 2 Capacitors",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa044"
+   ],
+   "formula": "{0xa044} / 256.0",
+   "unit": "%",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedPercentageValueToString"
+  },
+  {
+   "key": "fan_life",
+   "name": "Fan Life",
+   "field": "FanLife",
+   "label": "Component Life",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa041"
+   ],
+   "formula": "{0xa041} / 256.0",
+   "unit": "%",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedPercentageValueToString"
+  },
+  {
+   "key": "capacitor_life_consumed_filter",
+   "name": "Capacitor Life Consumed Filter",
+   "field": "CapacitorLifeConsumedFilter",
+   "label": "Filter Capacitors",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa0ad"
+   ],
+   "formula": "{0xa0ad} * 100.0 / 16384.0",
+   "unit": "%",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSigned14bitPercentageValueToString",
+   "note": "unconfirmed: SP LINK formula gives ~80 % and it varies between reads; PM1/PM2 read 0.31 %. Compare with SP LINK Technical tab"
+  },
+  {
+   "key": "load_volts_high_frequency_ripple",
+   "name": "Load Volts High Frequency Ripple",
+   "field": "LoadVoltsHighFrequencyRipple",
+   "label": "Load V Hi Freq Ripple",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa0ae"
+   ],
+   "formula": "(s16({0xa0ae}) * ({scale:AcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACVoltageValueToString"
+  },
+  {
+   "key": "ac_inverter_rms_volts_tech",
+   "name": "AC Inverter RMS Volts Tech",
+   "field": "ACInverterRmsVolts_Tech",
+   "label": "Load AC Volts",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa090"
+   ],
+   "formula": "(s16({0xa090}) * ({scale:AcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACVoltageValueToString"
+  },
+  {
+   "key": "d_ck_wh_in_today",
+   "name": "DC kWh In Today",
+   "field": "DCkWhInToday",
+   "label": "DC Energy In",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0af",
+    "0xa0b0"
+   ],
+   "formula": "(u32({0xa0af},{0xa0b0}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "d_ck_wh_out_today",
+   "name": "DC kWh Out Today",
+   "field": "DCkWhOutToday",
+   "label": "DC Energy Out",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0b1",
+    "0xa0b2"
+   ],
+   "formula": "(u32({0xa0b1},{0xa0b2}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "d_ck_wh_net_today",
+   "name": "DC kWh NET Today",
+   "field": "DCkWhNETToday",
+   "label": "DC Totals",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0b3",
+    "0xa0b4"
+   ],
+   "formula": "(0.0 - (s32(u32({0xa0b3},{0xa0b4})) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCEnergyValueInKwhToStringAndFlipSign"
+  },
+  {
+   "key": "inverter_d_ck_wh_acc",
+   "name": "Inverter DC kWh",
+   "field": "InverterDCkWhAcc",
+   "label": "DC Inverter Energy",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0b9"
+   ],
+   "formula": "abs((s16({0xa0b9}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt1k_wh_acc",
+   "name": "Shunt 1 kWh",
+   "field": "Shunt1kWhAcc",
+   "label": "",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0ba"
+   ],
+   "formula": "s16({0xa0ba}) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "shunt2k_wh_acc",
+   "name": "Shunt 2 kWh",
+   "field": "Shunt2kWhAcc",
+   "label": "",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0bb"
+   ],
+   "formula": "s16({0xa0bb}) * 24.0 * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_ink_wh_acc",
+   "name": "Battery In kWh",
+   "field": "BattInkWhAcc",
+   "label": "Battery Input Energy",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0b5",
+    "0xa0b6"
+   ],
+   "formula": "(u32({0xa0b5},{0xa0b6}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_outk_wh_acc",
+   "name": "Battery Out kWh",
+   "field": "BattOutkWhAcc",
+   "label": "Battery Output Energy",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0b7",
+    "0xa0b8"
+   ],
+   "formula": "(u32({0xa0b7},{0xa0b8}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+  },
+  {
+   "key": "batt_netk_wh",
+   "name": "Battery Net kWh",
+   "field": "BattNetkWh",
+   "label": "Battery Net Energy",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0c9",
+    "0xa0ca",
+    "0xa0cb",
+    "0xa0cc"
+   ],
+   "formula": "((u32({0xa0c9},{0xa0ca}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0)))) - (u32({0xa0cb},{0xa0cc}) * (24.0 * ({scale:DcVolts} * (({scale:DcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnSignedDCBattEnergyValueInKwhToString"
+  },
+  {
+   "key": "float_hrs_acc",
+   "name": "Float Hours",
+   "field": "FloatHrsAcc",
+   "label": "Hours of Float",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0bc"
+   ],
+   "formula": "({0xa0bc} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "time_float_achieved",
+   "name": "Time Float Achieved",
+   "field": "TimeFloatAchieved",
+   "label": "Time that Float wa",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0bd"
+   ],
+   "formula": "{0xa0bd}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvertTimethatfloatwasachievedToString"
+  },
+  {
+   "key": "ac_loadk_wh_acc",
+   "name": "AC Load kWh",
+   "field": "ACLoadkWhAcc",
+   "label": "AC Load Energy",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0ec"
+   ],
+   "formula": "abs(({0xa0ec} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_inputk_wh_acc",
+   "name": "AC Input kWh",
+   "field": "ACInputkWhAcc",
+   "label": "AC Totals",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0f0"
+   ],
+   "formula": "abs(({0xa0f0} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "ac_input_hrs_acc",
+   "name": "AC Input Hours",
+   "field": "ACInputHrsAcc",
+   "label": "Hours of AC Input",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0c0"
+   ],
+   "formula": "({0xa0c0} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "inverter_run_hrs_acc",
+   "name": "Inverter Run Hours",
+   "field": "InverterRunHrsAcc",
+   "label": "Inverter Run Time",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0c1"
+   ],
+   "formula": "({0xa0c1} / 60.0)",
+   "unit": "h",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertTimeInMinutesValueToHoursString"
+  },
+  {
+   "key": "ac_export_accumulated_today",
+   "name": "AC Export Accumulated Today",
+   "field": "AcExportAccumulatedToday",
+   "label": "Export Energy",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0ed"
+   ],
+   "formula": "abs(({0xa0ed} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "shunt1_peak_power_today",
+   "name": "Shunt 1 Peak Power Today",
+   "field": "Shunt1PeakPowerToday",
+   "label": "",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0c3"
+   ],
+   "formula": "s16({0xa0c3}) * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCPeakShuntPowerValueToString"
+  },
+  {
+   "key": "shunt2_peak_power_today",
+   "name": "Shunt 2 Peak Power Today",
+   "field": "Shunt2PeakPowerToday",
+   "label": "",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0c4"
+   ],
+   "formula": "s16({0xa0c4}) * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCPeakShuntPowerValueToString"
+  },
+  {
+   "key": "today_total_ac_energy_kaco",
+   "name": "Today Total AC Energy AC Solar",
+   "field": "TodayTotalAcEnergyKaco",
+   "label": "Total Energy",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0f2"
+   ],
+   "formula": "abs(({0xa0f2} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+  },
+  {
+   "key": "fan_life_in_service_tab",
+   "name": "Fan Life In Service Tab",
+   "field": "FanLifeInServiceTab",
+   "label": "",
+   "screen": "ServiceReadings1",
+   "words": [
+    "0xa041"
+   ],
+   "formula": "{0xa041} / 256.0",
+   "unit": "%",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedPercentageValueToString"
+  },
+  {
+   "key": "i_shunt1_in_service_tab",
+   "name": "I Shunt 1 In Service Tab",
+   "field": "IShunt1InServiceTab",
+   "label": "",
+   "screen": "ServiceReadings1",
+   "words": [
+    "0xa086"
+   ],
+   "formula": "s16({0xa086}) * {scale:DcCurrent} / 327680.0",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntCurrentValueToString"
+  },
+  {
+   "key": "i_shunt2_in_service_tab",
+   "name": "I Shunt 2 In Service Tab",
+   "field": "IShunt2InServiceTab",
+   "label": "",
+   "screen": "ServiceReadings1",
+   "words": [
+    "0xa087"
+   ],
+   "formula": "s16({0xa087}) * {scale:DcCurrent} / 327680.0",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCShuntCurrentValueToString"
+  },
+  {
+   "key": "batt_soc_percent_in_service_tab",
+   "name": "Battery SoC Percent in Service Tab",
+   "field": "BattSocPercent_inServiceTab",
+   "label": "",
+   "screen": "ServiceReadings1",
+   "words": [
+    "0xa081"
+   ],
+   "formula": "{0xa081} / 256.0",
+   "unit": "%",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedSOCPercentageValueToString"
+  },
+  {
+   "key": "emulated_inductance_percent",
+   "name": "Emulated Inductance Percent",
+   "field": "EmulatedInductancePercent",
+   "label": "",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc20b"
+   ],
+   "formula": "{0xc20b} / 10.0",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessDeciNumberValueToString"
+  },
+  {
+   "key": "ac_solar_integral_gain_connected_to_source",
+   "name": "AC Solar Integral Gain Connected To Source",
+   "field": "AcSolarIntegralGainConnectedToSource",
+   "label": "Integral Gain",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc210"
+   ],
+   "formula": "{0xc210}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_differential_gain_connected_to_source",
+   "name": "AC Solar Differential Gain Connected To Source",
+   "field": "AcSolarDifferentialGainConnectedToSource",
+   "label": "Differential Gain",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc211"
+   ],
+   "formula": "{0xc211}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_feed_forward_gain_connected_to_source",
+   "name": "AC Solar Feed Forward Gain Connected To Source",
+   "field": "AcSolarFeedForwardGainConnectedToSource",
+   "label": "Feed Forward Gain",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc212"
+   ],
+   "formula": "{0xc212}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_proportional_gain_connected_to_source",
+   "name": "AC Solar Proportional Gain Connected To Source",
+   "field": "AcSolarProportionalGainConnectedToSource",
+   "label": "AC Solar, Grid Synchronised ",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc213"
+   ],
+   "formula": "{0xc213}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_integral_gain",
+   "name": "AC Solar Integral Gain",
+   "field": "AcSolarIntegralGain",
+   "label": "Integral Gain",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc214"
+   ],
+   "formula": "{0xc214}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_differential_gain",
+   "name": "AC Solar Differential Gain",
+   "field": "AcSolarDifferentialGain",
+   "label": "Differential Gain",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc215"
+   ],
+   "formula": "{0xc215}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_feed_forward_gain",
+   "name": "AC Solar Feed Forward Gain",
+   "field": "AcSolarFeedForwardGain",
+   "label": "AC Solar, Standalone",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc216"
+   ],
+   "formula": "{0xc216}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_proportional_voltage0",
+   "name": "AC Solar Proportional Voltage 0",
+   "field": "AcSolarProportionalVoltage0",
+   "label": "Proportional Voltage 0",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc217"
+   ],
+   "formula": "{0xc217}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_proportional_gain0",
+   "name": "AC Solar Proportional Gain 0",
+   "field": "AcSolarProportionalGain0",
+   "label": "Proportional Gain 0",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc218"
+   ],
+   "formula": "{0xc218}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_proportional_voltage1",
+   "name": "AC Solar Proportional Voltage 1",
+   "field": "AcSolarProportionalVoltage1",
+   "label": "Proportional Voltage 1",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc219"
+   ],
+   "formula": "{0xc219}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_proportional_gain1",
+   "name": "AC Solar Proportional Gain 1",
+   "field": "AcSolarProportionalGain1",
+   "label": "Proportional Gain 1",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc21a"
+   ],
+   "formula": "{0xc21a}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_proportional_voltage2",
+   "name": "AC Solar Proportional Voltage 2",
+   "field": "AcSolarProportionalVoltage2",
+   "label": "Proportional Voltage 2",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc21b"
+   ],
+   "formula": "{0xc21b}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_proportional_gain2",
+   "name": "AC Solar Proportional Gain 2",
+   "field": "AcSolarProportionalGain2",
+   "label": "Proportional Gain 2",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc21c"
+   ],
+   "formula": "{0xc21c}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_proportional_voltage3",
+   "name": "AC Solar Proportional Voltage 3",
+   "field": "AcSolarProportionalVoltage3",
+   "label": "Proportional Voltage 3",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc21d"
+   ],
+   "formula": "{0xc21d}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_proportional_gain3",
+   "name": "AC Solar Proportional Gain 3",
+   "field": "AcSolarProportionalGain3",
+   "label": "Proportional Gain 3",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc21e"
+   ],
+   "formula": "{0xc21e}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_proportional_voltage4",
+   "name": "AC Solar Proportional Voltage 4",
+   "field": "AcSolarProportionalVoltage4",
+   "label": "Proportional Voltage 4",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc21f"
+   ],
+   "formula": "{0xc21f}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_proportional_gain4",
+   "name": "AC Solar Proportional Gain 4",
+   "field": "AcSolarProportionalGain4",
+   "label": "Proportional Gain 4",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc220"
+   ],
+   "formula": "{0xc220}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_filter_rising_sync",
+   "name": "AC Solar Filter Rising Sync",
+   "field": "AcSolarFilterRisingSync",
+   "label": "Filter Rising",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc225"
+   ],
+   "formula": "{0xc225}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_filter_falling_sync",
+   "name": "AC Solar Filter Falling Sync",
+   "field": "AcSolarFilterFallingSync",
+   "label": "Filter Falling",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc226"
+   ],
+   "formula": "{0xc226}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_filter_rising_standalone",
+   "name": "AC Solar Filter Rising Standalone",
+   "field": "AcSolarFilterRisingStandalone",
+   "label": "Filter Rising",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc227"
+   ],
+   "formula": "{0xc227}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "ac_solar_filter_falling_standalone",
+   "name": "AC Solar Filter Falling Standalone",
+   "field": "AcSolarFilterFallingStandalone",
+   "label": "AC Coupled Solar Filter",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc228"
+   ],
+   "formula": "{0xc228}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  }
+ ],
+ "blocks": {
+  "ServiceSettings": [
+   [
+    "0xc201",
+    40
+   ]
+  ],
+  "ServiceReadings1": [
+   [
+    "0xa03f",
+    73
+   ]
+  ],
+  "NowSubTab": [
+   [
+    "0xa058",
+    85
+   ]
+  ],
+  "Now_Today_Tech_KacoModelsCapacityAndOEM": [
+   [
+    "0xa386",
+    26
+   ]
+  ],
+  "TodaySubTab": [
+   [
+    "0xa0af",
+    68
+   ]
+  ],
+  "DCHistorySubTab": [
+   [
+    "0xa127",
+    140
+   ]
+  ],
+  "ACHistorySubTab": [
+   [
+    "0xa1ca",
+    103
+   ]
+  ],
+  "ACHistorySubTab2": [
+   [
+    "0xa36e",
+    18
+   ]
+  ],
+  "TechnicalDataSubTab": [
+   [
+    "0xa015",
+    154
+   ]
+  ],
+  "DataMultiPhase1": [
+   [
+    "0xa2b4",
+    107
+   ]
+  ],
+  "DataMultiPhase2": [
+   [
+    "0xa07d",
+    22
+   ]
+  ],
+  "RAndDOnlyDataSubTab": [
+   [
+    "0xa015",
+    33
+   ]
+  ]
+ }
+}

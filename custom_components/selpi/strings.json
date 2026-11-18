@@ -1,0 +1,39 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "selpi add-on",
+        "description": "Connect to the selpi add-on's API. Inside Home Assistant the host is `local-selpi`; the token is in the add-on's /data/api_token (normally discovery fills this in for you).",
+        "data": {"host": "Host", "port": "Port", "token": "API token"}
+      },
+      "hassio_confirm": {
+        "title": "Selectronic SP PRO",
+        "description": "Add the SP PRO from the {addon} add-on?"
+      },
+      "reauth_confirm": {
+        "title": "selpi add-on token",
+        "description": "The add-on refused the token. Enter the one in the add-on's /data/api_token.",
+        "data": {"token": "API token"}
+      }
+    },
+    "error": {
+      "cannot_connect": "Can't reach the selpi add-on (or it can't reach the SP PRO).",
+      "invalid_auth": "The add-on refused the token."
+    },
+    "abort": {
+      "already_configured": "This SP PRO is already set up.",
+      "cannot_connect": "Can't reach the selpi add-on.",
+      "reauth_successful": "Token updated."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Polling",
+        "description": "How often to ask the add-on for new values. Suggested for this connection: {suggested} s (Select.Live is a cloud round trip each time: keep it at 60 s or more).",
+        "data": {"scan_interval": "Poll interval (seconds)"}
+      }
+    }
+  }
+}
