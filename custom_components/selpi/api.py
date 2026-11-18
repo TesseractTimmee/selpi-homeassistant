@@ -51,3 +51,7 @@ class SelpiClient:
 
     async def backup(self) -> dict[str, Any]:
         return await self._request("POST", "/backup", timeout=10)
+
+    async def press(self, button: str) -> dict[str, Any]:
+        """Press a front panel button (generator, silence) on the SP PRO through the app."""
+        return await self._request("POST", "/button", timeout=60, name=button)

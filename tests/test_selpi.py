@@ -13,7 +13,8 @@ from custom_components.selpi.const import CONF_ADDON_SLUG, CONF_SCAN_INTERVAL, C
 
 BASE = "http://local-selpi:8100/api/v1"
 INFO = {"id": "unit123", "connection": "SelectLive", "scan_interval": 60, "model": "SP PRO",
-        "manufacturer": "Selectronic", "firmware": "15.47", "versions": {"memory_map": 31}, "version_problems": []}
+        "manufacturer": "Selectronic", "firmware": "15.47", "versions": {"memory_map": 31}, "version_problems": [],
+        "buttons": ["generator", "silence"]}
 FIELDS = [
     {"key": "load_ac_power", "name": "Load power", "unit": "kW", "kind": "number", "default": True,
      "device_class": "power", "state_class": "measurement", "precision": 3, "category": None, "note": ""},
@@ -40,6 +41,7 @@ def mock_api(aioclient_mock, values=VALUES, info=INFO):
     aioclient_mock.get(f"{BASE}/values", json=values)
     aioclient_mock.get(f"{BASE}/diagnostics", json=DIAG)
     aioclient_mock.post(f"{BASE}/backup", json={"started": True})
+    aioclient_mock.post(f"{BASE}/button", json={"pressed": "generator", "register": "0xa232", "read_back": [0, 0]})
 
 
 async def setup(hass, aioclient_mock, **kw):
@@ -163,3 +165,17 @@ async def test_discovery_of_configured_unit_updates_entry(hass: HomeAssistant, a
                                                            data=info)
     assert result["type"] is FlowResultType.ABORT and result["reason"] == "already_configured"
     assert entry.data[CONF_TOKEN] == "tok"
+
+
+async def test_front_panel_buttons(hass: HomeAssistant, aioclient_mock):
+    await setup(hass, aioclient_mock)
+    assert hass.states.get("button.sp_pro_silence_alarm") is not None
+    await hass.services.async_call("button", "press", {"entity_id": "button.sp_pro_generator_start_stop"}, blocking=True)
+    calls = [(m, u) for m, u, *_ in aioclient_mock.mock_calls if m == "POST" and u.path.endswith("/button")]
+    assert len(calls) == 1 and calls[0][1].query.get("name") == "generator"
+
+
+async def test_no_panel_buttons_from_an_older_app(hass: HomeAssistant, aioclient_mock):
+    await setup(hass, aioclient_mock, info={k: v for k, v in INFO.items() if k != "buttons"})
+    assert hass.states.get("button.sp_pro_generator_start_stop") is None
+    assert hass.states.get("button.sp_pro_back_up_settings") is not None

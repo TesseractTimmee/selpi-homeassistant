@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.4
+- Front panel buttons: the integration gets "Generator start/stop" and "Silence alarm" buttons, pressed the
+  way SP LINK's Quick View front panel does (short press; shows in the SP PRO event log as a front panel
+  press). Generator: starts/stops the auto start generator when off grid (on grid the press is logged and
+  ignored). The ON button (ON <-> IDLE) is not offered. (selpi v0.4.4)
+
 ## 0.4.3
 - Log downloads show a progress bar: which log, records read of total, percent and elapsed time;
   "SP PRO is searching" and "waiting for the SP PRO link" while those take time; a note if the page
