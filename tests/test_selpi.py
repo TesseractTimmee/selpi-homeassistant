@@ -1,6 +1,8 @@
 """selpi integration against a mocked add-on API."""
 from unittest.mock import patch
 
+import pytest
+
 from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.core import HomeAssistant
@@ -14,7 +16,7 @@ from custom_components.selpi.const import CONF_ADDON_SLUG, CONF_SCAN_INTERVAL, C
 BASE = "http://local-selpi:8100/api/v1"
 INFO = {"id": "unit123", "connection": "SelectLive", "scan_interval": 60, "model": "SP PRO",
         "manufacturer": "Selectronic", "firmware": "15.47", "versions": {"memory_map": 31}, "version_problems": [],
-        "buttons": ["generator", "silence"]}
+        "buttons": ["generator", "silence", "on"]}
 FIELDS = [
     {"key": "load_ac_power", "name": "Load power", "unit": "kW", "kind": "number", "default": True,
      "device_class": "power", "state_class": "measurement", "precision": 3, "category": None, "note": ""},
@@ -179,3 +181,21 @@ async def test_no_panel_buttons_from_an_older_app(hass: HomeAssistant, aioclient
     await setup(hass, aioclient_mock, info={k: v for k, v in INFO.items() if k != "buttons"})
     assert hass.states.get("button.sp_pro_generator_start_stop") is None
     assert hass.states.get("button.sp_pro_back_up_settings") is not None
+
+
+async def test_on_button_disabled_and_needs_a_second_press(hass: HomeAssistant, aioclient_mock):
+    from homeassistant.exceptions import HomeAssistantError
+    entry = await setup(hass, aioclient_mock)
+    reg = er.async_get(hass)
+    ent = reg.async_get("button.sp_pro_inverter_on_idle_long_press")
+    assert ent.disabled_by is er.RegistryEntryDisabler.INTEGRATION
+    reg.async_update_entity(ent.entity_id, disabled_by=None)
+    await hass.config_entries.async_reload(entry.entry_id)
+    await hass.async_block_till_done()
+    on_calls = lambda: [u for m, u, *_ in aioclient_mock.mock_calls
+                        if m == "POST" and u.path.endswith("/button") and u.query.get("name") == "on"]
+    with pytest.raises(HomeAssistantError, match="Press again"):
+        await hass.services.async_call("button", "press", {"entity_id": ent.entity_id}, blocking=True)
+    assert on_calls() == []
+    await hass.services.async_call("button", "press", {"entity_id": ent.entity_id}, blocking=True)
+    assert len(on_calls()) == 1 and on_calls()[0].query.get("confirm") == "outage"

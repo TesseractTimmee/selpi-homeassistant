@@ -7,8 +7,10 @@ Web page (sidebar "SP PRO") for the Selectronic SP PRO, without SP LINK or the W
 - **Backups**: daily config backup (SP LINK `.SPLC` + service settings CSV + JSON), keep N, compare any two.
 - **Logs**: events, alerts, daily summary, detailed data as SP LINK-format CSVs (zip).
 
-It doesn't change settings. It can press two of the SP PRO's front panel buttons for the Home Assistant
-integration (Generator start/stop and Silence alarm, as SP LINK's Quick View front panel does).
+It doesn't change settings. It can press the SP PRO's front panel buttons for the Home Assistant
+integration, as SP LINK's Quick View front panel does: Generator start/stop and Silence alarm (short press),
+and the ON button's long press (ON <-> IDLE; the integration's button for it is disabled by default and asks
+for a second press within 30 s, because IDLE cuts the AC output).
 
 A log download writes the SP PRO's download-mode and log-search registers,
 as SP LINK does, and waits if someone else (SP LINK, the installer via Select.Live) is downloading.

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.5
+- "Inverter ON/IDLE (long press)" button: the SP PRO ON button's long press, which switches the inverter
+  between ON and IDLE (IDLE = no AC output, an outage). Protected: disabled until you enable it, and the first
+  press only asks you to press again within 30 s. The app refuses it without an explicit confirmation.
+  (selpi v0.4.5)
+
 ## 0.4.4
 - Front panel buttons: the integration gets "Generator start/stop" and "Silence alarm" buttons, pressed the
   way SP LINK's Quick View front panel does (short press; shows in the SP PRO event log as a front panel
