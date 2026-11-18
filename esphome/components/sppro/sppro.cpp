@@ -17,6 +17,11 @@ static const uint32_t LOGIN_STATUS = 0x1f0010;    // 1 = logged in
 static const uint32_t VERSION_BASE = 0xa007;
 static const uint32_t CLOCK_READ = 0x1d0000;   // 8 words BCD: ?, sec, min, hour, weekday (Sun=1), day, month, year
 static const uint32_t CLOCK_SET = 0x1d0011;    // 7 words BCD: sec, min, hour, weekday, day, month, year
+// Front panel buttons (SP LINK Quick View, selpi sppro/buttons.py): the low byte of 0xa000 is the comms port this
+// link is on; each port has its own registers: generator, ON, silence at 0xa232.. (port 1) / 0xa235.. (port 2).
+// Write 1 for a short press, 2 for a long press; the SP PRO logs it as a front panel press.
+static const uint32_t PORT_REGISTER = 0xa000;
+static const char *const BUTTON_NAMES[3] = {"generator", "ON", "silence alarm"};
 
 // Writes a read-only proxy client may still make: what a log download needs (selpi sppro/logs.py):
 // download mode 0xa251 = 0/1, and each log's 5-word search range (events, alerts, daily, detailed).
@@ -201,6 +206,10 @@ void SpPro::next_own_request_() {
     return;
   }
   if (!this->cycling_) {
+#ifdef USE_SPPRO_BUTTONS
+    if (this->button_step_())
+      return;
+#endif
 #ifdef USE_SPPRO_CLOCK
     if (this->clock_due_()) {
       this->clock_next_ = millis() + this->clock_interval_ms_;
@@ -250,6 +259,11 @@ void SpPro::on_reply_() {
       this->block_idx_++;
     } else if (step == Step::CLOCK_READ || step == Step::CLOCK_WRITE) {
       // try again next interval
+#ifdef USE_SPPRO_BUTTONS
+    } else if (step == Step::PORT_READ || step == Step::BUTTON_WRITE) {
+      ESP_LOGW(TAG, "button: %s press not sent (bad reply)", BUTTON_NAMES[std::max<int>(0, this->button_pending_)]);
+      this->button_pending_ = -1;  // never resend a press blindly
+#endif
     } else {
       this->login_failed_("bad reply");
     }
@@ -287,6 +301,9 @@ void SpPro::on_reply_() {
       if ((data[0] | (data[1] << 8)) == 1) {
         this->logged_in_ = true;
         this->login_fail_count_ = 0;
+#ifdef USE_SPPRO_BUTTONS
+        this->port_ = 0;  // read it again for this session
+#endif
         ESP_LOGI(TAG, "logged in");
         this->set_status_("logged in");
       } else {
@@ -302,6 +319,22 @@ void SpPro::on_reply_() {
       this->block_idx_++;
       break;
     }
+#ifdef USE_SPPRO_BUTTONS
+    case Step::PORT_READ:
+      this->port_ = data[0];
+      ESP_LOGD(TAG, "button: link is on SP PRO comms port %u", this->port_);
+      if (this->port_ != 1 && this->port_ != 2) {
+        ESP_LOGW(TAG, "button: unknown comms port %u, %s press not sent", this->port_,
+                 BUTTON_NAMES[std::max<int>(0, this->button_pending_)]);
+        this->button_pending_ = -1;
+      }
+      break;
+    case Step::BUTTON_WRITE:
+      ESP_LOGI(TAG, "button: %s pressed (0x%" PRIx32 " = %u)", BUTTON_NAMES[std::max<int>(0, this->button_pending_)],
+               frame_address(this->tx_), this->tx_[8]);
+      this->button_pending_ = -1;
+      break;
+#endif
 #ifdef USE_SPPRO_CLOCK
     case Step::CLOCK_READ:
       this->on_clock_read_(data);
@@ -315,6 +348,57 @@ void SpPro::on_reply_() {
       break;
   }
 }
+
+#ifdef USE_SPPRO_BUTTONS
+void SpPro::request_button(uint8_t which) {
+  if (which > 2)
+    return;
+  if (this->button_pending_ >= 0) {
+    ESP_LOGW(TAG, "button: %s press ignored, %s press still pending", BUTTON_NAMES[which],
+             BUTTON_NAMES[this->button_pending_]);
+    return;
+  }
+  if (!this->logged_in_) {
+    ESP_LOGW(TAG, "button: %s press ignored, not logged in to the SP PRO", BUTTON_NAMES[which]);
+    return;
+  }
+  this->button_pending_ = static_cast<int8_t>(which);
+  ESP_LOGI(TAG, "button: %s press queued", BUTTON_NAMES[which]);
+}
+
+// one step of a pending press (port read first, then the write); false = nothing to do
+bool SpPro::button_step_() {
+  if (this->button_pending_ < 0)
+    return false;
+  if (this->port_ == 0) {
+    this->query_(Step::PORT_READ, PORT_REGISTER, 1);
+    return true;
+  }
+  uint32_t address = (this->port_ == 1 ? 0xa232 : 0xa235) + this->button_pending_;
+  uint8_t value = this->button_pending_ == 1 ? 2 : 1;  // ON: long press only; generator, silence: short
+  put_header(this->tx_, 'W', address, 1);
+  this->tx_[8] = value;
+  this->tx_[9] = 0;
+  uint16_t c = crc16(this->tx_, 10);
+  this->tx_[10] = c & 0xff;
+  this->tx_[11] = c >> 8;
+  this->send_(Step::BUTTON_WRITE, this->tx_, 12, 12);
+  return true;
+}
+
+void SpProButton::press_action() {
+  if (this->which_ == 1) {  // ON: ON <-> IDLE cuts the AC output, so it takes two presses
+    uint32_t now = millis();
+    if (this->asked_at_ == 0 || now - this->asked_at_ > 30000) {
+      this->asked_at_ = now == 0 ? 1 : now;
+      ESP_LOGW(TAG, "button: press ON again within 30 s to switch the SP PRO between ON and IDLE (no AC output)");
+      return;
+    }
+    this->asked_at_ = 0;
+  }
+  this->parent_->request_button(this->which_);
+}
+#endif
 
 #ifdef USE_SPPRO_CLOCK
 bool SpPro::clock_due_() {
@@ -379,6 +463,13 @@ void SpPro::on_timeout_() {
     case Step::CLOCK_READ:
     case Step::CLOCK_WRITE:
       break;  // next interval
+#ifdef USE_SPPRO_BUTTONS
+    case Step::PORT_READ:
+    case Step::BUTTON_WRITE:
+      ESP_LOGW(TAG, "button: no reply, %s press not confirmed", BUTTON_NAMES[std::max<int>(0, this->button_pending_)]);
+      this->button_pending_ = -1;  // don't resend: it may have landed
+      break;
+#endif
     default:
       this->login_failed_("no reply");
   }

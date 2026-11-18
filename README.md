@@ -10,6 +10,16 @@ own protocol (the one SP LINK uses). Built on [selpi](https://github.com/Tessera
 | **Integration** (Marketplace) | `custom_components/selpi` | The SP PRO as an HA device: sensors for the live values (39 on by default, ~276 available), link status, clock drift, last backup, a backup button. Found automatically when the app runs. |
 | **ESPHome component** | `esphome/` | ESP32-S3 on the SP PRO's USB port: local link without Select.Live, frame proxy for the app and SP LINK, clock sync. |
 
+## Which parts you need
+
+| Setup | Live sensors and buttons in HA | The app adds |
+|---|---|---|
+| **ESP only** | ESPHome device (sensors, front panel buttons, clock sync) | - |
+| **App + integration** (Select.Live, serial on the HA machine, or a TCP serial bridge) | the integration | backups, log downloads, settings browser, clock sync, SP LINK proxy |
+| **ESP + app** | ESPHome device | backups, log downloads, settings browser (the app connects through the ESP's proxy) |
+
+With the ESP, skip the integration (or leave its entities disabled), or HA gets every sensor and button twice.
+
 ## Install
 1. **App:** Settings → Apps → App store → ⋮ → Repositories → add
    `https://github.com/TesseractTimmee/selpi-homeassistant`, then install **selpi**, set the connection and
@@ -23,6 +33,7 @@ Read-only by design: nothing here changes inverter settings (except the clock, w
 ## Development
 - Integration tests: `pytest` (needs `pytest-homeassistant-custom-component`).
 - `tools/deploy_dev.sh`: copy the integration straight to a test HA over ssh (`HA=user@host`).
+- `tools/sync_fields.sh`: refresh the ESPHome component's field tables from the selpi fork at `SELPI_REF`.
 - The app pins selpi with `SELPI_REF` in `selpi/Dockerfile`; keep it and the versions in
   `selpi/config.yaml` and `custom_components/selpi/manifest.json` in step.
 

@@ -8,6 +8,10 @@
 #ifdef USE_SPPRO_CLOCK
 #include "esphome/components/time/real_time_clock.h"
 #endif
+#ifdef USE_SPPRO_BUTTONS
+#include "esphome/components/button/button.h"
+#include "esphome/core/helpers.h"
+#endif
 #ifdef USE_SPPRO_PROXY
 #include "esphome/components/socket/tcp_client_link.h"
 #include "esphome/components/socket/tcp_listener.h"
@@ -123,6 +127,10 @@ class SpPro : public PollingComponent, public uart::UARTDevice {
   }
   void set_clock_drift_sensor(sensor::Sensor *s) { this->clock_drift_sensor_ = s; }
 #endif
+#ifdef USE_SPPRO_BUTTONS
+  /// Front panel button press, sent between polls: 0 generator, 1 ON, 2 silence alarm.
+  void request_button(uint8_t which);
+#endif
 #ifdef USE_SPPRO_PROXY
   void set_proxy_port(uint16_t port) { this->client_.set_port(port); }
   void set_proxy_log_downloads(bool v) { this->proxy_log_downloads_ = v; }
@@ -133,7 +141,9 @@ class SpPro : public PollingComponent, public uart::UARTDevice {
 #endif
 
  protected:
-  enum class Step : uint8_t { NONE, LOGIN_CHALLENGE, LOGIN_ANSWER, LOGIN_CHECK, POLL, PROXY, CLOCK_READ, CLOCK_WRITE };
+  enum class Step : uint8_t {
+    NONE, LOGIN_CHALLENGE, LOGIN_ANSWER, LOGIN_CHECK, POLL, PROXY, CLOCK_READ, CLOCK_WRITE, PORT_READ, BUTTON_WRITE
+  };
   struct NumberField {
     sensor::Sensor *sensor;
     Formula f;
@@ -201,6 +211,11 @@ class SpPro : public PollingComponent, public uart::UARTDevice {
   std::string status_;
   std::string versions_text_;
 
+#ifdef USE_SPPRO_BUTTONS
+  bool button_step_();
+  int8_t button_pending_{-1};
+  uint8_t port_{0};  // SP PRO comms port of this link (low byte of 0xa000), 0 = not read yet this session
+#endif
 #ifdef USE_SPPRO_PROXY
   PeerListener listener_;
   socket::TcpClientLink client_;
@@ -219,5 +234,19 @@ class SpPro : public PollingComponent, public uart::UARTDevice {
   bool step_last_proxy_{false};
 #endif
 };
+
+#ifdef USE_SPPRO_BUTTONS
+/// An SP PRO front panel button as an ESPHome button. The ON button (ON <-> IDLE, IDLE = no AC output) needs a
+/// second press within 30 s; the first only logs a warning.
+class SpProButton : public button::Button, public Parented<SpPro> {
+ public:
+  void set_which(uint8_t which) { this->which_ = which; }
+
+ protected:
+  void press_action() override;
+  uint8_t which_{0};
+  uint32_t asked_at_{0};
+};
+#endif
 
 }  // namespace esphome::sppro

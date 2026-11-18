@@ -42,6 +42,13 @@ sppro:
     max_drift: 10s
     drift:
       name: Clock Drift
+  buttons:                 # front panel buttons, as SP LINK's Quick View presses them
+    generator:
+      name: Generator start-stop
+    silence:
+      name: Silence alarm
+    on_idle:               # ON <-> IDLE (IDLE = no AC output): disabled until enabled in HA, two presses within 30 s
+      name: Inverter ON-IDLE (long press)
   status:
     name: Link Status
   versions:

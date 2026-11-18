@@ -4,7 +4,11 @@ ESPHome external component: Selectronic SP PRO over its native link (USB CDC, or
 Reads the same memory blocks SP LINK's data screens read and publishes chosen fields as sensors /
 text sensors. The field table (live_fields.json, splink_tables.json) is selpi's, generated from
 SP LINK 15.40's display code for memory map 31 (selpi/tools/splink/); keep the copies here in sync
-with selpi/sppro/ (selpi/esphome/sync.sh).
+with selpi/sppro/ (tools/sync_fields.sh in this repo).
+
+Optional buttons: the SP PRO's front panel buttons as ESPHome buttons (generator start/stop and silence
+alarm: short press; on_idle: the ON button's long press, ON <-> IDLE, disabled by default and needing a second press within 30 s),
+pressed the way SP LINK's Quick View front panel does (see selpi docs/protocol.md).
 
 Optional proxy: a TCP port that passes raw SP PRO frames (selpi, SP LINK) through, interleaved with
 the component's own polling. Clients in `allowed_ips` are read-only (login frames pass); clients in `write_ips`
@@ -15,7 +19,7 @@ import os
 import re
 
 import esphome.codegen as cg
-from esphome.components import sensor, socket, text_sensor, time as time_, uart
+from esphome.components import button, sensor, socket, text_sensor, time as time_, uart
 import esphome.config_validation as cv
 from esphome.const import (
     CONF_ID,
@@ -25,6 +29,7 @@ from esphome.const import (
     CONF_PORT,
     CONF_STATUS,
     CONF_TIMEOUT,
+    ENTITY_CATEGORY_CONFIG,
     ENTITY_CATEGORY_DIAGNOSTIC,
     STATE_CLASS_MEASUREMENT,
     STATE_CLASS_TOTAL,
@@ -33,7 +38,7 @@ from esphome.const import (
 
 CODEOWNERS = []
 DEPENDENCIES = ["uart"]
-AUTO_LOAD = ["sensor", "text_sensor", "md5", "socket"]
+AUTO_LOAD = ["button", "sensor", "text_sensor", "md5", "socket"]
 
 CONF_FIELDS = "fields"
 CONF_ALL_FIELDS = "all_fields"
@@ -50,6 +55,8 @@ CONF_INTERVAL = "interval"
 CONF_MAX_DRIFT = "max_drift"
 CONF_SET = "set"
 CONF_DRIFT = "drift"
+CONF_BUTTONS = "buttons"
+BUTTONS = {"generator": 0, "on_idle": 1, "silence": 2}   # "on" would be read as YAML true
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 TABLE = json.load(open(os.path.join(_HERE, "live_fields.json"), encoding="utf-8"))
@@ -75,6 +82,7 @@ UNITS = {
 
 sppro_ns = cg.esphome_ns.namespace("sppro")
 SpPro = sppro_ns.class_("SpPro", cg.PollingComponent, uart.UARTDevice)
+SpProButton = sppro_ns.class_("SpProButton", button.Button, cg.Parented.template(SpPro))
 
 
 SCREEN_NAMES = {
@@ -172,6 +180,15 @@ CLOCK_SCHEMA = cv.Schema({
 })
 
 
+BUTTONS_SCHEMA = cv.Schema({
+    cv.Optional("generator"): button.button_schema(SpProButton, icon="mdi:engine"),
+    cv.Optional("silence"): button.button_schema(SpProButton, icon="mdi:volume-off"),
+    # ON <-> IDLE cuts the AC output: off in HA until enabled, and two presses within 30 s
+    cv.Optional("on_idle"): button.button_schema(SpProButton, icon="mdi:power", entity_category=ENTITY_CATEGORY_CONFIG)
+    .extend({cv.Optional("disabled_by_default", default=True): cv.boolean}),
+})
+
+
 def _proxy_sockets(config):
     if CONF_PROXY in config:
         socket.consume_sockets(1, "sppro", socket.SocketType.TCP_LISTEN)(config)
@@ -189,6 +206,7 @@ CONFIG_SCHEMA = cv.All(
         cv.Optional(CONF_ALLOW_VERSION_MISMATCH, default=False): cv.boolean,
         cv.Optional(CONF_PROXY): PROXY_SCHEMA,
         cv.Optional(CONF_CLOCK): CLOCK_SCHEMA,
+        cv.Optional(CONF_BUTTONS): BUTTONS_SCHEMA,
         cv.Optional(CONF_STATUS): text_sensor.text_sensor_schema(entity_category=ENTITY_CATEGORY_DIAGNOSTIC),
         cv.Optional(CONF_VERSIONS): text_sensor.text_sensor_schema(entity_category=ENTITY_CATEGORY_DIAGNOSTIC),
         cv.Optional(CONF_ERRORS): sensor.sensor_schema(accuracy_decimals=0, state_class=STATE_CLASS_TOTAL_INCREASING,
@@ -281,6 +299,14 @@ async def to_code(config):
         cg.add(var.set_clock(rtc, c[CONF_INTERVAL], c[CONF_MAX_DRIFT].total_seconds, c[CONF_SET]))
         if CONF_DRIFT in c:
             cg.add(var.set_clock_drift_sensor(await sensor.new_sensor(c[CONF_DRIFT])))
+
+    if CONF_BUTTONS in config:
+        cg.add_define("USE_SPPRO_BUTTONS")
+        for key, which in BUTTONS.items():
+            if key in config[CONF_BUTTONS]:
+                b = await button.new_button(config[CONF_BUTTONS][key])
+                await cg.register_parented(b, var)
+                cg.add(b.set_which(which))
 
     if CONF_PROXY in config:
         p = config[CONF_PROXY]
