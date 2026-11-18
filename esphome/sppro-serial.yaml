@@ -1,0 +1,77 @@
+# UNTESTED: Selectronic SP PRO on its DB9 serial port (comms port 1) instead of USB. Component: selpi/esphome.
+#
+# Nobody has run this yet: the component is the same as for USB (any UART stream), but the wiring, the line
+# settings and the board below are a starting point, not a verified setup. Please report back if you try it.
+#
+# - The DB9 is RS-232 (about +-12 V): it needs an RS-232 converter (MAX3232 board, 3.3 V side to the ESP).
+#   Never wire it straight to ESP pins.
+# - The DB9 is the port a Select.Live device uses; the two can't share it.
+# - Line settings: 57600 8N1 assumed (what selpi uses for the USB-serial units); check the SP PRO manual.
+# - TX/RX may need swapping (straight vs null-modem); if Link Status stays on "connecting" or "login failed: no reply", swap them.
+# - Front panel buttons use the port 1 registers; the component picks them from the unit's port register.
+substitutions:
+  node_name: sppro
+  friendly_name: SP PRO
+
+esphome:
+  name: ${node_name}
+  name_add_mac_suffix: false
+  friendly_name: ${friendly_name}
+
+esp32:
+  board: esp32dev          # any ESP32 with a free hardware UART
+  framework:
+    type: esp-idf
+
+logger:
+  level: DEBUG
+
+api:
+  encryption:
+    key: !secret api_password
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "${friendly_name} Hotspot"
+    password: !secret ap_password
+
+captive_portal:
+
+time:
+  - platform: sntp
+    id: sntp_time
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/TesseractTimmee/selpi-homeassistant
+      ref: v0.4.6
+      path: esphome/components
+    components: [ sppro ]
+
+uart:
+  - id: sppro_serial
+    tx_pin: GPIO17         # to the MAX3232's TTL TX input (-> DB9)
+    rx_pin: GPIO16         # from the MAX3232's TTL RX output (<- DB9)
+    baud_rate: 57600       # assumed, see above
+    data_bits: 8
+    parity: NONE
+    stop_bits: 1
+    rx_buffer_size: 1024
+
+sppro:
+  uart_id: sppro_serial
+  password: !secret sppro_password    # SP PRO login password (same as selpi's)
+  update_interval: 10s
+  # proxy:, clock:, buttons: as in sppro.yaml
+  status:
+    name: Link Status
+  versions:
+    name: Unit Versions
+  errors:
+    name: Link Errors

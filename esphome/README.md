@@ -1,4 +1,4 @@
-# ESPHome firmware for the SP PRO USB link
+# ESPHome firmware for the SP PRO link (USB, or the DB9 serial port: untested)
 
 `components/sppro` is an ESPHome external component that talks to a Selectronic SP PRO over its own
 protocol (the one SP LINK uses), logs in, reads the same memory blocks SP LINK's data screens read,
@@ -30,6 +30,8 @@ and publishes sensors to Home Assistant through the ESPHome API. No Modbus, no M
   isolator, USB CDC Microchip 04D8:000A), using shared `api_password` / wifi / `ap_password` secrets,
   OTA encryption, SNTP and diagnostics, plus `sppro_password` and the proxy addresses
   (`secrets.yaml.example`).
+- `sppro-serial.yaml` (**untested**): the same component on the SP PRO's DB9 serial port (comms port 1)
+  through an RS-232 converter (MAX3232) on a plain ESP32's UART. See "Serial port" below.
 - `components/sppro`: the component. `sppro.yaml` pulls it from this repository at a version tag. Its field
   tables come from the selpi fork (`tools/sync_fields.sh`).
 - `sppro-sim.yaml`: host build against selpi's simulator (TesseractTimmee/selpi, `tools/sim_sppro.py`),
@@ -41,3 +43,13 @@ and publishes sensors to Home Assistant through the ESPHome API. No Modbus, no M
 2. Add the keys from `secrets.yaml.example` to your ESPHome `secrets.yaml`.
 3. In the ESPHome Device Builder: Install (first time over USB-C, then OTA).
 4. In the selpi app, set the connection to `tcp`, host = the ESP, port 8899.
+
+## Serial port (untested)
+Nobody has run `sppro-serial.yaml` on a real unit yet; reports welcome. The component needs no changes (it
+reads any UART), only the hardware and line settings differ from USB:
+- The DB9 is RS-232 (about ±12 V): put an RS-232 converter (MAX3232 board, 3.3 V side) between it and the
+  ESP's UART pins. Never connect it directly.
+- It is the port a Select.Live device uses; the two can't share it. Use USB if Select.Live is plugged in.
+- Line settings: 57600 8N1 assumed (selpi's setting for USB-serial units); check the SP PRO manual.
+- If Link Status stays on "connecting" or "login failed: no reply", swap TX and RX (straight vs null-modem wiring).
+- Front panel buttons work the same; on this port the unit uses its port 1 button registers.
