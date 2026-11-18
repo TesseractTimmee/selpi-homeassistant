@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.6
+- ESPHome component: front panel buttons (`buttons:` generator, silence, and the protected `on_idle`), so the
+  ESP can run Home Assistant on its own; the app is then only needed for backups, log downloads and the
+  settings browser. `tools/sync_fields.sh` keeps the ESP's field tables in step with the app's selpi.
+- README: which parts you need (ESP only, app + integration, ESP + app). App and integration unchanged
+  apart from the version (selpi v0.4.6: protocol docs only).
+
 ## 0.4.5
 - "Inverter ON/IDLE (long press)" button: the SP PRO ON button's long press, which switches the inverter
   between ON and IDLE (IDLE = no AC output, an outage). Protected: disabled until you enable it, and the first
