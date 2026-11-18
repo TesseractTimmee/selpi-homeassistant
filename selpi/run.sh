@@ -45,10 +45,18 @@ fi
 export SELPI_API_PORT=8100
 export SELPI_API_TOKEN="$(cat /data/api_token)"
 export SELPI_INSTALL_ID="$(cat /data/install_id)"
-if bashio::discovery "selpi" "$(bashio::var.json host "$(hostname)" port "^8100" token "${SELPI_API_TOKEN}")" > /dev/null; then
-  bashio::log.info "selpi: announced to Home Assistant (integration discovery)"
-else
-  bashio::log.warning "selpi: discovery failed; add the integration by hand (host $(hostname), port 8100, token in /data/api_token)"
-fi
+# announce to HA only once the API answers, so the integration's first probe succeeds
+announce() {
+  for _ in $(seq 1 60); do
+    curl -sf -o /dev/null -H "Authorization: Bearer ${SELPI_API_TOKEN}" http://127.0.0.1:8100/api/v1/info && break
+    sleep 1
+  done
+  if bashio::discovery "selpi" "$(bashio::var.json host "$(hostname)" port "^8100" token "${SELPI_API_TOKEN}")" > /dev/null; then
+    bashio::log.info "selpi: announced to Home Assistant (integration discovery)"
+  else
+    bashio::log.warning "selpi: discovery failed; add the integration by hand (host $(hostname), port 8100, token in /data/api_token)"
+  fi
+}
+announce &
 bashio::log.info "selpi: ${SELPI_CONNECTION_TYPE}, daily backup ${SELPI_BACKUP_TIME:-off}, clock sync ${SELPI_CLOCK_SYNC}, SP LINK proxy ${SELPI_PROXY_PORT:-off}"
 exec python3 -m web.server --port 8099

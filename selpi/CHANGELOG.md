@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.2
+- Announce the app to Home Assistant only once its API answers, so the integration picks up a new or
+  moved install straight away (before, it could miss it until the next HA restart).
+
 ## 0.4.0
 - Optional SP LINK proxy: SP LINK reaches the SP PRO through this app, sharing its connection
   (off by default, read-only unless allowed, LAN only, one client).
