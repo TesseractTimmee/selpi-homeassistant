@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.3
+- Log downloads show a progress bar: which log, records read of total, percent and elapsed time;
+  "SP PRO is searching" and "waiting for the SP PRO link" while those take time; a note if the page
+  loses contact with the app. (selpi v0.4.3)
+
 ## 0.4.2
 - Announce the app to Home Assistant only once its API answers, so the integration picks up a new or
   moved install straight away (before, it could miss it until the next HA restart).
