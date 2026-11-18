@@ -1,5 +1,5 @@
 {
- "source": "SP LINK 15.40 display code, memory map version 31",
+ "source": "SP LINK 15.40, memory map version 31",
  "fields": [
   {
    "key": "multi_battery_so_c",

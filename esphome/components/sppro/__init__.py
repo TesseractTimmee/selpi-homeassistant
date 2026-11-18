@@ -2,8 +2,8 @@
 ESPHome external component: Selectronic SP PRO over its native link (USB CDC, or any UART stream).
 
 Reads the same memory blocks SP LINK's data screens read and publishes chosen fields as sensors /
-text sensors. The field table (live_fields.json, splink_tables.json) is selpi's, generated from
-SP LINK 15.40's display code for memory map 31 (selpi/tools/splink/); keep the copies here in sync
+text sensors. The field table (live_fields.json, splink_tables.json) is selpi's, matching
+SP LINK 15.40 for memory map 31; keep the copies here in sync
 with selpi/sppro/ (tools/sync_fields.sh in this repo).
 
 Optional buttons: the SP PRO's front panel buttons as ESPHome buttons (generator start/stop and silence

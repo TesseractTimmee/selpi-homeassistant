@@ -5,8 +5,8 @@ protocol (the one SP LINK uses), logs in, reads the same memory blocks SP LINK's
 and publishes sensors to Home Assistant through the ESPHome API. No Modbus, no MQTT.
 
 - Field table: `components/sppro/live_fields.json` / `splink_tables.json`, copies of selpi's
-  (`../sppro/`, generated from SP LINK 15.40's display code, memory map 31). Run `./sync.sh` after
-  regenerating them.
+  (`sppro/` in the selpi fork, matching SP LINK 15.40, memory map 31). Run `tools/sync_fields.sh`
+  after selpi's tables change.
 - Version gate: every cycle reads the unit's version block (`0xa007`). If config/service/map/log
   versions are not 48/14/31/3/3/5 (what the table was checked against), nothing is published and
   "Link status" says "version mismatch" (override: `allow_version_mismatch: true`).
