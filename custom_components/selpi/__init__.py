@@ -5,15 +5,19 @@ integration only asks the add-on's API for values and turns them into a device w
 """
 from __future__ import annotations
 
+import logging
+
 from homeassistant.const import CONF_HOST, CONF_PORT, Platform
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import SelpiAuthError, SelpiClient, SelpiError
-from .const import CONF_TOKEN
+from .const import CONF_TOKEN, DOMAIN
 from .coordinator import SelpiConfigEntry, SelpiCoordinator, SelpiRuntime
+
+_LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [Platform.SENSOR, Platform.BUTTON, Platform.SWITCH]
 # field keys renamed in selpi 0.4.7 (SP LINK's "DaystoEqualise" split badly): keep the entities
@@ -30,22 +34,32 @@ async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry) -> boo
         raise ConfigEntryAuthFailed(str(err)) from err
     except SelpiError as err:
         raise ConfigEntryNotReady(str(err)) from err
-    keys = {f["key"] for f in fields}
-
-    @callback
-    def _migrate(ent: er.RegistryEntry) -> dict | None:
-        for old, new in RENAMED_KEYS.items():
-            if new in keys and ent.unique_id.endswith("_" + old):
-                return {"new_unique_id": ent.unique_id[: -len(old)] + new}
-        return None
-
-    await er.async_migrate_entries(hass, entry.entry_id, _migrate)
+    _migrate_renamed_keys(hass, entry, {f["key"] for f in fields})
     coordinator = SelpiCoordinator(hass, entry, client, info, [f["key"] for f in fields if f.get("default")])
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = SelpiRuntime(client=client, info=info, fields=fields, coordinator=coordinator)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(_options_updated))
     return True
+
+
+def _migrate_renamed_keys(hass: HomeAssistant, entry: SelpiConfigEntry, keys: set[str]) -> None:
+    """Move sensors from renamed field keys to the new ones, keeping entity id and history. If the app was
+    updated first, an older integration may already have made a second entity for the new key (e.g.
+    sensor.sp_pro_days_to_equalise_2): that duplicate is removed so the original takes its key."""
+    reg = er.async_get(hass)
+    prefix = entry.unique_id or entry.entry_id
+    for old, new in RENAMED_KEYS.items():
+        if new not in keys:
+            continue
+        old_id = reg.async_get_entity_id("sensor", DOMAIN, f"{prefix}_{old}")
+        if old_id is None:
+            continue
+        dup = reg.async_get_entity_id("sensor", DOMAIN, f"{prefix}_{new}")
+        if dup is not None:
+            _LOGGER.info("selpi: removing %s (duplicate of %s after the %s -> %s rename)", dup, old_id, old, new)
+            reg.async_remove(dup)
+        reg.async_update_entity(old_id, new_unique_id=f"{prefix}_{new}")
 
 
 async def _options_updated(hass: HomeAssistant, entry: SelpiConfigEntry) -> None:

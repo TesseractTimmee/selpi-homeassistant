@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.8
+- Integration fix: setup failed ("Unique id ..._days_to_equalise is already in use") when the app was updated
+  before the integration, because the older integration had already made a second entity for the renamed key
+  (e.g. sensor.sp_pro_days_to_equalise_2). That duplicate is now removed and the original entity takes the new
+  key, keeping its entity id and history. App unchanged (selpi v0.4.7).
+
 ## 0.4.7
 - State-aware controls (selpi `sppro/controls.py`, `/api/v1/control`): a **Generator** switch and an
   **Inverter output** switch whose state is the SP PRO's own (Generator Status / Output Mode), so they show
