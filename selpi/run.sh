@@ -21,6 +21,7 @@ export SELPI_BACKUP_TIME="$(bashio::config 'backup_time')"
 export SELPI_BACKUP_KEEP="$(bashio::config 'backup_keep')"
 export SELPI_CLOCK_SYNC="$(bashio::config 'clock_sync')"
 export SELPI_CLOCK_MAX_DRIFT="$(bashio::config 'clock_max_drift')"
+export SELPI_ALLOW_CONFIG_WRITES="$(bashio::config 'allow_config_writes')"
 export SELPI_LOG_LEVEL="$(bashio::config 'log_level')"
 export SELPI_DATA_DIR=/data
 # SP LINK proxy (off by default): container port 8899, mapped to a host port in the app's Network settings

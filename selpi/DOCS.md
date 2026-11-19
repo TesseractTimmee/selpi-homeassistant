@@ -3,11 +3,13 @@
 Web page (sidebar "SP PRO") for the Selectronic SP PRO, without SP LINK or the Windows VM:
 
 - **Live**: every value SP LINK's data screens show (Now, Today, Technical, history, service).
-- **Settings**: all 623 configuration and service settings (raw values), searchable.
+- **Configuration**: the settings laid out like SP LINK's Configuration Settings screens (same tabs and
+  groups, values in SP LINK's units and pick-lists, SP LINK's ranges), searchable; a raw list too.
+  Changes are checked with SP LINK's rules as you make them; writing them needs `allow_config_writes`.
 - **Backups**: daily config backup (SP LINK `.SPLC` + service settings CSV + JSON), keep N, compare any two.
 - **Logs**: events, alerts, daily summary, detailed data as SP LINK-format CSVs (zip).
 
-It doesn't change settings. It can press the SP PRO's front panel buttons for the Home Assistant
+It changes settings only from the Configuration page, and only with `allow_config_writes: true`. It can press the SP PRO's front panel buttons for the Home Assistant
 integration, as SP LINK's Quick View front panel does: Generator start/stop and Silence alarm (short press),
 and the ON button's long press (ON <-> IDLE; the integration's button for it is disabled by default and asks
 for a second press within 30 s, because IDLE cuts the AC output).
@@ -21,6 +23,22 @@ as SP LINK does, and waits if someone else (SP LINK, the installer via Select.Li
   there, log downloads allowed) or any transparent serial-to-network bridge on the SP PRO's serial port.
 - `serial`: a serial/USB device on the HA machine (`serial_device`, `serial_baudrate`; the SP PRO's
   serial port runs at 57600).
+
+## Configuration writes
+Off by default. With `allow_config_writes: true` the Configuration page can write changed settings:
+
+- it checks the changes with SP LINK's own rules and send checks (for example one function per input,
+  voltage limits in order, frequency changes only in IDLE) and SP LINK's ranges, and refuses on an error
+  unless you tick the override;
+- the unit must be on the verified firmware versions, not busy (no log download or SP LINK write), and
+  unchanged since the page read it (read again if it was changed meanwhile, e.g. from the front panel);
+- it asks for the SP LINK passcode every time and never stores it;
+- it saves a full backup first (`/data/config-writes`, SP LINK `.SPLC` + JSON), writes every change in one
+  unlock session, always relocks, then reads the whole configuration back and reports anything else that
+  changed.
+
+Over the ESPHome link (`tcp`) the ESP only forwards the writes it allows; configuration writes work over
+Select.Live and serial.
 
 ## Clock sync
 `clock_sync: true` checks the SP PRO clock hourly and sets it to HA's time when it is more than
