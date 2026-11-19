@@ -37,8 +37,9 @@ Off by default. With `allow_config_writes: true` the Configuration page can writ
   unlock session, always relocks, then reads the whole configuration back and reports anything else that
   changed.
 
-Over the ESPHome link (`tcp`) the ESP only forwards the writes it allows; configuration writes work over
-Select.Live and serial.
+Over the ESPHome link (`tcp`) the ESP forwards writes only from addresses in its proxy's `write_ips`
+(`allowed_ips` clients may only make the writes a log download needs): put Home Assistant's address in
+`write_ips` to write the configuration from here.
 
 ## Clock sync
 `clock_sync: true` checks the SP PRO clock hourly and sets it to HA's time when it is more than

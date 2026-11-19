@@ -32,10 +32,10 @@ sppro:
   # fields: [...]          # default: 39 (see esphome/components/sppro/__init__.py in this repo)
   proxy:                   # raw SP PRO frames over TCP, one client at a time
     port: 8899
-    allowed_ips:           # read-only (login frames pass): Home Assistant (the selpi app)
+    allowed_ips:           # read-only (login frames pass; log downloads allowed)
       - !secret sppro_proxy_read_ip
-    write_ips:             # may also write: the computer running SP LINK
-      - !secret sppro_proxy_write_ip
+    write_ips:             # may also write: SP LINK's computer, and Home Assistant for the selpi app's
+      - !secret sppro_proxy_write_ip   # Configuration page (allow_config_writes)
   clock:                   # keep the SP PRO clock on SNTP time (replaces HA's weekly selpi settime)
     time_id: sntp_time
     interval: 1h
