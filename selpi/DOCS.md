@@ -25,6 +25,7 @@ as SP LINK does, and waits if someone else (SP LINK, the installer via Select.Li
   serial port runs at 57600).
 
 ## Configuration writes
+**Disabled in this release (read-only).** Writes are implemented and tested against a simulator but not yet validated against a real SP PRO, so this build shows the configuration but does not change it. The Configuration page is a viewer and `allow_config_writes` has no effect yet; a later release will enable writes once validated on hardware. When enabled, writes will work as follows:
 Off by default. With `allow_config_writes: true` the Configuration page can write changed settings:
 
 - it checks the changes with SP LINK's own rules and send checks (for example one function per input,

@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.0
+- **Configuration page (read-only):** a new "Configuration" tab in the web UI shows every setting the way SP LINK's
+  Configuration Settings screens do — the same tabs, groups, units, pick-lists and ranges — with SP LINK's own
+  validation shown live as you look. Replaces the old raw settings list (kept as a toggle).
+- **Settings decoded from SP LINK (587):** meanings, units, ranges and SP LINK's rules, including per-battery-type DC
+  voltage limits, power-factor settings, the Year-to-Date rollover date, the MPPT model list, and the AS4777 Region
+  (previously mislabelled as a percent field).
+- **Installer-only settings are read-only:** the 19 AS4777 grid-protection / Volt-Var / Volt-Watt / charge-voltage
+  settings SP LINK keeps behind the installer code are shown but never written.
+- **Faster Select.Live reads:** a lost reply is retried at once instead of after ~1 minute (a full configuration read
+  is now a few seconds).
+- `selpi config show` / `config set` show the value, unit, range and SP LINK screen location; dry-run previews.
+- **Configuration writes are implemented but disabled in this release**, pending validation against a real SP PRO.
+  The `allow_config_writes` option and `config set --yes` will enable them in a later release.
+- App: selpi v0.5.0. Integration unchanged apart from the version.
+
 ## 0.4.10
 - Grid / generator power: the generator now counts while the inverter is synchronised and the generator is in any
   generator state (Running, Starting: the two-stage start carries the loads before the charger, Stopping); the grid
