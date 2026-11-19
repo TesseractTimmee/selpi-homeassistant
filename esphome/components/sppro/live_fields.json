@@ -3158,6 +3158,60 @@
    "derived": "selpi: ac_source_power split by sign before averaging (SP PRO: negative = import)"
   },
   {
+   "key": "grid_power_in",
+   "name": "Grid Power In",
+   "field": null,
+   "label": "Grid power in (import)",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa0ab",
+    "0xa096",
+    "0xa07d"
+   ],
+   "formula": "(({0xa096} == 10) * ({0xa07d} == 3)) * (max(0 - ((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))), 0))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": null,
+   "derived": "selpi: AC source power in while synchronised (Output Mode 3 Sync) to the grid (Generator Status 10 AC Source Present), else 0"
+  },
+  {
+   "key": "grid_power_out",
+   "name": "Grid Power Out",
+   "field": null,
+   "label": "Grid power out (export)",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa0ab",
+    "0xa096",
+    "0xa07d"
+   ],
+   "formula": "(({0xa096} == 10) * ({0xa07d} == 3)) * (max((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0))), 0))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": null,
+   "derived": "selpi: AC source power out while synchronised (Output Mode 3 Sync) to the grid (Generator Status 10 AC Source Present), else 0"
+  },
+  {
+   "key": "generator_power_in",
+   "name": "Generator Power In",
+   "field": null,
+   "label": "Generator power in",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa0ab",
+    "0xa096",
+    "0xa07d"
+   ],
+   "formula": "(({0xa096} == 1) * ({0xa07d} == 3)) * (max(0 - ((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))), 0))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": null,
+   "derived": "selpi: AC source power in while synchronised (Output Mode 3 Sync) to the generator (Generator Status 1 Running), else 0"
+  },
+  {
    "key": "ac_source_reactive_power",
    "name": "AC Source Reactive Power",
    "field": "AcSourceReactivePower",

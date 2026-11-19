@@ -3,8 +3,11 @@
 ## 0.4.9
 - Four new default sensors from selpi's field table: **AC source power in / out** and **Battery power in / out**,
   the SP PRO's signed powers split into >= 0 parts (the SP PRO reports import and charging as negative). Use these
-  for charts and statistics: averaging the signed values nets the two directions out. The ESPHome component gets
-  them too (same table; 46 default entities).
+  for charts and statistics: averaging the signed values nets the two directions out.
+- **Grid power in / out** and **Generator power in**: the AC source split by what it is, counted only while the
+  inverter is synchronised to it (Output Mode Sync) and Generator Status says grid (AC Source Present) or
+  generator (Running); 0 otherwise. The original AC source sensors stay. The ESPHome component gets all of these
+  too (same table; 49 default entities).
 - App: selpi v0.4.9. Integration unchanged apart from the version.
 
 ## 0.4.8
