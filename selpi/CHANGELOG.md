@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.5.1
+- **Firmware-aware Configuration page:** each setting now knows the minimum SP PRO config-settings version SP LINK
+  needs to show it; on older firmware the page shows those settings read-only with a "needs firmware vN" note
+  (65 settings, e.g. the newer AC-scheduling, AC-coupling and Powerchain options). The page reads the unit's
+  config version and adapts, so it's correct on any firmware, not just the one it was built against.
+- **Powerchain (multi-phase):** the Powerchain Plan / Inverters per Phase / Balance 3 Phase settings are decoded
+  and editable; they need config version 38, and a rule refuses a Powador string-inverter port with more than one
+  inverter per phase. (Multi-unit structure/count checks that need the live detected-inverter list are not done.)
+- Still read-only: configuration writes remain disabled pending on-hardware validation.
+- App: selpi v0.5.1.
+
 ## 0.5.0
 - **Configuration page (read-only):** a new "Configuration" tab in the web UI shows every setting the way SP LINK's
   Configuration Settings screens do — the same tabs, groups, units, pick-lists and ranges — with SP LINK's own
