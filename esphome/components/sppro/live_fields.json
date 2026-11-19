@@ -3168,12 +3168,12 @@
     "0xa096",
     "0xa07d"
    ],
-   "formula": "(({0xa096} == 10) * ({0xa07d} == 3)) * (max(0 - ((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))), 0))",
+   "formula": "((1 - (({0xa096} == 1) + ({0xa096} == 6) + ({0xa096} == 8))) * ({0xa07d} == 3)) * (max(0 - ((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))), 0))",
    "unit": "kW",
    "kind": "number",
    "table": null,
    "converter": null,
-   "derived": "selpi: AC source power in while synchronised (Output Mode 3 Sync) to the grid (Generator Status 10 AC Source Present), else 0"
+   "derived": "selpi: AC source power in while synchronised (Output Mode 3 Sync) and Generator Status is not a generator state (1 Running, 6 Starting, 8 Stopping): the grid; else 0"
   },
   {
    "key": "grid_power_out",
@@ -3186,12 +3186,12 @@
     "0xa096",
     "0xa07d"
    ],
-   "formula": "(({0xa096} == 10) * ({0xa07d} == 3)) * (max((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0))), 0))",
+   "formula": "((1 - (({0xa096} == 1) + ({0xa096} == 6) + ({0xa096} == 8))) * ({0xa07d} == 3)) * (max((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0))), 0))",
    "unit": "kW",
    "kind": "number",
    "table": null,
    "converter": null,
-   "derived": "selpi: AC source power out while synchronised (Output Mode 3 Sync) to the grid (Generator Status 10 AC Source Present), else 0"
+   "derived": "selpi: AC source power out while synchronised (Output Mode 3 Sync) and Generator Status is not a generator state (1 Running, 6 Starting, 8 Stopping): the grid; else 0"
   },
   {
    "key": "generator_power_in",
@@ -3204,12 +3204,12 @@
     "0xa096",
     "0xa07d"
    ],
-   "formula": "(({0xa096} == 1) * ({0xa07d} == 3)) * (max(0 - ((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))), 0))",
+   "formula": "((({0xa096} == 1) + ({0xa096} == 6) + ({0xa096} == 8)) * ({0xa07d} == 3)) * (max(0 - ((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))), 0))",
    "unit": "kW",
    "kind": "number",
    "table": null,
    "converter": null,
-   "derived": "selpi: AC source power in while synchronised (Output Mode 3 Sync) to the generator (Generator Status 1 Running), else 0"
+   "derived": "selpi: AC source power in while synchronised (Output Mode 3 Sync) and Generator Status is 1 Running, 6 Starting (two-stage start: loads first) or 8 Stopping; else 0"
   },
   {
    "key": "ac_source_reactive_power",

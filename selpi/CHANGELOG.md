@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.10
+- Grid / generator power: the generator now counts while the inverter is synchronised and the generator is in any
+  generator state (Running, Starting: the two-stage start carries the loads before the charger, Stopping); the grid
+  counts while synchronised in any other state. Before, the grid needed "AC Source Present", which units without a
+  generator don't report. Same sensors, same history.
+- selpi command line: `selpi config set NAME VALUE` (guarded one-setting writes; dry run without --yes).
+- App: selpi v0.4.10. Integration unchanged apart from the version.
+
 ## 0.4.9
 - Four new default sensors from selpi's field table: **AC source power in / out** and **Battery power in / out**,
   the SP PRO's signed powers split into >= 0 parts (the SP PRO reports import and charging as negative). Use these
