@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.9
+- Four new default sensors from selpi's field table: **AC source power in / out** and **Battery power in / out**,
+  the SP PRO's signed powers split into >= 0 parts (the SP PRO reports import and charging as negative). Use these
+  for charts and statistics: averaging the signed values nets the two directions out. The ESPHome component gets
+  them too (same table; 46 default entities).
+- App: selpi v0.4.9. Integration unchanged apart from the version.
+
 ## 0.4.8
 - Integration fix: setup failed ("Unique id ..._days_to_equalise is already in use") when the app was updated
   before the integration, because the older integration had already made a second entity for the renamed key

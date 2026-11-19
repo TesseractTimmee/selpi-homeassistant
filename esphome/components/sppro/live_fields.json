@@ -2954,6 +2954,40 @@
    "converter": "fnConvert32bitSignedDCBatteryPowerValueToString"
   },
   {
+   "key": "dc_battery_power_in",
+   "name": "DC Battery Power In",
+   "field": null,
+   "label": "Battery power in (charging)",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa02f",
+    "0xa030"
+   ],
+   "formula": "max(0 - (s32(u32({0xa02f}, {0xa030})) * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)), 0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": null,
+   "derived": "selpi: dc_battery_power split by sign before averaging (SP PRO: negative = charging)"
+  },
+  {
+   "key": "dc_battery_power_out",
+   "name": "DC Battery Power Out",
+   "field": null,
+   "label": "Battery power out (discharging)",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa02f",
+    "0xa030"
+   ],
+   "formula": "max(s32(u32({0xa02f}, {0xa030})) * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0), 0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": null,
+   "derived": "selpi: dc_battery_power split by sign before averaging (SP PRO: negative = charging)"
+  },
+  {
    "key": "battery_cable_loss",
    "name": "Battery Cable Loss",
    "field": "BatteryCableLoss",
@@ -3090,6 +3124,38 @@
    "kind": "number",
    "table": null,
    "converter": "fnConvertSignedACPowerValueToString"
+  },
+  {
+   "key": "ac_source_power_in",
+   "name": "AC Source Power In",
+   "field": null,
+   "label": "AC source power in (import)",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa0ab"
+   ],
+   "formula": "max(0 - ((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))), 0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": null,
+   "derived": "selpi: ac_source_power split by sign before averaging (SP PRO: negative = import)"
+  },
+  {
+   "key": "ac_source_power_out",
+   "name": "AC Source Power Out",
+   "field": null,
+   "label": "AC source power out (export)",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa0ab"
+   ],
+   "formula": "max((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0))), 0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": null,
+   "derived": "selpi: ac_source_power split by sign before averaging (SP PRO: negative = import)"
   },
   {
    "key": "ac_source_reactive_power",

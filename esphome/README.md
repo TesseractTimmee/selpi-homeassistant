@@ -28,10 +28,10 @@ and publishes sensors to Home Assistant through the ESPHome API. No Modbus, no M
   and needs a second request within 30 s. `equalise`: a button for the equalise request (two long
   Generator presses; the SP PRO equalises after the next full charge). These switches never act at boot
   (`restore_mode` must stay `DISABLED`).
-- Entities: 42 by default (powers, voltages, SoC, temperatures, today's energies, status texts, digital inputs 1–4), plus
+- Entities: 46 by default (powers, voltages, SoC, temperatures, today's energies, status texts, digital inputs 1–4), plus
   Link status / Unit versions / Link errors. Choose others with `fields:` (keys from
   `selpi live --list`), each a key or `{key: ..., name: ..., <sensor options>}`; `all_fields: true`
-  adds all 288.
+  adds all 292.
 
 ## Files
 - `sppro.yaml` + `includes/esp32s3-usb-otg.yaml`: an example device (ESP32-S3-USB-OTG + ADuM3160 USB
