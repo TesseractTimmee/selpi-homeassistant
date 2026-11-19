@@ -52,6 +52,16 @@ class SelpiClient:
     async def backup(self) -> dict[str, Any]:
         return await self._request("POST", "/backup", timeout=10)
 
+    async def control(self, name: str, state: str = "", confirm: str | None = None) -> dict[str, Any]:
+        """State-aware control through the app: generator on/off, output on/idle (idle needs confirm), equalise.
+        The app presses a front panel button only when the unit's state needs it."""
+        params = {"name": name}
+        if state:
+            params["state"] = state
+        if confirm:
+            params["confirm"] = confirm
+        return await self._request("POST", "/control", timeout=90, **params)
+
     async def press(self, button: str, confirm: str | None = None) -> dict[str, Any]:
         """Press a front panel button on the SP PRO through the app (generator, silence; on needs confirm)."""
         params = {"name": button}

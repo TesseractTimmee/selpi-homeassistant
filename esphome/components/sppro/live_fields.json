@@ -2969,7 +2969,7 @@
    "converter": "fnConvertUnSignedDCPowerValueToStringInWatts"
   },
   {
-   "key": "daysto_recharge",
+   "key": "days_to_recharge",
    "name": "Days to Recharge",
    "field": "DaystoRecharge",
    "label": "Days to Recharge",
@@ -2999,7 +2999,7 @@
    "converter": "fnConvertUnitlessNumberValueToString"
   },
   {
-   "key": "daysto_equalise",
+   "key": "days_to_equalise",
    "name": "Days to Equalise",
    "field": "DaystoEqualise",
    "label": "Days to Equalise",

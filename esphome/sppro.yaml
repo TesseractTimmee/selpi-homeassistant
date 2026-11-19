@@ -10,7 +10,7 @@ external_components:
   - source:
       type: git
       url: https://github.com/TesseractTimmee/selpi-homeassistant
-      ref: v0.4.6
+      ref: v0.4.7
       path: esphome/components
     components: [ sppro ]
 
@@ -42,13 +42,16 @@ sppro:
     max_drift: 10s
     drift:
       name: Clock Drift
-  buttons:                 # front panel buttons, as SP LINK's Quick View presses them
-    generator:
-      name: Generator start-stop
+  buttons:                 # raw front panel presses, as SP LINK's Quick View sends them
     silence:
       name: Silence alarm
-    on_idle:               # ON <-> IDLE (IDLE = no AC output): disabled until enabled in HA, two presses within 30 s
-      name: Inverter ON-IDLE (long press)
+  controls:                # state-aware: the state is the unit's, a press is sent only when it changes something
+    generator:             # on while starting / running; refused with the grid present, disabled, fault, no fuel
+      name: Generator
+    output:                # inverter output; off = IDLE (no AC output): disabled until enabled in HA, two requests
+      name: Inverter output
+    equalise:              # equalise request: two long Generator presses
+      name: Request equalise
   status:
     name: Link Status
   versions:

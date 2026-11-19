@@ -1,5 +1,6 @@
-"""Buttons: back up settings (read-only to the SP PRO), and the SP PRO front panel buttons the app offers
-(generator start/stop, silence alarm), pressed the way SP LINK's Quick View front panel does."""
+"""Buttons: back up settings (read-only to the SP PRO), the SP PRO front panel buttons the app offers
+(silence alarm; generator start/stop and ON/IDLE only from apps without state-aware controls, which are
+switches now: switch.py), pressed the way SP LINK's Quick View front panel does, and the equalise request."""
 from __future__ import annotations
 
 import time
@@ -17,11 +18,17 @@ from .entity import SelpiEntity
 
 async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry,
                             async_add_entities: AddConfigEntryEntitiesCallback) -> None:
-    buttons = entry.runtime_data.info.get("buttons") or []
+    info = entry.runtime_data.info
+    buttons = info.get("buttons") or []
+    controls = info.get("controls") or []
     entities: list[ButtonEntity] = [SelpiBackupButton(entry)]
-    entities += [SelpiPanelButton(entry, b) for b in buttons if b in PANEL_BUTTONS]
-    if "on" in buttons:
+    # with state-aware controls the generator and ON/IDLE are switches (switch.py), not toggling buttons
+    entities += [SelpiPanelButton(entry, b) for b in buttons
+                 if b in PANEL_BUTTONS and not (b == "generator" and "generator" in controls)]
+    if "on" in buttons and "output" not in controls:
         entities.append(SelpiOnButton(entry))
+    if "equalise" in controls:
+        entities.append(SelpiEqualiseButton(entry))
     async_add_entities(entities)
 
 
@@ -80,6 +87,25 @@ class SelpiPanelButton(SelpiEntity, ButtonEntity):
     async def async_press(self) -> None:
         try:
             await self._client.press(self._button)
+        except SelpiError as err:
+            raise HomeAssistantError(f"{self._attr_name}: {err}") from err
+        await self.coordinator.async_request_refresh()
+
+
+class SelpiEqualiseButton(SelpiEntity, ButtonEntity):
+    """Request an equalise charge: two long presses of the Generator button (SP PRO manual). The SP PRO
+    equalises after the next full charge; Days to Equalise / Days Since Equalise show the outcome."""
+
+    _attr_icon = "mdi:battery-sync"
+
+    def __init__(self, entry: SelpiConfigEntry) -> None:
+        super().__init__(entry, "control_equalise")
+        self._attr_name = "Request equalise"
+        self._client = entry.runtime_data.client
+
+    async def async_press(self) -> None:
+        try:
+            await self._client.control("equalise")
         except SelpiError as err:
             raise HomeAssistantError(f"{self._attr_name}: {err}") from err
         await self.coordinator.async_request_refresh()

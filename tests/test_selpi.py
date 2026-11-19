@@ -36,10 +36,10 @@ DIAG = {"last_ok": "2026-11-17T18:00:00+08:00", "last_error": None, "busy": None
 DATA = {CONF_HOST: "local-selpi", CONF_PORT: 8100, CONF_TOKEN: "tok", CONF_ADDON_SLUG: "local_selpi"}
 
 
-def mock_api(aioclient_mock, values=VALUES, info=INFO):
+def mock_api(aioclient_mock, values=VALUES, info=INFO, fields=FIELDS):
     aioclient_mock.clear_requests()
     aioclient_mock.get(f"{BASE}/info", json=info)
-    aioclient_mock.get(f"{BASE}/fields", json={"fields": FIELDS})
+    aioclient_mock.get(f"{BASE}/fields", json={"fields": fields})
     aioclient_mock.get(f"{BASE}/values", json=values)
     aioclient_mock.get(f"{BASE}/diagnostics", json=DIAG)
     aioclient_mock.post(f"{BASE}/backup", json={"started": True})
@@ -199,3 +199,90 @@ async def test_on_button_disabled_and_needs_a_second_press(hass: HomeAssistant, 
     assert on_calls() == []
     await hass.services.async_call("button", "press", {"entity_id": ent.entity_id}, blocking=True)
     assert len(on_calls()) == 1 and on_calls()[0].query.get("confirm") == "outage"
+
+
+CTRL_INFO = {**INFO, "controls": ["equalise", "generator", "output"]}
+CTRL_VALUES = {**VALUES, "values": {**VALUES["values"], "generator_status_from_led": "Not Running"}}
+
+
+def control_calls(aioclient_mock, name=None):
+    return [u for m, u, *_ in aioclient_mock.mock_calls
+            if m == "POST" and u.path.endswith("/control") and (name is None or u.query.get("name") == name)]
+
+
+async def test_controls_replace_toggling_buttons(hass: HomeAssistant, aioclient_mock):
+    await setup(hass, aioclient_mock, info=CTRL_INFO, values=CTRL_VALUES)
+    assert hass.states.get("button.sp_pro_generator_start_stop") is None
+    assert er.async_get(hass).async_get("button.sp_pro_inverter_on_idle_long_press") is None
+    assert hass.states.get("button.sp_pro_silence_alarm") is not None
+    assert hass.states.get("button.sp_pro_request_equalise") is not None
+    assert hass.states.get("switch.sp_pro_generator").state == "off"
+
+
+async def test_generator_switch_tracks_the_unit(hass: HomeAssistant, aioclient_mock):
+    entry = await setup(hass, aioclient_mock, info=CTRL_INFO, values=CTRL_VALUES)
+    aioclient_mock.post(f"{BASE}/control", json={"control": "generator", "state": "on", "pressed": True})
+    await hass.services.async_call("switch", "turn_on", {"entity_id": "switch.sp_pro_generator"}, blocking=True)
+    calls = control_calls(aioclient_mock, "generator")
+    assert len(calls) == 1 and calls[0].query.get("state") == "on"
+    # the unit reports Starting (whoever started it): the switch follows
+    for label, state in (("Starting", "on"), ("Running", "on"), ("Stopping", "off"), ("AC Source Present", "off")):
+        mock_api(aioclient_mock, info=CTRL_INFO,
+                 values={**VALUES, "values": {**VALUES["values"], "generator_status_from_led": label}})
+        await entry.runtime_data.coordinator.async_refresh()
+        await hass.async_block_till_done()
+        s = hass.states.get("switch.sp_pro_generator")
+        assert (s.state, s.attributes["sp_pro_state"]) == (state, label)
+
+
+async def test_generator_refusal_is_an_error(hass: HomeAssistant, aioclient_mock):
+    from homeassistant.exceptions import HomeAssistantError
+    await setup(hass, aioclient_mock, info=CTRL_INFO, values=CTRL_VALUES)
+    aioclient_mock.post(f"{BASE}/control", status=409,
+                        json={"error": "generator is AC Source Present: the SP PRO will not start it from the button"})
+    with pytest.raises(HomeAssistantError, match="AC Source Present"):
+        await hass.services.async_call("switch", "turn_on", {"entity_id": "switch.sp_pro_generator"}, blocking=True)
+
+
+async def test_output_switch_disabled_and_idle_needs_a_second_turn_off(hass: HomeAssistant, aioclient_mock):
+    from homeassistant.exceptions import HomeAssistantError
+    entry = await setup(hass, aioclient_mock, info=CTRL_INFO, values=CTRL_VALUES)
+    reg = er.async_get(hass)
+    ent = reg.async_get("switch.sp_pro_inverter_output")
+    assert ent.disabled_by is er.RegistryEntryDisabler.INTEGRATION
+    reg.async_update_entity(ent.entity_id, disabled_by=None)
+    await hass.config_entries.async_reload(entry.entry_id)
+    await hass.async_block_till_done()
+    assert hass.states.get(ent.entity_id).state == "on"          # Sync
+    aioclient_mock.post(f"{BASE}/control", json={"control": "output", "state": "idle", "pressed": True})
+    with pytest.raises(HomeAssistantError, match="again within"):
+        await hass.services.async_call("switch", "turn_off", {"entity_id": ent.entity_id}, blocking=True)
+    assert control_calls(aioclient_mock, "output") == []
+    await hass.services.async_call("switch", "turn_off", {"entity_id": ent.entity_id}, blocking=True)
+    calls = control_calls(aioclient_mock, "output")
+    assert len(calls) == 1 and calls[0].query.get("state") == "idle" and calls[0].query.get("confirm") == "outage"
+    await hass.services.async_call("switch", "turn_on", {"entity_id": ent.entity_id}, blocking=True)
+    assert control_calls(aioclient_mock, "output")[-1].query.get("state") == "on"
+
+
+async def test_equalise_button(hass: HomeAssistant, aioclient_mock):
+    await setup(hass, aioclient_mock, info=CTRL_INFO, values=CTRL_VALUES)
+    aioclient_mock.post(f"{BASE}/control", json={"control": "equalise", "state": "", "pressed": True})
+    await hass.services.async_call("button", "press", {"entity_id": "button.sp_pro_request_equalise"}, blocking=True)
+    calls = control_calls(aioclient_mock, "equalise")
+    assert len(calls) == 1 and "state" not in calls[0].query
+
+
+async def test_renamed_key_keeps_its_entity(hass: HomeAssistant, aioclient_mock):
+    reg = er.async_get(hass)
+    entry = MockConfigEntry(domain=DOMAIN, data=DATA, unique_id="unit123")
+    entry.add_to_hass(hass)
+    old = reg.async_get_or_create("sensor", DOMAIN, "unit123_daysto_recharge", config_entry=entry,
+                                  suggested_object_id="sp_pro_days_to_recharge")
+    fields = FIELDS + [{"key": "days_to_recharge", "name": "Days to Recharge", "unit": "", "kind": "number",
+                        "default": False, "device_class": None, "state_class": "measurement", "precision": 0,
+                        "category": None, "note": ""}]
+    mock_api(aioclient_mock, fields=fields)
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert reg.async_get(old.entity_id).unique_id == "unit123_days_to_recharge"

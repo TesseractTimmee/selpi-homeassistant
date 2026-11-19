@@ -12,6 +12,9 @@
 #include "esphome/components/button/button.h"
 #include "esphome/core/helpers.h"
 #endif
+#ifdef USE_SPPRO_CONTROLS
+#include "esphome/components/switch/switch.h"
+#endif
 #ifdef USE_SPPRO_PROXY
 #include "esphome/components/socket/tcp_client_link.h"
 #include "esphome/components/socket/tcp_listener.h"
@@ -131,6 +134,14 @@ class SpPro : public PollingComponent, public uart::UARTDevice {
   /// Front panel button press, sent between polls: 0 generator, 1 ON, 2 silence alarm.
   void request_button(uint8_t which);
 #endif
+#ifdef USE_SPPRO_CONTROLS
+  /// State-aware controls (selpi sppro/controls.py): read the unit's state word first, press only if needed.
+  /// which: 0 generator (Generator Status 0xa096), 1 inverter output (Output Mode 0xa07d).
+  void request_control(uint8_t which, bool on);
+  /// Equalise request: two long Generator presses, the second once the first is released.
+  void request_equalise();
+  void set_control_switch(uint8_t which, switch_::Switch *s) { this->control_switch_[which] = s; }
+#endif
 #ifdef USE_SPPRO_PROXY
   void set_proxy_port(uint16_t port) { this->client_.set_port(port); }
   void set_proxy_log_downloads(bool v) { this->proxy_log_downloads_ = v; }
@@ -142,7 +153,8 @@ class SpPro : public PollingComponent, public uart::UARTDevice {
 
  protected:
   enum class Step : uint8_t {
-    NONE, LOGIN_CHALLENGE, LOGIN_ANSWER, LOGIN_CHECK, POLL, PROXY, CLOCK_READ, CLOCK_WRITE, PORT_READ, BUTTON_WRITE
+    NONE, LOGIN_CHALLENGE, LOGIN_ANSWER, LOGIN_CHECK, POLL, PROXY, CLOCK_READ, CLOCK_WRITE, PORT_READ, BUTTON_WRITE,
+    STATE_READ, RELEASE_READ
   };
   struct NumberField {
     sensor::Sensor *sensor;
@@ -213,8 +225,22 @@ class SpPro : public PollingComponent, public uart::UARTDevice {
 
 #ifdef USE_SPPRO_BUTTONS
   bool button_step_();
+  void cancel_presses_(const char *why);
   int8_t button_pending_{-1};
+  uint8_t button_value_{1};  // 1 short, 2 long
   uint8_t port_{0};  // SP PRO comms port of this link (low byte of 0xa000), 0 = not read yet this session
+#endif
+#ifdef USE_SPPRO_CONTROLS
+  void on_state_read_(uint16_t code);
+  void on_release_read_(uint16_t value);
+  void publish_controls_();
+  int8_t control_pending_{-1};      // 0 generator on, 1 generator off, 2 output on, 3 output idle
+  uint8_t equalise_stage_{0};       // 1 first press queued, 2 waiting for its release, 3 second press queued
+  uint32_t equalise_wait_until_{0};
+  uint32_t equalise_deadline_{0};
+  uint32_t control_at_[2]{0, 0};    // when the last press for this control was sent ...
+  uint16_t control_code_[2]{0, 0};  // ... and the state code before it (a press the unit hasn't shown yet)
+  switch_::Switch *control_switch_[2]{nullptr, nullptr};
 #endif
 #ifdef USE_SPPRO_PROXY
   PeerListener listener_;
@@ -235,9 +261,24 @@ class SpPro : public PollingComponent, public uart::UARTDevice {
 #endif
 };
 
+#ifdef USE_SPPRO_CONTROLS
+/// Generator / inverter output as a switch whose state is the unit's (Generator Status / Output Mode), not what
+/// was last requested. Turning the output off (IDLE: no AC output) needs a second request within 30 s.
+class SpProSwitch : public switch_::Switch, public Parented<SpPro> {
+ public:
+  void set_which(uint8_t which) { this->which_ = which; }
+
+ protected:
+  void write_state(bool state) override;
+  uint8_t which_{0};
+  uint32_t asked_at_{0};
+};
+#endif
+
 #ifdef USE_SPPRO_BUTTONS
 /// An SP PRO front panel button as an ESPHome button. The ON button (ON <-> IDLE, IDLE = no AC output) needs a
-/// second press within 30 s; the first only logs a warning.
+/// second press within 30 s; the first only logs a warning. which_ 3 = the equalise request (two long Generator
+/// presses).
 class SpProButton : public button::Button, public Parented<SpPro> {
  public:
   void set_which(uint8_t which) { this->which_ = which; }

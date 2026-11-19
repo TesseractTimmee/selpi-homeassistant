@@ -6,15 +6,18 @@ integration only asks the add-on's API for values and turns them into a device w
 from __future__ import annotations
 
 from homeassistant.const import CONF_HOST, CONF_PORT, Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import SelpiAuthError, SelpiClient, SelpiError
 from .const import CONF_TOKEN
 from .coordinator import SelpiConfigEntry, SelpiCoordinator, SelpiRuntime
 
-PLATFORMS = [Platform.SENSOR, Platform.BUTTON]
+PLATFORMS = [Platform.SENSOR, Platform.BUTTON, Platform.SWITCH]
+# field keys renamed in selpi 0.4.7 (SP LINK's "DaystoEqualise" split badly): keep the entities
+RENAMED_KEYS = {"daysto_recharge": "days_to_recharge", "daysto_equalise": "days_to_equalise"}
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry) -> bool:
@@ -27,6 +30,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry) -> boo
         raise ConfigEntryAuthFailed(str(err)) from err
     except SelpiError as err:
         raise ConfigEntryNotReady(str(err)) from err
+    keys = {f["key"] for f in fields}
+
+    @callback
+    def _migrate(ent: er.RegistryEntry) -> dict | None:
+        for old, new in RENAMED_KEYS.items():
+            if new in keys and ent.unique_id.endswith("_" + old):
+                return {"new_unique_id": ent.unique_id[: -len(old)] + new}
+        return None
+
+    await er.async_migrate_entries(hass, entry.entry_id, _migrate)
     coordinator = SelpiCoordinator(hass, entry, client, info, [f["key"] for f in fields if f.get("default")])
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = SelpiRuntime(client=client, info=info, fields=fields, coordinator=coordinator)

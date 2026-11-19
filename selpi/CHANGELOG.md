@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.7
+- State-aware controls (selpi `sppro/controls.py`, `/api/v1/control`): a **Generator** switch and an
+  **Inverter output** switch whose state is the SP PRO's own (Generator Status / Output Mode), so they show
+  starts and stops from anything (state of charge, schedule, remote input, front panel). Switching reads the
+  unit's state first and presses the button only when that changes something; the generator is refused
+  with the grid present, disabled, faulted or out of fuel. They replace the "Generator start/stop" and
+  "Inverter ON/IDLE (long press)" buttons (delete those once they show as unavailable). Inverter output is
+  disabled by default and turning it off (IDLE, no AC output) asks for a second turn-off within 30 s.
+- **Request equalise** button: two long Generator presses (SP PRO manual); the unit equalises after the
+  next full charge. New default sensors: Days to equalise, Days since equalise, Generator started by.
+- Field keys `daysto_recharge` / `daysto_equalise` renamed `days_to_recharge` / `days_to_equalise`
+  (existing entities are moved to the new keys; the old keys still work in the API and in ESPHome `fields:`).
+- ESPHome component: the same as `controls:` (generator / output switches, equalise button).
+
 ## 0.4.6
 - ESPHome component: front panel buttons (`buttons:` generator, silence, and the protected `on_idle`), so the
   ESP can run Home Assistant on its own; the app is then only needed for backups, log downloads and the

@@ -22,6 +22,11 @@ static const uint32_t CLOCK_SET = 0x1d0011;    // 7 words BCD: sec, min, hour, w
 // Write 1 for a short press, 2 for a long press; the SP PRO logs it as a front panel press.
 static const uint32_t PORT_REGISTER = 0xa000;
 static const char *const BUTTON_NAMES[3] = {"generator", "ON", "silence alarm"};
+// State-aware controls (selpi sppro/controls.py): the state words they read before pressing.
+static const uint32_t GENERATOR_STATUS = 0xa096;  // 0 Not Running, 1 Running, 6 Starting, 8 Stopping, ...
+static const uint32_t OUTPUT_MODE = 0xa07d;       // 0 Idle, 1 Econo, 2 On, 3 Sync
+static const char *const CONTROL_NAMES[2] = {"generator", "inverter output"};
+static const uint32_t CONTROL_SETTLE_MS = 30000;  // a press the unit hasn't shown yet blocks another this long
 
 // Writes a read-only proxy client may still make: what a log download needs (selpi sppro/logs.py):
 // download mode 0xa251 = 0/1, and each log's 5-word search range (events, alerts, daily, detailed).
@@ -260,9 +265,9 @@ void SpPro::on_reply_() {
     } else if (step == Step::CLOCK_READ || step == Step::CLOCK_WRITE) {
       // try again next interval
 #ifdef USE_SPPRO_BUTTONS
-    } else if (step == Step::PORT_READ || step == Step::BUTTON_WRITE) {
-      ESP_LOGW(TAG, "button: %s press not sent (bad reply)", BUTTON_NAMES[std::max<int>(0, this->button_pending_)]);
-      this->button_pending_ = -1;  // never resend a press blindly
+    } else if (step == Step::PORT_READ || step == Step::BUTTON_WRITE || step == Step::STATE_READ ||
+               step == Step::RELEASE_READ) {
+      this->cancel_presses_("bad reply");  // never resend a press blindly
 #endif
     } else {
       this->login_failed_("bad reply");
@@ -324,15 +329,34 @@ void SpPro::on_reply_() {
       this->port_ = data[0];
       ESP_LOGD(TAG, "button: link is on SP PRO comms port %u", this->port_);
       if (this->port_ != 1 && this->port_ != 2) {
-        ESP_LOGW(TAG, "button: unknown comms port %u, %s press not sent", this->port_,
-                 BUTTON_NAMES[std::max<int>(0, this->button_pending_)]);
-        this->button_pending_ = -1;
+        ESP_LOGW(TAG, "button: unknown comms port %u", this->port_);
+        this->port_ = 0;
+        this->cancel_presses_("unknown comms port");
       }
       break;
     case Step::BUTTON_WRITE:
-      ESP_LOGI(TAG, "button: %s pressed (0x%" PRIx32 " = %u)", BUTTON_NAMES[std::max<int>(0, this->button_pending_)],
+      ESP_LOGI(TAG, "button: %s %s press sent (0x%" PRIx32 " = %u)",
+               BUTTON_NAMES[std::max<int>(0, this->button_pending_)], this->tx_[8] == 2 ? "long" : "short",
                frame_address(this->tx_), this->tx_[8]);
       this->button_pending_ = -1;
+#ifdef USE_SPPRO_CONTROLS
+      if (this->equalise_stage_ == 1) {  // first long press sent: wait for the register to read 0 again
+        this->equalise_stage_ = 2;
+        this->equalise_wait_until_ = millis() + 500;
+        this->equalise_deadline_ = millis() + 10000;
+      } else if (this->equalise_stage_ == 3) {
+        this->equalise_stage_ = 0;
+        ESP_LOGI(TAG, "equalise: requested (two long Generator presses)");
+      }
+#endif
+      break;
+#endif
+#ifdef USE_SPPRO_CONTROLS
+    case Step::STATE_READ:
+      this->on_state_read_(data[0] | (data[1] << 8));
+      break;
+    case Step::RELEASE_READ:
+      this->on_release_read_(data[0] | (data[1] << 8));
       break;
 #endif
 #ifdef USE_SPPRO_CLOCK
@@ -362,20 +386,61 @@ void SpPro::request_button(uint8_t which) {
     ESP_LOGW(TAG, "button: %s press ignored, not logged in to the SP PRO", BUTTON_NAMES[which]);
     return;
   }
+#ifdef USE_SPPRO_CONTROLS
+  if (this->control_pending_ >= 0 || this->equalise_stage_ != 0) {
+    ESP_LOGW(TAG, "button: %s press ignored, a control is still in progress", BUTTON_NAMES[which]);
+    return;
+  }
+#endif
   this->button_pending_ = static_cast<int8_t>(which);
+  this->button_value_ = which == 1 ? 2 : 1;  // ON: long press only; generator, silence: short
   ESP_LOGI(TAG, "button: %s press queued", BUTTON_NAMES[which]);
+}
+
+void SpPro::cancel_presses_(const char *why) {
+  if (this->button_pending_ >= 0)
+    ESP_LOGW(TAG, "button: %s press not confirmed (%s)", BUTTON_NAMES[this->button_pending_], why);
+  this->button_pending_ = -1;
+#ifdef USE_SPPRO_CONTROLS
+  if (this->control_pending_ >= 0)
+    ESP_LOGW(TAG, "%s: not changed (%s)", CONTROL_NAMES[this->control_pending_ / 2], why);
+  if (this->equalise_stage_ != 0)
+    ESP_LOGW(TAG, "equalise: request abandoned (%s)", why);
+  this->control_pending_ = -1;
+  this->equalise_stage_ = 0;
+#endif
 }
 
 // one step of a pending press (port read first, then the write); false = nothing to do
 bool SpPro::button_step_() {
-  if (this->button_pending_ < 0)
+  bool work = this->button_pending_ >= 0;
+#ifdef USE_SPPRO_CONTROLS
+  work = work || this->control_pending_ >= 0 || this->equalise_stage_ != 0;
+#endif
+  if (!work)
     return false;
   if (this->port_ == 0) {
     this->query_(Step::PORT_READ, PORT_REGISTER, 1);
     return true;
   }
+#ifdef USE_SPPRO_CONTROLS
+  if (this->control_pending_ >= 0) {  // read the state fresh: it may have changed since the last poll
+    this->query_(Step::STATE_READ, this->control_pending_ < 2 ? GENERATOR_STATUS : OUTPUT_MODE, 1);
+    return true;
+  }
+  if (this->equalise_stage_ == 2) {
+    if (millis() < this->equalise_wait_until_)
+      return false;
+    this->query_(Step::RELEASE_READ, this->port_ == 1 ? 0xa232 : 0xa235, 1);
+    return true;
+  }
+  if (this->equalise_stage_ == 3 && millis() < this->equalise_wait_until_)
+    return false;  // gap between the two long presses
+#endif
+  if (this->button_pending_ < 0)
+    return false;
   uint32_t address = (this->port_ == 1 ? 0xa232 : 0xa235) + this->button_pending_;
-  uint8_t value = this->button_pending_ == 1 ? 2 : 1;  // ON: long press only; generator, silence: short
+  uint8_t value = this->button_value_;
   put_header(this->tx_, 'W', address, 1);
   this->tx_[8] = value;
   this->tx_[9] = 0;
@@ -387,6 +452,13 @@ bool SpPro::button_step_() {
 }
 
 void SpProButton::press_action() {
+#ifdef USE_SPPRO_CONTROLS
+  if (this->which_ == 3) {
+    this->parent_->request_equalise();
+    return;
+  }
+#endif
+
   if (this->which_ == 1) {  // ON: ON <-> IDLE cuts the AC output, so it takes two presses
     uint32_t now = millis();
     if (this->asked_at_ == 0 || now - this->asked_at_ > 30000) {
@@ -397,6 +469,134 @@ void SpProButton::press_action() {
     this->asked_at_ = 0;
   }
   this->parent_->request_button(this->which_);
+}
+#endif
+
+#ifdef USE_SPPRO_CONTROLS
+void SpPro::request_control(uint8_t which, bool on) {
+  if (which > 1)
+    return;
+  if (!this->logged_in_) {
+    ESP_LOGW(TAG, "%s: ignored, not logged in to the SP PRO", CONTROL_NAMES[which]);
+    return;
+  }
+  if (this->button_pending_ >= 0 || this->control_pending_ >= 0 || this->equalise_stage_ != 0) {
+    ESP_LOGW(TAG, "%s: ignored, another press is still in progress", CONTROL_NAMES[which]);
+    return;
+  }
+  if (!this->versions_good_ && !this->allow_mismatch_) {
+    ESP_LOGW(TAG, "%s: ignored, SP PRO versions not verified", CONTROL_NAMES[which]);
+    return;
+  }
+  this->control_pending_ = static_cast<int8_t>(which * 2 + (on ? 0 : 1));
+  ESP_LOGI(TAG, "%s: %s requested", CONTROL_NAMES[which], on ? "on" : (which == 0 ? "off" : "idle"));
+}
+
+void SpPro::request_equalise() {
+  if (!this->logged_in_) {
+    ESP_LOGW(TAG, "equalise: ignored, not logged in to the SP PRO");
+    return;
+  }
+  if (this->button_pending_ >= 0 || this->control_pending_ >= 0 || this->equalise_stage_ != 0) {
+    ESP_LOGW(TAG, "equalise: ignored, another press is still in progress");
+    return;
+  }
+  if (!this->versions_good_ && !this->allow_mismatch_) {
+    ESP_LOGW(TAG, "equalise: ignored, SP PRO versions not verified");
+    return;
+  }
+  this->equalise_stage_ = 1;
+  this->button_pending_ = 0;
+  this->button_value_ = 2;
+  ESP_LOGI(TAG, "equalise: requested, sending two long Generator presses");
+}
+
+void SpPro::on_state_read_(uint16_t code) {
+  int8_t pending = this->control_pending_;
+  this->control_pending_ = -1;
+  if (pending < 0)
+    return;
+  uint8_t which = pending / 2;
+  bool on = (pending % 2) == 0;
+  // the same rules as selpi sppro/controls.py
+  int state;  // 1 on, 0 off, -1 the unit can't be switched from here
+  if (which == 0) {
+    state = (code == 1 || code == 6) ? 1 : (code == 0 || code == 8) ? 0 : -1;
+  } else {
+    state = (code >= 1 && code <= 3) ? 1 : code == 0 ? 0 : -1;
+  }
+  if (this->control_switch_[which] != nullptr && state >= 0)
+    this->control_switch_[which]->publish_state(state == 1);
+  if (state < 0) {
+    ESP_LOGW(TAG, "%s: not changed, the unit reports state %u (%s)", CONTROL_NAMES[which], code,
+             which == 0 ? "grid present, disabled, fault, no fuel, ..." : "unknown output mode");
+    return;
+  }
+  if ((state == 1) == on) {
+    ESP_LOGI(TAG, "%s: already %s (state %u), nothing pressed", CONTROL_NAMES[which], on ? "on" : "off", code);
+    return;
+  }
+  if (which == 0 && on && code == 8) {
+    ESP_LOGW(TAG, "generator: still stopping, try again once it has stopped");
+    return;
+  }
+  if (this->control_at_[which] != 0 && millis() - this->control_at_[which] < CONTROL_SETTLE_MS &&
+      code == this->control_code_[which]) {
+    ESP_LOGW(TAG, "%s: the last press is still being processed (state %u), not pressing again", CONTROL_NAMES[which],
+             code);
+    return;
+  }
+  this->control_at_[which] = millis() == 0 ? 1 : millis();
+  this->control_code_[which] = code;
+  this->button_pending_ = which == 0 ? 0 : 1;  // Generator short / ON long
+  this->button_value_ = which == 0 ? 1 : 2;
+}
+
+void SpPro::on_release_read_(uint16_t value) {
+  if (this->equalise_stage_ != 2)
+    return;
+  if (value == 0) {
+    this->equalise_stage_ = 3;
+    this->equalise_wait_until_ = millis() + 1000;  // gap before the second long press
+    this->button_pending_ = 0;
+    this->button_value_ = 2;
+  } else if (millis() > this->equalise_deadline_) {
+    this->cancel_presses_("Generator button still held after 10 s");
+  } else {
+    this->equalise_wait_until_ = millis() + 500;
+  }
+}
+
+void SpPro::publish_controls_() {
+  for (uint8_t which = 0; which < 2; which++) {
+    if (this->control_switch_[which] == nullptr)
+      continue;
+    this->mem_.missing = false;
+    int code = this->mem_.word(which == 0 ? GENERATOR_STATUS : OUTPUT_MODE);
+    if (this->mem_.missing)
+      continue;
+    if (which == 0 && (code == 1 || code == 6 || code == 0 || code == 8))
+      this->control_switch_[which]->publish_state(code == 1 || code == 6);
+    else if (which == 0)
+      this->control_switch_[which]->publish_state(false);  // can't run now: shown as off
+    else if (code >= 0 && code <= 3)
+      this->control_switch_[which]->publish_state(code != 0);
+  }
+}
+
+void SpProSwitch::write_state(bool state) {
+  if (this->which_ == 1 && !state) {  // output IDLE cuts the AC output: needs a second request within 30 s
+    uint32_t now = millis();
+    if (this->asked_at_ == 0 || now - this->asked_at_ > 30000) {
+      this->asked_at_ = now == 0 ? 1 : now;
+      ESP_LOGW(TAG, "inverter output: turn off again within 30 s to put the SP PRO in IDLE (no AC output)");
+      this->publish_state(this->state);  // show the unit's state again
+      return;
+    }
+    this->asked_at_ = 0;
+  }
+  this->parent_->request_control(this->which_, state);
+  this->publish_state(this->state);  // the unit's state, not the request: the next read shows the change
 }
 #endif
 
@@ -466,8 +666,9 @@ void SpPro::on_timeout_() {
 #ifdef USE_SPPRO_BUTTONS
     case Step::PORT_READ:
     case Step::BUTTON_WRITE:
-      ESP_LOGW(TAG, "button: no reply, %s press not confirmed", BUTTON_NAMES[std::max<int>(0, this->button_pending_)]);
-      this->button_pending_ = -1;  // don't resend: it may have landed
+    case Step::STATE_READ:
+    case Step::RELEASE_READ:
+      this->cancel_presses_("no reply");  // don't resend: it may have landed
       break;
 #endif
     default:
@@ -536,6 +737,9 @@ void SpPro::finish_cycle_() {
       f.sensor->publish_state("code " + std::to_string(code));
     }
   }
+#ifdef USE_SPPRO_CONTROLS
+  this->publish_controls_();
+#endif
   this->set_status_(this->cycle_had_error_ ? "ok (some reads failed)" : "ok");
 }
 

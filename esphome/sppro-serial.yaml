@@ -50,7 +50,7 @@ external_components:
   - source:
       type: git
       url: https://github.com/TesseractTimmee/selpi-homeassistant
-      ref: v0.4.6
+      ref: v0.4.7
       path: esphome/components
     components: [ sppro ]
 
@@ -68,7 +68,7 @@ sppro:
   uart_id: sppro_serial
   password: !secret sppro_password    # SP PRO login password (same as selpi's)
   update_interval: 10s
-  # proxy:, clock:, buttons: as in sppro.yaml
+  # proxy:, clock:, buttons:, controls: as in sppro.yaml
   status:
     name: Link Status
   versions:

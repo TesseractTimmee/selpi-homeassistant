@@ -10,6 +10,12 @@ Optional buttons: the SP PRO's front panel buttons as ESPHome buttons (generator
 alarm: short press; on_idle: the ON button's long press, ON <-> IDLE, disabled by default and needing a second press within 30 s),
 pressed the way SP LINK's Quick View front panel does (see selpi docs/protocol.md).
 
+Optional controls (state-aware, selpi sppro/controls.py): `generator` and `output` switches whose state is the
+unit's own (Generator Status / Output Mode, whatever started or stopped it); switching reads the state fresh and
+presses Generator (short) / ON (long) only if that changes something. Output off = IDLE (no AC output): disabled
+by default, needs a second request within 30 s. `equalise`: a button for the equalise request (two long
+Generator presses).
+
 Optional proxy: a TCP port that passes raw SP PRO frames (selpi, SP LINK) through, interleaved with
 the component's own polling. Clients in `allowed_ips` are read-only (login frames pass); clients in `write_ips`
 may also write (e.g. SP LINK).
@@ -19,7 +25,7 @@ import os
 import re
 
 import esphome.codegen as cg
-from esphome.components import button, sensor, socket, text_sensor, time as time_, uart
+from esphome.components import button, sensor, socket, switch, text_sensor, time as time_, uart
 import esphome.config_validation as cv
 from esphome.const import (
     CONF_ID,
@@ -38,7 +44,7 @@ from esphome.const import (
 
 CODEOWNERS = []
 DEPENDENCIES = ["uart"]
-AUTO_LOAD = ["button", "sensor", "text_sensor", "md5", "socket"]
+AUTO_LOAD = ["button", "sensor", "switch", "text_sensor", "md5", "socket"]
 
 CONF_FIELDS = "fields"
 CONF_ALL_FIELDS = "all_fields"
@@ -56,12 +62,18 @@ CONF_MAX_DRIFT = "max_drift"
 CONF_SET = "set"
 CONF_DRIFT = "drift"
 CONF_BUTTONS = "buttons"
+CONF_CONTROLS = "controls"
+CONTROLS = {"generator": 0, "output": 1}
+# fields whose words the controls need polled (their switch state), plus what shows an equalise request
+CONTROL_KEYS = ["generator_status_from_led", "ac_out_status", "days_to_equalise"]
 BUTTONS = {"generator": 0, "on_idle": 1, "silence": 2}   # "on" would be read as YAML true
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 TABLE = json.load(open(os.path.join(_HERE, "live_fields.json"), encoding="utf-8"))
 ENUMS = json.load(open(os.path.join(_HERE, "splink_tables.json"), encoding="utf-8"))
 FIELDS = {f["key"]: f for f in TABLE["fields"]}
+# keys renamed in 0.4.7 (SP LINK's "DaystoEqualise" split badly): the old ones still work
+KEY_ALIASES = {"daysto_recharge": "days_to_recharge", "daysto_equalise": "days_to_equalise"}
 SCALES = ["AcVolts", "AcCurrent", "DcVolts", "DcCurrent", "Temperature", "InternalVoltages"]
 SCALE_BASE = 0xA028
 VERSION_BASE, VERSION_WORDS = 0xA007, 25
@@ -83,6 +95,7 @@ UNITS = {
 sppro_ns = cg.esphome_ns.namespace("sppro")
 SpPro = sppro_ns.class_("SpPro", cg.PollingComponent, uart.UARTDevice)
 SpProButton = sppro_ns.class_("SpProButton", button.Button, cg.Parented.template(SpPro))
+SpProSwitch = sppro_ns.class_("SpProSwitch", switch.Switch, cg.Parented.template(SpPro))
 
 
 SCREEN_NAMES = {
@@ -100,6 +113,7 @@ def _field_entry(value):
     if isinstance(value, str):
         value = {CONF_KEY: value}
     value = cv.Schema({cv.Required(CONF_KEY): cv.string}, extra=cv.ALLOW_EXTRA)(value)
+    value[CONF_KEY] = KEY_ALIASES.get(value[CONF_KEY], value[CONF_KEY])
     if value[CONF_KEY] not in FIELDS:
         raise cv.Invalid("unknown SP PRO field '%s' (see live_fields.json, or `selpi live --list`)" % value[CONF_KEY])
     return value
@@ -189,6 +203,26 @@ BUTTONS_SCHEMA = cv.Schema({
 })
 
 
+def _no_restore(config):
+    # a restored / boot state would press a button at startup: these switches only follow the unit
+    if str(config.get("restore_mode", "DISABLED")).upper() != "DISABLED":
+        raise cv.Invalid("SP PRO control switches follow the unit's state: restore_mode must be DISABLED")
+    return config
+
+
+CONTROLS_SCHEMA = cv.Schema({
+    cv.Optional("generator"): cv.All(switch.switch_schema(SpProSwitch, icon="mdi:engine",
+                                                          default_restore_mode="DISABLED"), _no_restore),
+    # IDLE cuts the AC output: off in HA until enabled, and turning off takes two requests within 30 s
+    cv.Optional("output"): cv.All(switch.switch_schema(SpProSwitch, icon="mdi:power",
+                                                       entity_category=ENTITY_CATEGORY_CONFIG,
+                                                       default_restore_mode="DISABLED")
+                                  .extend({cv.Optional("disabled_by_default", default=True): cv.boolean}),
+                                  _no_restore),
+    cv.Optional("equalise"): button.button_schema(SpProButton, icon="mdi:battery-sync"),
+})
+
+
 def _proxy_sockets(config):
     if CONF_PROXY in config:
         socket.consume_sockets(1, "sppro", socket.SocketType.TCP_LISTEN)(config)
@@ -207,6 +241,7 @@ CONFIG_SCHEMA = cv.All(
         cv.Optional(CONF_PROXY): PROXY_SCHEMA,
         cv.Optional(CONF_CLOCK): CLOCK_SCHEMA,
         cv.Optional(CONF_BUTTONS): BUTTONS_SCHEMA,
+        cv.Optional(CONF_CONTROLS): CONTROLS_SCHEMA,
         cv.Optional(CONF_STATUS): text_sensor.text_sensor_schema(entity_category=ENTITY_CATEGORY_DIAGNOSTIC),
         cv.Optional(CONF_VERSIONS): text_sensor.text_sensor_schema(entity_category=ENTITY_CATEGORY_DIAGNOSTIC),
         cv.Optional(CONF_ERRORS): sensor.sensor_schema(accuracy_decimals=0, state_class=STATE_CLASS_TOTAL_INCREASING,
@@ -262,7 +297,10 @@ async def to_code(config):
     cg.add(var.set_expected_versions(*VERIFIED_VERSIONS))
     cg.add(var.set_allow_version_mismatch(config[CONF_ALLOW_VERSION_MISMATCH]))
 
-    for base, n in _blocks_for(config["_entities"]):
+    polled = list(config["_entities"])
+    if CONF_CONTROLS in config:
+        polled += [{CONF_KEY: k} for k in CONTROL_KEYS]
+    for base, n in _blocks_for(polled):
         cg.add(var.add_block(base, n))
 
     tables_done = set()
@@ -300,8 +338,22 @@ async def to_code(config):
         if CONF_DRIFT in c:
             cg.add(var.set_clock_drift_sensor(await sensor.new_sensor(c[CONF_DRIFT])))
 
-    if CONF_BUTTONS in config:
+    if CONF_BUTTONS in config or CONF_CONTROLS in config:
         cg.add_define("USE_SPPRO_BUTTONS")
+    if CONF_CONTROLS in config:
+        cg.add_define("USE_SPPRO_CONTROLS")
+        c = config[CONF_CONTROLS]
+        for key, which in CONTROLS.items():
+            if key in c:
+                sw = await switch.new_switch(c[key])
+                await cg.register_parented(sw, var)
+                cg.add(sw.set_which(which))
+                cg.add(var.set_control_switch(which, sw))
+        if "equalise" in c:
+            b = await button.new_button(c["equalise"])
+            await cg.register_parented(b, var)
+            cg.add(b.set_which(3))
+    if CONF_BUTTONS in config:
         for key, which in BUTTONS.items():
             if key in config[CONF_BUTTONS]:
                 b = await button.new_button(config[CONF_BUTTONS][key])

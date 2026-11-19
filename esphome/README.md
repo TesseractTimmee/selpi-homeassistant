@@ -20,7 +20,15 @@ and publishes sensors to Home Assistant through the ESPHome API. No Modbus, no M
   IDLE = no AC output; disabled by default in HA and needs a second press within 30 s). Avoid `/` in names.
 - Clock (optional, `clock:`): checks the SP PRO clock every `interval` and sets it from SNTP when it is
   more than `max_drift` out; "Clock Drift" sensor. Leave the app's `clock_sync` off when this is on.
-- Entities: 39 by default (powers, voltages, SoC, temperatures, today's energies, status texts, digital inputs 1–4), plus
+- Controls (optional, `controls:`), state-aware (selpi `sppro/controls.py`): `generator` and `output`
+  switches show the unit's own state (Generator Status / Output Mode, whatever started or stopped it);
+  switching reads the state fresh and presses Generator (short) / ON (long) only if that changes
+  something, never twice for a press the unit hasn't shown yet (30 s). The generator is refused with the
+  grid present, disabled, faulted or out of fuel. `output` off = IDLE (no AC output): disabled by default
+  and needs a second request within 30 s. `equalise`: a button for the equalise request (two long
+  Generator presses; the SP PRO equalises after the next full charge). These switches never act at boot
+  (`restore_mode` must stay `DISABLED`).
+- Entities: 42 by default (powers, voltages, SoC, temperatures, today's energies, status texts, digital inputs 1–4), plus
   Link status / Unit versions / Link errors. Choose others with `fields:` (keys from
   `selpi live --list`), each a key or `{key: ..., name: ..., <sensor options>}`; `all_fields: true`
   adds all 288.
