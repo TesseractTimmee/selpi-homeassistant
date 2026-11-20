@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.5.2
+- **Consistent entity names and info.** Entity names are now Title Case and consistent across the app, the HA
+  integration and the ESP firmware, driven by one shared source, so they no longer differ between them; a few
+  names that showed an internal label or odd word order were fixed.
+- **HA entity fixes.** kvar / kVA readings no longer get a device class HA rejects (they were logged as invalid);
+  kWh averages and last-period snapshots are now plain measurements, so they stop appearing as Energy-dashboard
+  meters (only real meters do).
+- **Unit / factory info.** Model number, serial number, Control PCA and PM1/PM2 serials and firmware version are
+  now shown as Diagnostic entities. (More factory values - batteryless, export limit, phase - come once their
+  registers are confirmed on hardware.)
+- **Inverter controls.** The Inverter ON/IDLE button and Inverter output switch now appear under Controls rather
+  than Configuration; they are still disabled by default and still need a second press/toggle within 30 s to act.
+- **Earlier UI fixes.** Detailed data-log interval reads "15 min" (not a code); schedule fields are grouped by
+  schedule number; a valid setting value below SP LINK's editable minimum is shown without a false out-of-range flag.
+- Still read-only: configuration writes remain disabled pending on-hardware validation.
+- App: selpi v0.5.2.
+
 ## 0.5.1
 - **Firmware-aware Configuration page:** each setting now knows the minimum SP PRO config-settings version SP LINK
   needs to show it; on older firmware the page shows those settings read-only with a "needs firmware vN" note
