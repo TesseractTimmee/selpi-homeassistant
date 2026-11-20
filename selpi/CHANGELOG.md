@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.4
+- **Naming consistency.** The HACS/Marketplace listing now shows "Selectronic SP PRO" instead of
+  "selpi (Selectronic SP PRO)" — that name came from hacs.json, not the manifest. Setup-dialog/error text that
+  said "the selpi add-on" now says "the Selectronic SP PRO add-on". The domain and slug stay "selpi" (entity ids
+  depend on them). No functional change.
+- App: selpi v0.5.3 (unchanged).
+
 ## 0.5.3
 - **Fixes the lockup/timeout when switching between Live and Configuration.** A stalled or flaky Select.Live
   link could hold the single SP PRO link for minutes (the configuration read retries across every block),
