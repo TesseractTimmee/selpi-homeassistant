@@ -27,6 +27,8 @@ import re
 import esphome.codegen as cg
 from esphome.components import button, sensor, socket, switch, text_sensor, time as time_, uart
 import esphome.config_validation as cv
+
+from . import field_meta
 from esphome.const import (
     CONF_ID,
     CONF_KEY,
@@ -85,12 +87,9 @@ VERIFIED_VERSIONS = [48, 14, 31, 3, 3, 5]
 # Any key from live_fields.json can be added under `fields:`.
 DEFAULT_FIELDS = json.load(open(os.path.join(_HERE, "default_fields.json"), encoding="utf-8"))
 
-# unit -> (device_class, accuracy)
-UNITS = {
-    "kW": ("power", 3), "kWh": ("energy", 2), "kvar": ("reactive_power", 3), "kVA": ("apparent_power", 3),
-    "V": ("voltage", 1), "A": ("current", 1), "Hz": ("frequency", 2), "°C": ("temperature", 1),
-    "h": ("duration", 1), "%": (None, 1), "": (None, 2),
-}
+# state_class string (from field_meta.hints) -> ESPHome constant
+_STATE_CLASS = {"measurement": STATE_CLASS_MEASUREMENT, "total": STATE_CLASS_TOTAL,
+                "total_increasing": STATE_CLASS_TOTAL_INCREASING}
 
 sppro_ns = cg.esphome_ns.namespace("sppro")
 SpPro = sppro_ns.class_("SpPro", cg.PollingComponent, uart.UARTDevice)
@@ -122,22 +121,16 @@ def _field_entry(value):
 def _entity_schema(f):
     if f["kind"] == "enum":
         return text_sensor.text_sensor_schema()
-    if f["kind"] == "raw":
-        return sensor.sensor_schema(accuracy_decimals=0, state_class=STATE_CLASS_MEASUREMENT,
-                                    entity_category=ENTITY_CATEGORY_DIAGNOSTIC)
-    device_class, acc = UNITS.get(f["unit"], (None, 2))
-    if f["unit"] == "%" and "soc" in f["key"]:
-        device_class = "battery"
-    state_class = STATE_CLASS_MEASUREMENT
-    if f["unit"] == "kWh":
-        net = "net" in f["key"]
-        state_class = STATE_CLASS_TOTAL_INCREASING if ("today" in f["key"] or f["key"].endswith("_acc")) and not net \
-            else STATE_CLASS_TOTAL
-    kw = dict(accuracy_decimals=acc, state_class=state_class)
+    h = field_meta.hints(f)      # shared with the selpi app / HA integration
+    kw = dict(accuracy_decimals=h["precision"] if h["precision"] is not None else 2)
+    if h["state_class"]:
+        kw["state_class"] = _STATE_CLASS[h["state_class"]]
+    if h["device_class"]:
+        kw["device_class"] = h["device_class"]
+    if h["category"] == "diagnostic":
+        kw["entity_category"] = ENTITY_CATEGORY_DIAGNOSTIC
     if f["unit"]:
         kw["unit_of_measurement"] = f["unit"]
-    if device_class:
-        kw["device_class"] = device_class
     return sensor.sensor_schema(**kw)
 
 
@@ -145,11 +138,13 @@ def _expand_fields(config):
     """Turn `fields:` (keys, or dicts with key + entity options) into validated entity configs."""
     entries = config.get(CONF_FIELDS)
     if entries is None:
-        entries = [{CONF_KEY: k, CONF_NAME: n} for k, n in DEFAULT_FIELDS.items()]
+        entries = [{CONF_KEY: k} for k in DEFAULT_FIELDS]
     if config[CONF_ALL_FIELDS]:
         # every other field, minus exact repeats (same words and formula on another screen)
         seen = {(tuple(FIELDS[e[CONF_KEY]]["words"]), FIELDS[e[CONF_KEY]]["formula"]) for e in entries}
         for k, f in FIELDS.items():
+            if k in field_meta.HA_DROP:
+                continue
             sig = (tuple(f["words"]), f["formula"])
             if sig not in seen and all(e[CONF_KEY] != k for e in entries):
                 seen.add(sig)
@@ -159,11 +154,11 @@ def _expand_fields(config):
         f = FIELDS[e[CONF_KEY]]
         conf = {k: v for k, v in e.items() if k not in (CONF_KEY, "_auto")}
         if CONF_NAME not in conf:
-            name = f["name"]
+            name = field_meta.field_name(f["key"], f["name"], DEFAULT_FIELDS.get(f["key"]))
             if _slug(name) in names:   # same label on two screens: say which
                 name = "%s (%s)" % (name, SCREEN_NAMES.get(f["screen"], f["screen"]))
             if _slug(name) in names:
-                name = "%s (%s)" % (f["name"], f["key"])
+                name = "%s (%s)" % (name, f["key"])
             conf[CONF_NAME] = name
         names.add(_slug(conf[CONF_NAME]))
         conf = _entity_schema(f)(conf)
