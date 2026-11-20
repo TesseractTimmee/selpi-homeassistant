@@ -1,0 +1,211 @@
+# SP PRO status screen for the ESP32-S3-USB-OTG's 1.3" 240x240 ST7789 LCD.
+# Two pages (Power / Diagnostics), status-coloured, button-paged; backlight dims off when idle.
+#
+# Pin map (ESP32-S3-USB-OTG user guide): LCD_SCLK GPIO6, LCD_SDA/MOSI GPIO7, LCD_DC GPIO4,
+# LCD_EN(=CS) GPIO5, LCD_RST GPIO8, LCD_BL GPIO9; buttons MENU GPIO14, OK/BOOT GPIO0.
+# VERIFY against the board on arrival (and `rotation:` below) before trusting the wiring.
+
+spi:
+  clk_pin: GPIO6
+  mosi_pin: GPIO7
+
+# Backlight (GPIO9) as a dimmable light so it can time out when idle.
+output:
+  - platform: ledc
+    id: lcd_bl_out
+    pin: GPIO9
+    frequency: 1000Hz
+
+light:
+  - platform: monochromatic
+    id: lcd_bl
+    output: lcd_bl_out
+    default_transition_length: 200ms
+    restore_mode: ALWAYS_ON
+    on_turn_on:
+      - script.execute: bl_timeout
+
+script:
+  - id: bl_timeout             # turn the backlight off after a spell with no button press
+    mode: restart
+    then:
+      - delay: 45s
+      - light.turn_off: lcd_bl
+
+globals:
+  - id: page                   # 0 = Power, 1 = Diagnostics
+    type: int
+    restore_value: no
+    initial_value: '0'
+  - id: last_read_ms           # millis() of the last good SP PRO read (stamped from load_ac_power)
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+# MENU pages Power <-> Diagnostics; either button wakes the screen first (a wake press doesn't also page).
+binary_sensor:
+  - platform: gpio
+    id: btn_menu
+    pin: { number: GPIO14, inverted: true, mode: { input: true, pullup: true } }
+    on_press:
+      then:
+        - if:
+            condition:
+              lambda: 'return id(lcd_bl).current_values.is_on();'
+            then:
+              - globals.set: { id: page, value: !lambda 'return (id(page) + 1) % 2;' }
+        - light.turn_on: { id: lcd_bl, brightness: 100% }
+        - script.execute: bl_timeout
+  - platform: gpio
+    id: btn_ok                 # OK / BOOT: just wake the screen
+    pin: { number: GPIO0, inverted: true, mode: { input: true, pullup: true } }
+    on_press:
+      then:
+        - light.turn_on: { id: lcd_bl, brightness: 100% }
+        - script.execute: bl_timeout
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      id: f_ip
+      name: "IP address"
+      entity_category: diagnostic
+
+font:
+  - file: "gfonts://Roboto"
+    id: f_small
+    size: 13
+    glyphs: &glyphs ' !%()+,-./0123456789:<>?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+  - file: "gfonts://Roboto"
+    id: f_med
+    size: 18
+    glyphs: *glyphs
+  - file: "gfonts://Roboto"
+    id: f_title
+    size: 20
+    glyphs: *glyphs
+  - file: "gfonts://Roboto Mono"
+    id: f_big
+    size: 54
+    glyphs: *glyphs
+
+color:
+  - { id: c_green,  hex: "19C819" }
+  - { id: c_amber,  hex: "E6A000" }
+  - { id: c_red,    hex: "E02828" }
+  - { id: c_blue,   hex: "2A96E6" }
+  - { id: c_purple, hex: "9C46E6" }
+  - { id: c_orange, hex: "E67328" }
+  - { id: c_white,  hex: "F0F0F0" }
+  - { id: c_grey,   hex: "808080" }
+  - { id: c_gold,   hex: "E6C81E" }
+
+display:
+  - platform: st7789v
+    id: lcd
+    model: Custom
+    height: 240
+    width: 240
+    offset_height: 0
+    offset_width: 0
+    cs_pin: GPIO5
+    dc_pin: GPIO4
+    reset_pin: GPIO8
+    # backlight is the lcd_bl light above — do NOT set backlight_pin here
+    rotation: 90               # host port up; try 270 if it reads upside down
+    update_interval: 1s
+    lambda: |-
+      it.fill(Color(0, 0, 0));
+      char buf[24];
+      // label on the left, value on the right (colour c)
+      auto row = [&](int y, const char *label, const char *val, Color c) {
+        it.printf(12, y, id(f_med), id(c_grey), TextAlign::TOP_LEFT, "%s", label);
+        it.printf(228, y, id(f_med), c, TextAlign::TOP_RIGHT, "%s", val);
+      };
+
+      if (id(page) == 0) {
+        // ---------- Page 1: Power ----------
+        it.printf(120, 4, id(f_small), id(c_grey), TextAlign::TOP_CENTER, "BATTERY");
+        if (id(f_soc).has_state()) {
+          float soc = id(f_soc).state;
+          Color cs = soc > 50 ? id(c_green) : (soc >= 20 ? id(c_amber) : id(c_red));
+          it.printf(120, 18, id(f_big), cs, TextAlign::TOP_CENTER, "%.0f%%", soc);
+        } else {
+          it.printf(120, 24, id(f_big), id(c_grey), TextAlign::TOP_CENTER, "--");
+        }
+        if (id(f_vbat).has_state())
+          it.printf(120, 78, id(f_med), id(c_white), TextAlign::TOP_CENTER, "%.1f V", id(f_vbat).state);
+        it.line(8, 104, 232, 104, id(c_grey));
+
+        float bin  = id(f_bpin).has_state()  ? id(f_bpin).state  : 0;
+        float bout = id(f_bpout).has_state() ? id(f_bpout).state : 0;
+        if (bin > 0.01f)       { snprintf(buf, sizeof(buf), "+%.1f kW", bin);  row(110, "Bat", buf, id(c_green)); }
+        else if (bout > 0.01f) { snprintf(buf, sizeof(buf), "-%.1f kW", bout); row(110, "Bat", buf, id(c_orange)); }
+        else                     row(110, "Bat", "0.0 kW", id(c_grey));
+
+        if (id(f_solar).has_state()) { snprintf(buf, sizeof(buf), "%.1f kW", id(f_solar).state); row(132, "Solar", buf, id(c_gold)); }
+        if (id(f_load).has_state())  { snprintf(buf, sizeof(buf), "%.1f kW", id(f_load).state);  row(154, "Load",  buf, id(c_white)); }
+
+        float gin  = id(f_gridin).has_state()  ? id(f_gridin).state  : 0;
+        float gout = id(f_gridout).has_state() ? id(f_gridout).state : 0;
+        if (gin > 0.01f)       { snprintf(buf, sizeof(buf), "%.1f kW", gin);   row(176, "Grid", buf, id(c_red)); }
+        else if (gout > 0.01f) { snprintf(buf, sizeof(buf), "-%.1f kW", gout); row(176, "Grid", buf, id(c_green)); }
+        else                     row(176, "Grid", "0.0 kW", id(c_grey));
+
+        float gen = id(f_gen).has_state() ? id(f_gen).state : 0;
+        if (gen > 0.01f) { snprintf(buf, sizeof(buf), "%.1f kW", gen); row(198, "Gen", buf, id(c_orange)); }
+        else               row(198, "Gen", "off", id(c_grey));
+
+        it.line(8, 222, 232, 222, id(c_grey));
+        uint32_t age = id(last_read_ms) ? (millis() - id(last_read_ms)) / 1000 : 9999;
+        Color hb = id(last_read_ms) == 0 ? id(c_grey) : (age < 5 ? id(c_green) : (age < 15 ? id(c_amber) : id(c_red)));
+        it.filled_circle(14, 232, 4, hb);
+        if (id(last_read_ms)) it.printf(24, 225, id(f_small), hb, TextAlign::TOP_LEFT, "link %ds", (int) age);
+        else                  it.printf(24, 225, id(f_small), id(c_grey), TextAlign::TOP_LEFT, "link --");
+        if (id(f_mode).has_state()) {
+          std::string m = id(f_mode).state;
+          Color cm = id(c_blue);
+          if (m.find("Equalis") != std::string::npos) cm = id(c_purple);
+          else if (m.find("Fault") != std::string::npos || m.find("Off") != std::string::npos) cm = id(c_red);
+          else if (m.find("Idle") != std::string::npos) cm = id(c_amber);
+          it.printf(228, 225, id(f_small), cm, TextAlign::TOP_RIGHT, "%s", m.c_str());
+        }
+
+      } else {
+        // ---------- Page 2: Diagnostics ----------
+        it.printf(120, 4, id(f_title), id(c_white), TextAlign::TOP_CENTER, "DIAGNOSTICS");
+        it.line(8, 28, 232, 28, id(c_grey));
+
+        uint32_t age = id(last_read_ms) ? (millis() - id(last_read_ms)) / 1000 : 9999;
+        bool live = id(last_read_ms) && age < 15;
+        Color cl = id(last_read_ms) == 0 ? id(c_grey) : (live ? id(c_green) : id(c_red));
+        row(34, "SP PRO", (id(f_link).has_state() ? id(f_link).state.c_str() : "--"), cl);
+        snprintf(buf, sizeof(buf), "%us ago", (unsigned) age);
+        row(54, "last read", (id(last_read_ms) ? buf : "--"), cl);
+        if (id(f_errors).has_state()) {
+          int e = (int) id(f_errors).state;
+          snprintf(buf, sizeof(buf), "%d", e);
+          row(74, "errors", buf, e == 0 ? id(c_green) : id(c_red));
+        }
+        it.line(8, 96, 232, 96, id(c_grey));
+
+        bool fw_ok = id(f_soc).has_state() && live;       // values flowing => version gate passed
+        row(100, "firmware", (fw_ok ? "OK" : "check"), (fw_ok ? id(c_green) : id(c_amber)));
+        if (id(f_dayseq).has_state()) { snprintf(buf, sizeof(buf), "%.0f", id(f_dayseq).state); row(120, "days eq", buf, id(c_white)); }
+        it.line(8, 142, 232, 142, id(c_grey));
+
+        if (id(wifi_rssi).has_state()) {
+          float r = id(wifi_rssi).state;
+          Color cr = r > -67 ? id(c_green) : (r > -75 ? id(c_amber) : id(c_red));
+          snprintf(buf, sizeof(buf), "%.0f dBm", r);
+          row(146, "WiFi", buf, cr);
+        }
+        row(166, "HA", (id(device_status).state ? "online" : "offline"), (id(device_status).state ? id(c_green) : id(c_red)));
+        if (id(f_ip).has_state()) row(186, "IP", id(f_ip).state.c_str(), id(c_grey));
+        if (id(internal_temp).has_state()) {
+          float t = id(internal_temp).state;
+          Color ct = t < 60 ? id(c_green) : (t < 75 ? id(c_amber) : id(c_red));
+          snprintf(buf, sizeof(buf), "%.0f C", t);
+          row(206, "ESP temp", buf, ct);
+        }
+      }

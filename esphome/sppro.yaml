@@ -5,12 +5,13 @@ packages:
     vars:
       node_name: sppro
       friendly_name: SP PRO
+  display: !include includes/display.yaml
 
 external_components:
   - source:
       type: git
       url: https://github.com/TesseractTimmee/selpi-homeassistant
-      ref: v0.4.10
+      ref: v0.5.4
       path: esphome/components
     components: [ sppro ]
 
@@ -29,7 +30,74 @@ sppro:
   uart_id: sppro_usb
   password: !secret sppro_password    # SP PRO login password (same as selpi's)
   update_interval: 10s
-  # fields: [...]          # default: 39 (see esphome/components/sppro/__init__.py in this repo)
+  fields:   # default set (unchanged); id: added on the fields the LCD shows (includes/display.yaml)
+    - key: load_ac_power
+      id: f_load
+      on_value:
+        - lambda: 'id(last_read_ms) = millis();'
+    - key: ac_inverter_power
+    - key: ac_source_power
+    - key: ac_source_power_in
+    - key: ac_source_power_out
+    - key: grid_power_in
+      id: f_gridin
+    - key: grid_power_out
+      id: f_gridout
+    - key: generator_power_in
+      id: f_gen
+    - key: now_total_ac_power_kaco
+      id: f_solar
+    - key: dc_battery_power
+    - key: dc_battery_power_in
+      id: f_bpin
+    - key: dc_battery_power_out
+      id: f_bpout
+    - key: batt_soc_percent
+      id: f_soc
+    - key: battery_volts
+      id: f_vbat
+    - key: dc_battery_current
+    - key: shunt1_power
+    - key: ac_inverter_rms_volts_tech
+    - key: inv_freq
+    - key: ac_generator_rms_volts
+    - key: input_ac_hz
+    - key: inverter_reactive_power
+    - key: ac_source_reactive_power
+    - key: ac_out_status
+      id: f_mode
+    - key: ac_source_status
+    - key: generator_status_from_led
+    - key: generator_running_reason
+    - key: generator_start_reason
+    - key: charge_status_now
+    - key: days_to_equalise
+      id: f_dayseq
+    - key: days_since_equalise
+    - key: digital_in_status1
+    - key: digital_in_status2
+    - key: digital_in_status3
+    - key: digital_in_status4
+    - key: battery_temperature
+    - key: heatsink_temperature
+    - key: transformer_temperature
+    - key: inlet_air_temperature
+    - key: fan_speed
+    - key: batt_ink_wh_acc
+    - key: batt_outk_wh_acc
+    - key: ac_loadk_wh_acc
+    - key: ac_inputk_wh_acc
+    - key: ac_export_accumulated_today
+    - key: today_total_ac_energy_kaco
+    - key: d_ck_wh_in_today
+    - key: d_ck_wh_out_today
+    - key: inverter_run_hrs_total_acc
+    - key: version_number
+    - key: unit_model_number
+    - key: unit_serial_number
+    - key: control_pca_serial_number
+    - key: pm1_serial_number
+    - key: pm2_serial_number
   proxy:                   # raw SP PRO frames over TCP, one client at a time
     port: 8899
     allowed_ips:           # read-only (login frames pass; log downloads allowed)
@@ -54,7 +122,9 @@ sppro:
       name: Request equalise
   status:
     name: Link Status
+    id: f_link
   versions:
     name: Unit Versions
   errors:
     name: Link Errors
+    id: f_errors
