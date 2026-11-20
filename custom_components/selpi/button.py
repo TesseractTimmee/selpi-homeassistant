@@ -48,7 +48,8 @@ class SelpiOnButton(SelpiEntity, ButtonEntity):
     Protected: disabled until you enable it, and the first press only asks for confirmation ("press again
     within 30 s"); the second press within 30 s acts. The app also refuses it without confirm=outage."""
 
-    _attr_entity_category = EntityCategory.CONFIG
+    # A control, not device configuration: shown in the device's Controls (not Configuration). It stays safe by
+    # being disabled by default and needing a second press within 30 s to act.
     _attr_entity_registry_enabled_default = False
     _attr_icon = "mdi:power"
 

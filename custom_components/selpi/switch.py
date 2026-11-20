@@ -8,7 +8,6 @@ import time
 from typing import Any
 
 from homeassistant.components.switch import SwitchEntity
-from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -110,7 +109,8 @@ class SelpiOutputSwitch(_StateSwitch):
     _on_labels = frozenset({"On", "Econo", "Sync"})
     _off_state = "idle"
     _attr_icon = "mdi:power"
-    _attr_entity_category = EntityCategory.CONFIG
+    # A control, not device configuration: shown in Controls. Kept safe by being disabled by default and needing
+    # a second toggle-off within 30 s to actually idle the inverter.
     _attr_entity_registry_enabled_default = False
 
     def __init__(self, entry: SelpiConfigEntry) -> None:
