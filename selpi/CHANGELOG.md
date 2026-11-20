@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.5.3
+- **Fixes the lockup/timeout when switching between Live and Configuration.** A stalled or flaky Select.Live
+  link could hold the single SP PRO link for minutes (the configuration read retries across every block),
+  leaving "configuration read…" stuck in the top-right and blocking the page and HA polls. Link operations now
+  have a time budget and give up cleanly rather than wedging (live 25 s, settings 40 s, configuration 45 s).
+- **Web UI:** requests time out after 90 s and show "try again" instead of spinning forever; a second
+  configuration read no longer starts while one is in flight, so the double countdown-timer is gone.
+- **Integration:** the constant identity values (model, serial, PCA/PM serials, firmware) are read once and
+  refreshed occasionally instead of on every poll, trimming per-poll link load.
+- Still read-only: configuration writes remain disabled pending on-hardware validation.
+- App: selpi v0.5.3.
+
 ## 0.5.2
 - **Consistent entity names and info.** Entity names are now Title Case and consistent across the app, the HA
   integration and the ESP firmware, driven by one shared source, so they no longer differ between them; a few

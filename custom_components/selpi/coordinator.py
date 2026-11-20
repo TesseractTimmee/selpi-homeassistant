@@ -16,6 +16,14 @@ from .const import CONF_SCAN_INTERVAL, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
+# Identity / factory values that never change: fetch once, then only rarely, instead of every poll — they
+# otherwise add their registers to every cycle's link read for data that is constant.
+STATIC_KEYS = frozenset({
+    "version_number", "unit_model_number", "unit_serial_number",
+    "control_pca_serial_number", "pm1_serial_number", "pm2_serial_number",
+})
+STATIC_EVERY = 60   # re-read the static values every N polls as a refresh (about hourly at a 60 s interval)
+
 
 @dataclass
 class SelpiData:
@@ -50,6 +58,8 @@ class SelpiCoordinator(DataUpdateCoordinator[SelpiData]):
         self.keys: set[str] = set(default_keys)   # replaced by the entities that are actually added
         self._entity_keys: set[str] = set()
         self._warned_versions = False
+        self._static: dict[str, Any] = {}          # cached values of the STATIC_KEYS (constant identity fields)
+        self._cycle = 0
 
     def add_key(self, key: str) -> bool:
         """An entity was added; True if its value hasn't been fetched yet."""
@@ -64,8 +74,14 @@ class SelpiCoordinator(DataUpdateCoordinator[SelpiData]):
         self.keys.discard(key)
 
     async def _async_update_data(self) -> SelpiData:
+        self._cycle += 1
+        poll = set(self.keys)
+        # once we have a static value cached, stop re-requesting it every poll (refresh occasionally)
+        cached = STATIC_KEYS & self._static.keys()
+        if cached and self._cycle % STATIC_EVERY != 0:
+            poll -= cached
         try:
-            got = await self.client.values(sorted(self.keys)) if self.keys else {"values": {}}
+            got = await self.client.values(sorted(poll)) if poll else {"values": {}}
             diag = await self.client.diagnostics()
         except SelpiAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
@@ -80,5 +96,11 @@ class SelpiCoordinator(DataUpdateCoordinator[SelpiData]):
                                 "against (%s); not publishing values", ", ".join(problems))
                 self._warned_versions = True
             raise UpdateFailed("SP PRO versions not verified: " + ", ".join(problems))
-        return SelpiData(values=got.get("values") or {}, stale=bool(got.get("stale")),
+        values = got.get("values") or {}
+        for k in STATIC_KEYS:          # remember static values, and merge the cached ones back so those
+            if values.get(k) is not None:   # sensors stay populated on the polls we skip re-reading them
+                self._static[k] = values[k]
+        for k, v in self._static.items():
+            values.setdefault(k, v)
+        return SelpiData(values=values, stale=bool(got.get("stale")),
                          version_problems=problems, diagnostics=diag)
