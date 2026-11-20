@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Selectronic SP PRO",
-        "description": "Connect to the selpi add-on's API. Inside Home Assistant the host is `local-selpi`; the token is in the add-on's /data/api_token (normally discovery fills this in for you).",
+        "description": "Connect to the Selectronic SP PRO add-on's API. Inside Home Assistant the host is `local-selpi`; the token is in the add-on's /data/api_token (normally discovery fills this in for you).",
         "data": {"host": "Host", "port": "Port", "token": "API token"}
       },
       "hassio_confirm": {
@@ -18,12 +18,12 @@
       }
     },
     "error": {
-      "cannot_connect": "Can't reach the selpi add-on (or it can't reach the SP PRO).",
+      "cannot_connect": "Can't reach the Selectronic SP PRO add-on (or it can't reach the SP PRO).",
       "invalid_auth": "The add-on refused the token."
     },
     "abort": {
       "already_configured": "This SP PRO is already set up.",
-      "cannot_connect": "Can't reach the selpi add-on.",
+      "cannot_connect": "Can't reach the Selectronic SP PRO add-on.",
       "reauth_successful": "Token updated."
     }
   },
