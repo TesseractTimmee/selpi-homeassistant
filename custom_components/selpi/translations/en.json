@@ -3,7 +3,7 @@
     "flow_title": "{name}",
     "step": {
       "user": {
-        "title": "selpi add-on",
+        "title": "Selectronic SP PRO",
         "description": "Connect to the selpi add-on's API. Inside Home Assistant the host is `local-selpi`; the token is in the add-on's /data/api_token (normally discovery fills this in for you).",
         "data": {"host": "Host", "port": "Port", "token": "API token"}
       },
@@ -12,7 +12,7 @@
         "description": "Add the SP PRO from the {addon} add-on?"
       },
       "reauth_confirm": {
-        "title": "selpi add-on token",
+        "title": "Selectronic SP PRO (API token)",
         "description": "The add-on refused the token. Enter the one in the add-on's /data/api_token.",
         "data": {"token": "API token"}
       }
