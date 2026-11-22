@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.3
+- **Configuration page is cached.** Opening/reopening the web UI's Configuration page no longer re-reads the
+  whole config over the link every time — it serves the last read, so it's instant and doesn't starve the live
+  poll or stall a slow Select.Live connection. A new ↻ (Refresh) button forces a fresh read; a successful write
+  clears the cache so the next open re-reads the changed config. Live-data freshness is unchanged. (Pulls selpi
+  app v0.6.3.)
+
 ## 0.6.2
 - **Fix: non-default sensors no longer all enabled.** 0.6.0 introduced a bug where, with no ESP present, the
   integration re-enabled *every* sensor it had disabled — including the many infrequently-used (non-default)
