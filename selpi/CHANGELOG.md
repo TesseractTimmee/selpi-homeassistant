@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.5
+- **Integration self-heals a transient 401.** The add-on's API token is persistent, so a 401 while the add-on
+  restarts/updates is temporary — but the integration used to latch into "unauthorized" (reauth) on the first
+  one and need a manual reload. It now tolerates a few consecutive 401s (keeping the last values, marked stale)
+  before declaring a real auth failure, so an add-on restart recovers on its own. (Integration only.)
+
 ## 0.6.4
 - **One Configuration button.** 0.6.3 briefly added a second (refresh) button next to "Read configuration";
   since the tab already auto-loads the cached config on open, that was redundant. Back to a single
