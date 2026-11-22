@@ -5,7 +5,11 @@
       "user": {
         "title": "Selectronic SP PRO",
         "description": "Connect to the Selectronic SP PRO add-on's API. Inside Home Assistant the host is `local-selpi`; the token is in the add-on's /data/api_token (normally discovery fills this in for you).",
-        "data": {"host": "Host", "port": "Port", "token": "API token"}
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "token": "API token"
+        }
       },
       "hassio_confirm": {
         "title": "Selectronic SP PRO",
@@ -14,7 +18,9 @@
       "reauth_confirm": {
         "title": "Selectronic SP PRO (API token)",
         "description": "The add-on refused the token. Enter the one in the add-on's /data/api_token.",
-        "data": {"token": "API token"}
+        "data": {
+          "token": "API token"
+        }
       }
     },
     "error": {
@@ -32,8 +38,17 @@
       "init": {
         "title": "Polling",
         "description": "How often to ask the add-on for new values. Suggested for this connection: {suggested} s (Select.Live is a cloud round trip each time: keep it at 60 s or more).",
-        "data": {"scan_interval": "Poll interval (seconds)"}
+        "data": {
+          "scan_interval": "Poll interval (seconds)",
+          "esp_present": "Also running the ESPHome component (hide its duplicate SP PRO data sensors)"
+        }
       }
+    }
+  },
+  "issues": {
+    "esp_clock_conflict": {
+      "title": "SP PRO clock synced by both the add-on and the ESP",
+      "description": "The selpi add-on and the ESPHome component are both set to sync the SP PRO clock. With the ESP present, turn off the add-on's clock sync (set SELPI_CLOCK_SYNC=false in the add-on config) so only one writes the clock."
     }
   }
 }

@@ -10,11 +10,12 @@ import logging
 from homeassistant.const import CONF_HOST, CONF_PORT, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import entity_registry as er, issue_registry as ir
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import SelpiAuthError, SelpiClient, SelpiError
-from .const import CONF_ESP_PRESENT, CONF_TOKEN, DOMAIN
+from .const import CONF_TOKEN, DOMAIN
+from .esp import esp_active
 from .coordinator import SelpiConfigEntry, SelpiCoordinator, SelpiRuntime
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,7 +36,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry) -> boo
     except SelpiError as err:
         raise ConfigEntryNotReady(str(err)) from err
     _migrate_renamed_keys(hass, entry, {f["key"] for f in fields})
-    _apply_esp_present(hass, entry, fields)
+    esp = esp_active(entry, info)     # option if set, else auto-detected from the connection type (TCP = ESP proxy)
+    _apply_esp_present(hass, entry, fields, esp)
+    _check_clock_conflict(hass, entry, esp, bool(info.get("clock_sync")))
     coordinator = SelpiCoordinator(hass, entry, client, info, [f["key"] for f in fields if f.get("default")])
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = SelpiRuntime(client=client, info=info, fields=fields, coordinator=coordinator)
@@ -63,12 +66,23 @@ def _migrate_renamed_keys(hass: HomeAssistant, entry: SelpiConfigEntry, keys: se
         reg.async_update_entity(old_id, new_unique_id=f"{prefix}_{new}")
 
 
-def _apply_esp_present(hass: HomeAssistant, entry: SelpiConfigEntry, fields: list) -> None:
-    """When "ESP present" is on, the ESPHome component publishes the same SP PRO data, so disable the duplicate
+CLOCK_CONFLICT_ISSUE = "esp_clock_conflict"
+
+
+def _check_clock_conflict(hass: HomeAssistant, entry: SelpiConfigEntry, esp: bool, addon_clock_sync: bool) -> None:
+    """The ESPHome component also syncs the SP PRO clock, so warn if the add-on is also syncing it."""
+    if esp and addon_clock_sync:
+        ir.async_create_issue(hass, DOMAIN, CLOCK_CONFLICT_ISSUE, is_fixable=False,
+                              severity=ir.IssueSeverity.WARNING, translation_key=CLOCK_CONFLICT_ISSUE)
+    else:
+        ir.async_delete_issue(hass, DOMAIN, CLOCK_CONFLICT_ISSUE)
+
+
+def _apply_esp_present(hass: HomeAssistant, entry: SelpiConfigEntry, fields: list, esp: bool) -> None:
+    """When the ESP is present, the ESPHome component publishes the same SP PRO data, so disable the duplicate
     field sensors in the registry (so it also hides existing ones, not just new installs); re-enable the ones we
-    disabled when it's turned back off. User-disabled entities are left alone."""
+    disabled when it's no longer present. User-disabled entities are left alone."""
     reg = er.async_get(hass)
-    esp = entry.options.get(CONF_ESP_PRESENT, False)
     prefix = entry.unique_id or entry.entry_id
     for f in fields:
         eid = reg.async_get_entity_id("sensor", DOMAIN, f"{prefix}_{f['key']}")

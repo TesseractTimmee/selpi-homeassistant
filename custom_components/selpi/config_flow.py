@@ -22,6 +22,7 @@ from .const import (
     MAX_SCAN_INTERVAL,
     MIN_SCAN_INTERVAL,
 )
+from .esp import esp_active
 
 
 class SelpiConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -109,10 +110,11 @@ class SelpiOptionsFlow(OptionsFlow):
         runtime = getattr(entry, "runtime_data", None)
         suggested = runtime.info.get("scan_interval") if runtime else 60
         current = entry.options.get(CONF_SCAN_INTERVAL) or suggested or 60
+        esp_default = esp_active(entry, runtime.info if runtime else {})   # user's choice, else connection type
         schema = vol.Schema({
             vol.Required(CONF_SCAN_INTERVAL, default=current):
                 vol.All(vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL)),
-            vol.Required(CONF_ESP_PRESENT, default=entry.options.get(CONF_ESP_PRESENT, False)): bool,
+            vol.Required(CONF_ESP_PRESENT, default=esp_default): bool,
         })
         return self.async_show_form(step_id="init", data_schema=schema,
                                     description_placeholders={"suggested": str(suggested)})

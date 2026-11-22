@@ -9,9 +9,9 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util import dt as dt_util
 
-from .const import CONF_ESP_PRESENT
 from .coordinator import SelpiConfigEntry
 from .entity import SelpiEntity
+from .esp import esp_active
 
 # selpi's units -> HA's spelling where they differ
 UNITS = {"h": UnitOfTime.HOURS}
@@ -21,7 +21,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry,
                             async_add_entities: AddConfigEntryEntitiesCallback) -> None:
     # When the ESPHome component also runs it publishes the same SP PRO data, so hide these by default and keep only
     # the add-on-specific sensors (link, connection, backup) enabled; the user can still enable any they want.
-    esp = entry.options.get(CONF_ESP_PRESENT, False)
+    esp = esp_active(entry, entry.runtime_data.info)
     entities: list[SensorEntity] = [SelpiFieldSensor(entry, f, esp_present=esp) for f in entry.runtime_data.fields]
     entities += [SelpiLinkSensor(entry), SelpiConnectionSensor(entry),
                  SelpiClockDriftSensor(entry), SelpiLastBackupSensor(entry)]
