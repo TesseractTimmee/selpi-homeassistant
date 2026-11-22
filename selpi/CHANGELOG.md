@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.5
+- **Configuration page greys more fields to match SP LINK.** Three more dependent show/grey rules finish the
+  parity audit against SP LINK's own field-gating: **Number of AC Solar units** is greyed unless the AC-solar
+  port supports multiple units; **Number of Workers** and **3-Phase AC Source Balance** are greyed unless
+  Advanced Multiphase is configured (so on a single-phase unit they now show greyed, as SP LINK does). View-only
+  (writes stay disabled); no setup. (Pulls selpi app v0.7.5.)
+
 ## 0.7.4
 - **Caching is now per-connection and configurable.** The caches that smooth over Select.Live's stalls were
   applied to every connection, so a direct serial/USB (or local TCP/ESP) link — which is fast and reliable —
