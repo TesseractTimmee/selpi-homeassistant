@@ -4639,6 +4639,52 @@
    "kind": "raw",
    "table": null,
    "converter": null
+  },
+  {
+   "key": "comms_card_stored_firmware",
+   "name": "Comms Card Stored Firmware",
+   "field": "CommsCardStoredSoftwareVersion",
+   "label": "Comms Card Stored Firmware",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa01c"
+   ],
+   "formula": "{0xa01c}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": null
+  },
+  {
+   "key": "grid_firmware",
+   "name": "Grid Firmware",
+   "field": "GridFirmwareVersion",
+   "label": "Grid Firmware",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa036"
+   ],
+   "formula": "({0xa036} / 100.0)",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": null
+  },
+  {
+   "key": "comms_card_firmware_update",
+   "name": "Comms Card Firmware Update",
+   "field": "CommsCardFirmwareUpdate",
+   "label": "Comms Card Firmware Update",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa01b",
+    "0xa01c"
+   ],
+   "formula": "('Pending' if {0xa01c} != 0 and {0xa01c} != {0xa01b} else 'None')",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": null
   }
  ],
  "blocks": {

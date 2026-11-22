@@ -58,5 +58,8 @@
  "comms_card_serial": "Comms Card Serial",
  "comms_card_software": "Comms Card Software Version",
  "kaco_mode": "Kaco Mode",
- "number_of_kacos": "Number of Kacos"
+ "number_of_kacos": "Number of Kacos",
+ "comms_card_stored_firmware": "Comms Card Stored Firmware",
+ "grid_firmware": "Grid Firmware",
+ "comms_card_firmware_update": "Comms Card Firmware Update"
 }
