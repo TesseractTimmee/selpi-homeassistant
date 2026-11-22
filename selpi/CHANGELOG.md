@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.3
+- **Loading indicator on the web UI.** Switching the Live screen (e.g. Now + Today → Technical) or opening a
+  tab used to give no sign anything was happening — the previous table just sat there until the new data
+  arrived, which over Select.Live can take a few seconds. Now the live table dims with a spinner while it
+  refreshes, the Configuration read shows a spinner next to its timer, and the Backups and Status tabs show a
+  spinner instead of a blank card. No behaviour change, web UI only. (Pulls selpi app v0.7.3.)
+
 ## 0.7.2
 - **Fix: three diagnostic sensors were "unavailable".** Battery-less, Factory export limit and Comms-card
   firmware update showed as unavailable because they were typed as numeric (measurement) sensors but their
