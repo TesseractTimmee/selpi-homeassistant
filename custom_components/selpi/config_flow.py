@@ -14,6 +14,7 @@ from homeassistant.helpers.service_info.hassio import HassioServiceInfo
 from .api import SelpiAuthError, SelpiClient, SelpiError
 from .const import (
     CONF_ADDON_SLUG,
+    CONF_ESP_PRESENT,
     CONF_SCAN_INTERVAL,
     CONF_TOKEN,
     DEFAULT_PORT,
@@ -111,6 +112,7 @@ class SelpiOptionsFlow(OptionsFlow):
         schema = vol.Schema({
             vol.Required(CONF_SCAN_INTERVAL, default=current):
                 vol.All(vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL)),
+            vol.Required(CONF_ESP_PRESENT, default=entry.options.get(CONF_ESP_PRESENT, False)): bool,
         })
         return self.async_show_form(step_id="init", data_schema=schema,
                                     description_placeholders={"suggested": str(suggested)})

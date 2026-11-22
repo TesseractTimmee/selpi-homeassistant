@@ -14,7 +14,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import SelpiAuthError, SelpiClient, SelpiError
-from .const import CONF_TOKEN, DOMAIN
+from .const import CONF_ESP_PRESENT, CONF_TOKEN, DOMAIN
 from .coordinator import SelpiConfigEntry, SelpiCoordinator, SelpiRuntime
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,6 +35,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry) -> boo
     except SelpiError as err:
         raise ConfigEntryNotReady(str(err)) from err
     _migrate_renamed_keys(hass, entry, {f["key"] for f in fields})
+    _apply_esp_present(hass, entry, fields)
     coordinator = SelpiCoordinator(hass, entry, client, info, [f["key"] for f in fields if f.get("default")])
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = SelpiRuntime(client=client, info=info, fields=fields, coordinator=coordinator)
@@ -60,6 +61,24 @@ def _migrate_renamed_keys(hass: HomeAssistant, entry: SelpiConfigEntry, keys: se
             _LOGGER.info("selpi: removing %s (duplicate of %s after the %s -> %s rename)", dup, old_id, old, new)
             reg.async_remove(dup)
         reg.async_update_entity(old_id, new_unique_id=f"{prefix}_{new}")
+
+
+def _apply_esp_present(hass: HomeAssistant, entry: SelpiConfigEntry, fields: list) -> None:
+    """When "ESP present" is on, the ESPHome component publishes the same SP PRO data, so disable the duplicate
+    field sensors in the registry (so it also hides existing ones, not just new installs); re-enable the ones we
+    disabled when it's turned back off. User-disabled entities are left alone."""
+    reg = er.async_get(hass)
+    esp = entry.options.get(CONF_ESP_PRESENT, False)
+    prefix = entry.unique_id or entry.entry_id
+    for f in fields:
+        eid = reg.async_get_entity_id("sensor", DOMAIN, f"{prefix}_{f['key']}")
+        if eid is None:
+            continue
+        ent = reg.async_get(eid)
+        if esp and ent and ent.disabled_by is None:
+            reg.async_update_entity(eid, disabled_by=er.RegistryEntryDisabler.INTEGRATION)
+        elif not esp and ent and ent.disabled_by is er.RegistryEntryDisabler.INTEGRATION:
+            reg.async_update_entity(eid, disabled_by=None)
 
 
 async def _options_updated(hass: HomeAssistant, entry: SelpiConfigEntry) -> None:
