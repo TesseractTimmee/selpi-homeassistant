@@ -731,5 +731,20 @@
  "digital_io": {
   "0": "Inactive",
   "1": "Active"
+ },
+ "kaco_mode": {
+  "0": "Disabled",
+  "1": "RS232 Port 1 Powador",
+  "2": "RS232 Port 2 Powador",
+  "3": "RS485 Port 1 Powador",
+  "4": "Powador",
+  "5": "External Comms",
+  "7": "ABB / FIMER",
+  "8": "Fronius SnapIN Primo",
+  "9": "SelectSun",
+  "10": "Fronius SnapIN Symo",
+  "11": "Fronius GEN24 Primo",
+  "12": "Fronius GEN24 Symo",
+  "13": "Fronius Verto"
  }
 }
