@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.0
+- **Bounded, coalescing link serialization (fixes random Select.Live stalls).** Every SP PRO operation is now
+  time-bounded, so nothing — not even the automatic hourly clock sync or daily config backup — can hold the
+  link indefinitely and freeze polls/pages (the main cause of selpi "clagging up for no reason"). Reads now
+  wait a bounded time for the link instead of failing the instant it's busy, and identical in-flight reads are
+  coalesced (a duplicate waits for the first and reuses its result instead of running again over the slow
+  link). (Pulls selpi app v0.7.0.)
+- **Integration:** the poll request timeout is raised to outlast the add-on's worst case, so the integration
+  never gives up (and flaps) before the add-on answers.
+
 ## 0.6.5
 - **Integration self-heals a transient 401.** The add-on's API token is persistent, so a 401 while the add-on
   restarts/updates is temporary — but the integration used to latch into "unauthorized" (reauth) on the first

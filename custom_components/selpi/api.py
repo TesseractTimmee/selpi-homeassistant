@@ -44,7 +44,9 @@ class SelpiClient:
         return (await self._request("GET", "/fields"))["fields"]
 
     async def values(self, keys: list[str]) -> dict[str, Any]:
-        return await self._request("GET", "/values", keys=",".join(keys))
+        # outlast the add-on's worst case (it waits up to VALUE_WAIT for the link + POLL_DEADLINE to read, plus a
+        # little coalescing slack) so the integration never gives up before the add-on answers
+        return await self._request("GET", "/values", timeout=60, keys=",".join(keys))
 
     async def diagnostics(self) -> dict[str, Any]:
         return await self._request("GET", "/diagnostics", timeout=10)
