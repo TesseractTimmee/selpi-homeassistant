@@ -65,9 +65,10 @@ UNITS = {
 
 # Identity / factory info that belongs in HA's Diagnostic section (and a web "Unit info" group) rather than the
 # main readings. The raw serial/model fields already come through as diagnostics (kind == 'raw' below); this set
-# adds the non-raw ones (e.g. firmware version) and is where the 3 Dec additions (batteryless, connected phase,
-# comms-card serial, ...) will be listed once their registers are pinned on hardware.
-DIAGNOSTIC = {'version_number'}
+# adds the non-raw ones (e.g. firmware version). Batteryless (0xa021) and the factory export limit (0xa0aa)
+# are now pinned (from the Select.Live capture) and surfaced as raw diagnostics; connected phase / comms-card serial
+# can be added the same way.
+DIAGNOSTIC = {'version_number', 'kaco_mode'}
 
 
 def hints(f):

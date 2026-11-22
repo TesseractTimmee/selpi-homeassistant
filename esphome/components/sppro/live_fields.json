@@ -3236,7 +3236,7 @@
     "0xa03d"
    ],
    "formula": "s16({0xa03d}) * {scale:Temperature} / 32768.0",
-   "unit": "\u00b0C",
+   "unit": "°C",
    "kind": "number",
    "table": null,
    "converter": "fnConvertSignedTemperatureValueToString"
@@ -3252,7 +3252,7 @@
     "0xa038"
    ],
    "formula": "max(s16({0xa037}), s16({0xa038})) * {scale:Temperature} / 32768.0",
-   "unit": "\u00b0C",
+   "unit": "°C",
    "kind": "number",
    "table": null,
    "converter": "fnConvertSignedHottestTemperatureValueToString"
@@ -3267,7 +3267,7 @@
     "0xa03b"
    ],
    "formula": "s16({0xa03b}) * {scale:Temperature} / 32768.0",
-   "unit": "\u00b0C",
+   "unit": "°C",
    "kind": "number",
    "table": null,
    "converter": "fnConvertSignedTemperatureValueToString"
@@ -3282,7 +3282,7 @@
     "0xa03e"
    ],
    "formula": "s16({0xa03e}) * {scale:Temperature} / 32768.0",
-   "unit": "\u00b0C",
+   "unit": "°C",
    "kind": "number",
    "table": null,
    "converter": "fnConvertSignedTemperatureValueToString"
@@ -3297,7 +3297,7 @@
     "0xa03c"
    ],
    "formula": "s16({0xa03c}) * {scale:Temperature} / 32768.0",
-   "unit": "\u00b0C",
+   "unit": "°C",
    "kind": "number",
    "table": null,
    "converter": "fnConvertSignedBattTemperatureValueToString"
@@ -4548,6 +4548,97 @@
    "kind": "number",
    "table": null,
    "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "factory_batteryless",
+   "name": "Batteryless",
+   "field": "FactoryBatterylessMode",
+   "label": "Batteryless",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa021"
+   ],
+   "formula": "('Yes' if {0xa021} == 1 else 'No')",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": null
+  },
+  {
+   "key": "factory_export_limit",
+   "name": "Factory Export Limit",
+   "field": "FactoryExportLimit",
+   "label": "Factory Export Limit",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa0aa"
+   ],
+   "formula": "('No factory limit' if {0xa0aa} == 65535 else {0xa0aa} / 10.0)",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvertDeciUnitsNumberOrFFFFBlankToString"
+  },
+  {
+   "key": "comms_card_serial",
+   "name": "Comms Card Serial",
+   "field": "CommsCardSerialNumber",
+   "label": "Comms Card Serial",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa017",
+    "0xa018"
+   ],
+   "formula": "u32({0xa017},{0xa018})",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "fnConvert32BitSerialNumberValueToString"
+  },
+  {
+   "key": "comms_card_software",
+   "name": "Comms Card Software Version",
+   "field": "CommsCardSoftwareVersion",
+   "label": "Comms Card Software Version",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa01b"
+   ],
+   "formula": "{0xa01b}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": null
+  },
+  {
+   "key": "kaco_mode",
+   "name": "Kaco Mode",
+   "field": "ConfigKacoComPort",
+   "label": "Kaco Mode",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa023"
+   ],
+   "formula": "{0xa023}",
+   "unit": "",
+   "kind": "enum",
+   "table": "kaco_mode",
+   "converter": null
+  },
+  {
+   "key": "number_of_kacos",
+   "name": "Number of Kacos",
+   "field": "ConfigNumberOfKacos",
+   "label": "Number of Kacos",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa024"
+   ],
+   "formula": "{0xa024}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": null
   }
  ],
  "blocks": {
