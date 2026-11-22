@@ -21,6 +21,11 @@ _LOGGER = logging.getLogger(__name__)
 STATIC_KEYS = frozenset({
     "version_number", "unit_model_number", "unit_serial_number",
     "control_pca_serial_number", "pm1_serial_number", "pm2_serial_number",
+    # 0.6.0 factory/identity/firmware diagnostics — constant per unit, and all on the TechnicalDataSubTab block
+    # (0xa015, 154 words); without this they pull that whole block every poll, which bogs down a Select.Live link.
+    "factory_batteryless", "factory_export_limit", "comms_card_serial", "comms_card_software",
+    "comms_card_stored_firmware", "grid_firmware", "comms_card_firmware_update",
+    "kaco_mode", "number_of_kacos",
 })
 STATIC_EVERY = 60   # re-read the static values every N polls as a refresh (about hourly at a 60 s interval)
 GRACE_FAILURES = 4  # keep the last values (marked stale) through this many consecutive failed polls before going

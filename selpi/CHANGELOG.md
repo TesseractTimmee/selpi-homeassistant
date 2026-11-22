@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.1
+- **Poll resilience over Select.Live.** Fixes the integration failing to load / the add-on sticking on
+  "busy: HA poll" when the SP PRO is reached over a slow or flaky Select.Live link. The poll now reads each
+  block independently and skips any that doesn't reply (reconnecting per block) instead of failing the whole
+  poll, so a slow link returns partial/stale data rather than nothing; it's bounded by a 30 s deadline so a
+  stuck block can't hold the link for minutes; and a field whose block was skipped keeps its last good value
+  instead of being wiped. (Pulls selpi app v0.6.1.)
+- Integration: the constant factory/firmware diagnostics are treated as static (fetched once, refreshed
+  hourly) so they don't add their registers to every poll.
+
 ## 0.6.0
 - **SP LINK 16.11 support.** Settings now match SP LINK 16.11: new managed-BMS battery types (AERL, XESS,
   SelectCell River Gum), the Fronius range rename (Verto), granular MPPT alert codes, and the CSIP fallback
