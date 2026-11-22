@@ -77,7 +77,12 @@ def hints(f):
     if f['kind'] == 'enum':
         return {'device_class': 'enum', 'state_class': None, 'precision': None, 'category': cat}
     if f['kind'] == 'raw':
-        return {'device_class': None, 'state_class': 'measurement', 'precision': 0, 'category': 'diagnostic'}
+        # A raw field whose formula yields text (e.g. "'Yes' if ... else 'No'", "'No factory limit'") must not be
+        # a measurement sensor — HA rejects a string value for state_class=measurement and the entity goes
+        # unavailable. Only number-valued raw fields get the measurement class.
+        text = "'" in f.get('formula', '') or '"' in f.get('formula', '')
+        return {'device_class': None, 'state_class': None if text else 'measurement',
+                'precision': None if text else 0, 'category': 'diagnostic'}
     dc, prec = UNITS.get(f['unit'], (None, 2))
     if f['unit'] == '%' and 'soc' in f['key']:
         dc = 'battery'

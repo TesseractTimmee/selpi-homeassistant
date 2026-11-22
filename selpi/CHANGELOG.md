@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.2
+- **Fix: three diagnostic sensors were "unavailable".** Battery-less, Factory export limit and Comms-card
+  firmware update showed as unavailable because they were typed as numeric (measurement) sensors but their
+  value is text ("No", "No factory limit", "None"), which HA rejects. They're now plain text sensors and show
+  their value. The number-valued diagnostics were unaffected. Update + reload the integration to get them back.
+  (Pulls selpi app v0.7.2; ESPHome component synced too.)
+
 ## 0.7.1
 - **Configuration/Settings pages no longer hang over Select.Live.** Select.Live intermittently stalls (every
   read times out for ~20-60 s, then recovers); the settings/config read pulls 6 memory blocks, so it hit those

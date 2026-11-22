@@ -1,7 +1,7 @@
 ARG BUILD_FROM
 FROM ${BUILD_FROM}
 # selpi itself (protocol library, web UI, API, SP LINK proxy) comes from the selpi fork at a fixed tag
-ARG SELPI_REF=v0.7.1
+ARG SELPI_REF=v0.7.2
 ADD https://github.com/TesseractTimmee/selpi/archive/refs/tags/${SELPI_REF}.tar.gz /tmp/selpi.tar.gz
 RUN pip3 install --no-cache-dir python-dotenv==1.1.1 pyserial==3.5 \
  && mkdir -p /tmp/src /opt/selpi && tar -xzf /tmp/selpi.tar.gz -C /tmp/src --strip-components=1 \
