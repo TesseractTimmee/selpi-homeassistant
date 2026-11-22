@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.6.0
+- **SP LINK 16.11 support.** Settings now match SP LINK 16.11: new managed-BMS battery types (AERL, XESS,
+  SelectCell River Gum), the Fronius range rename (Verto), granular MPPT alert codes, and the CSIP fallback
+  export-limit settings.
+- **Fuller show/hide & read-only, like SP LINK.** Settings are gated on the SP PRO firmware / memory-map
+  version, the Comms Card software version, and other settings' values (power factor, AC-coupling, SoC control,
+  batteryless, Kaco port, external CT, shunt mode), and whole-group firmware hiding — so the web UI greys/hides
+  the same fields SP LINK does. Installer/factory settings stay read-only.
+- **Service Settings** are decoded and shown (read-only) in their own tab: AC-solar control gains, filters,
+  anti-islanding, CSIP export limits, and more.
+- **New diagnostics** (web Live page + HA Diagnostic): batteryless, factory export limit, Comms Card serial /
+  software, Kaco mode / count, grid firmware, and a staged-firmware indicator — all pinned from the live link.
+- **Connections:** Select.Live 2 is selectable (server presets: Select.Live / Select.Live 2 / nonprod, plus a
+  manual host), alongside the existing Select.Live, serial and TCP (ESP proxy) options.
+- **Integration — sensors no longer flap.** A brief add-on/link hiccup used to drop every sensor; the
+  integration now keeps the last values through short failures and shows "retrying" on the Link status.
+- **Integration — ESP aware.** Detects when the ESPHome component is the link (Connected via = ESP proxy) and
+  hides the duplicate SP PRO data sensors, leaving the add-on's extras; warns if both the add-on and the ESP are
+  set to sync the SP PRO clock. New "Connected via" sensor shows the transport.
+- **ESP firmware:** an SP PRO status screen for the ESP32-S3-USB-OTG LCD.
+- Still read-only: configuration writes remain disabled pending on-hardware validation.
+- App: selpi v0.6.0.
+
+
 ## 0.5.4
 - **Naming consistency.** The HACS/Marketplace listing now shows "Selectronic SP PRO" instead of
   "selpi (Selectronic SP PRO)" — that name came from hacs.json, not the manifest. Setup-dialog/error text that
