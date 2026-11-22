@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.1
+- **Configuration/Settings pages no longer hang over Select.Live.** Select.Live intermittently stalls (every
+  read times out for ~20-60 s, then recovers); the settings/config read pulls 6 memory blocks, so it hit those
+  stalls and used to hang ~54 s then 500. Now the Select.Live read timeout is shorter, the config read is
+  partial-tolerant and cache-backed (a block it can't read keeps its last value; a cold stall shows a clear
+  "link busy" message), and both pages are cache-first — instant after the first load, serving the last good
+  read on a stall instead of hanging. (Pulls selpi app v0.7.1.)
+
 ## 0.7.0
 - **Bounded, coalescing link serialization (fixes random Select.Live stalls).** Every SP PRO operation is now
   time-bounded, so nothing — not even the automatic hourly clock sync or daily config backup — can hold the
