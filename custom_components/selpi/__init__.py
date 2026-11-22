@@ -23,6 +23,7 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS = [Platform.SENSOR, Platform.BUTTON, Platform.SWITCH]
 # field keys renamed in selpi 0.4.7 (SP LINK's "DaystoEqualise" split badly): keep the entities
 RENAMED_KEYS = {"daysto_recharge": "days_to_recharge", "daysto_equalise": "days_to_equalise"}
+NONDEFAULT_REPAIRED = "nondefault_repaired"   # one-time flag: the 0.6.0 re-enable-all bug has been undone
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry) -> bool:
@@ -38,6 +39,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry) -> boo
     _migrate_renamed_keys(hass, entry, {f["key"] for f in fields})
     esp = esp_active(entry, info)     # option if set, else auto-detected from the connection type (TCP = ESP proxy)
     _apply_esp_present(hass, entry, fields, esp)
+    _repair_nondefault_enabled(hass, entry, fields)
     _check_clock_conflict(hass, entry, esp, bool(info.get("clock_sync")))
     coordinator = SelpiCoordinator(hass, entry, client, info, [f["key"] for f in fields if f.get("default")])
     await coordinator.async_config_entry_first_refresh()
@@ -81,10 +83,16 @@ def _check_clock_conflict(hass: HomeAssistant, entry: SelpiConfigEntry, esp: boo
 def _apply_esp_present(hass: HomeAssistant, entry: SelpiConfigEntry, fields: list, esp: bool) -> None:
     """When the ESP is present, the ESPHome component publishes the same SP PRO data, so disable the duplicate
     field sensors in the registry (so it also hides existing ones, not just new installs); re-enable the ones we
-    disabled when it's no longer present. User-disabled entities are left alone."""
+    disabled when it's no longer present. User-disabled entities are left alone.
+
+    Only the *default* (normally-enabled) fields take part: the infrequently-used ones are disabled-by-default
+    regardless of the ESP, and HA marks those with the same disabled_by=INTEGRATION, so touching them here would
+    wrongly re-enable all of them when the ESP is absent."""
     reg = er.async_get(hass)
     prefix = entry.unique_id or entry.entry_id
     for f in fields:
+        if not f.get("default"):
+            continue
         eid = reg.async_get_entity_id("sensor", DOMAIN, f"{prefix}_{f['key']}")
         if eid is None:
             continue
@@ -93,6 +101,26 @@ def _apply_esp_present(hass: HomeAssistant, entry: SelpiConfigEntry, fields: lis
             reg.async_update_entity(eid, disabled_by=er.RegistryEntryDisabler.INTEGRATION)
         elif not esp and ent and ent.disabled_by is er.RegistryEntryDisabler.INTEGRATION:
             reg.async_update_entity(eid, disabled_by=None)
+
+
+def _repair_nondefault_enabled(hass: HomeAssistant, entry: SelpiConfigEntry, fields: list) -> None:
+    """One-time fix for the 0.6.0 bug where _apply_esp_present re-enabled every INTEGRATION-disabled entity when
+    the ESP was absent — including the infrequently-used (non-default) field sensors that are meant to stay
+    disabled. Re-disable those once; the guard flag means a sensor the user enables afterwards stays enabled."""
+    if entry.data.get(NONDEFAULT_REPAIRED):
+        return
+    reg = er.async_get(hass)
+    prefix = entry.unique_id or entry.entry_id
+    for f in fields:
+        if f.get("default"):
+            continue
+        eid = reg.async_get_entity_id("sensor", DOMAIN, f"{prefix}_{f['key']}")
+        if eid is None:
+            continue
+        ent = reg.async_get(eid)
+        if ent and ent.disabled_by is None:
+            reg.async_update_entity(eid, disabled_by=er.RegistryEntryDisabler.INTEGRATION)
+    hass.config_entries.async_update_entry(entry, data={**entry.data, NONDEFAULT_REPAIRED: True})
 
 
 async def _options_updated(hass: HomeAssistant, entry: SelpiConfigEntry) -> None:

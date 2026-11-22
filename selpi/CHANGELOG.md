@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.2
+- **Fix: non-default sensors no longer all enabled.** 0.6.0 introduced a bug where, with no ESP present, the
+  integration re-enabled *every* sensor it had disabled — including the many infrequently-used (non-default)
+  field sensors that are meant to be disabled by default — because Home Assistant marks both "disabled by
+  default" and "disabled because the ESP is present" with the same `disabled_by=INTEGRATION`. The ESP
+  show/hide now only touches the default (normally-enabled) sensors, and a one-time repair re-disables the
+  non-default sensors the bug enabled (any you enable yourself afterwards stay enabled). (Integration only.)
+
 ## 0.6.1
 - **Poll resilience over Select.Live.** Fixes the integration failing to load / the add-on sticking on
   "busy: HA poll" when the SP PRO is reached over a slow or flaky Select.Live link. The poll now reads each
