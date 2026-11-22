@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.4
+- **One Configuration button.** 0.6.3 briefly added a second (refresh) button next to "Read configuration";
+  since the tab already auto-loads the cached config on open, that was redundant. Back to a single
+  "Read from SP PRO" button (always a fresh read); reopening the tab still serves the cached copy, no link read.
+
 ## 0.6.3
 - **Configuration page is cached.** Opening/reopening the web UI's Configuration page no longer re-reads the
   whole config over the link every time — it serves the last read, so it's instant and doesn't starve the live
