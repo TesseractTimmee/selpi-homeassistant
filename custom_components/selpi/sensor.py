@@ -19,7 +19,8 @@ UNITS = {"h": UnitOfTime.HOURS}
 async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry,
                             async_add_entities: AddConfigEntryEntitiesCallback) -> None:
     entities: list[SensorEntity] = [SelpiFieldSensor(entry, f) for f in entry.runtime_data.fields]
-    entities += [SelpiLinkSensor(entry), SelpiClockDriftSensor(entry), SelpiLastBackupSensor(entry)]
+    entities += [SelpiLinkSensor(entry), SelpiConnectionSensor(entry),
+                 SelpiClockDriftSensor(entry), SelpiLastBackupSensor(entry)]
     async_add_entities(entities)
 
 
@@ -107,10 +108,13 @@ class SelpiLinkSensor(_Diag):
         if not self.coordinator.last_update_success:
             err = str(self.coordinator.last_exception or "add-on not reachable")
             return err[:255]
+        data = self.coordinator.data
+        if data and data.error:          # a poll failed but the last values are being kept (grace period)
+            return f"retrying: {data.error}"[:255]
         d = self._diag
         if d.get("last_error"):
             return str(d["last_error"])[:255]
-        if self.coordinator.data and self.coordinator.data.stale:
+        if data and data.stale:
             return f"busy: {d.get('busy') or 'link in use'}"[:255]
         return "OK"
 
@@ -120,6 +124,24 @@ class SelpiLinkSensor(_Diag):
         return {"connection": self.coordinator.config_entry.runtime_data.info.get("connection"),
                 "last_ok": d.get("last_ok"),
                 "versions": self.coordinator.config_entry.runtime_data.info.get("versions")}
+
+
+class SelpiConnectionSensor(_Diag):
+    """How the add-on reaches the SP PRO: Serial, TCP, Select.Live or Select.Live 2."""
+
+    _attr_icon = "mdi:transit-connection-variant"
+
+    def __init__(self, entry: SelpiConfigEntry) -> None:
+        super().__init__(entry, "connected_via", "Connected via")
+
+    @property
+    def available(self) -> bool:
+        return True
+
+    @property
+    def native_value(self) -> str | None:
+        info = self.coordinator.config_entry.runtime_data.info
+        return info.get("connection_label") or info.get("connection") or None
 
 
 class SelpiClockDriftSensor(_Diag):

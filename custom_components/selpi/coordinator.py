@@ -1,7 +1,7 @@
 """Polls the selpi add-on for the values of the enabled entities."""
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import timedelta
 import logging
 from typing import Any
@@ -23,6 +23,9 @@ STATIC_KEYS = frozenset({
     "control_pca_serial_number", "pm1_serial_number", "pm2_serial_number",
 })
 STATIC_EVERY = 60   # re-read the static values every N polls as a refresh (about hourly at a 60 s interval)
+GRACE_FAILURES = 4  # keep the last values (marked stale) through this many consecutive failed polls before going
+                    # unavailable — the add-on/link is often only briefly busy (a config read, a restart, Select.Live
+                    # latency), and dropping every sensor on one failed HTTP call is the main cause of flapping.
 
 
 @dataclass
@@ -31,6 +34,7 @@ class SelpiData:
     stale: bool = False
     version_problems: list[str] = field(default_factory=list)
     diagnostics: dict[str, Any] = field(default_factory=dict)
+    error: str | None = None     # a transient poll error while the last values are kept
 
 
 type SelpiConfigEntry = ConfigEntry["SelpiRuntime"]
@@ -60,6 +64,7 @@ class SelpiCoordinator(DataUpdateCoordinator[SelpiData]):
         self._warned_versions = False
         self._static: dict[str, Any] = {}          # cached values of the STATIC_KEYS (constant identity fields)
         self._cycle = 0
+        self._fail_count = 0
 
     def add_key(self, key: str) -> bool:
         """An entity was added; True if its value hasn't been fetched yet."""
@@ -86,7 +91,13 @@ class SelpiCoordinator(DataUpdateCoordinator[SelpiData]):
         except SelpiAuthError as err:
             raise ConfigEntryAuthFailed(str(err)) from err
         except SelpiError as err:
+            self._fail_count += 1
+            if self.data is not None and self._fail_count <= GRACE_FAILURES:
+                _LOGGER.debug("selpi poll failed (%d/%d), keeping last values: %s",
+                              self._fail_count, GRACE_FAILURES, err)
+                return replace(self.data, stale=True, error=str(err))   # entities stay available (stale)
             raise UpdateFailed(str(err)) from err
+        self._fail_count = 0
         problems = got.get("version_problems") or []
         if problems:
             # Same gate as the ESPHome component: the field table was verified at known firmware
