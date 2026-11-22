@@ -40,6 +40,7 @@
         "description": "How often to ask the add-on for new values. Suggested for this connection: {suggested} s (Select.Live is a cloud round trip each time: keep it at 60 s or more).",
         "data": {
           "scan_interval": "Poll interval (seconds)",
+          "grace": "Keep last values this many seconds before entities go unavailable (0 = go unavailable immediately)",
           "esp_present": "Also running the ESPHome component (hide its duplicate SP PRO data sensors)"
         }
       }

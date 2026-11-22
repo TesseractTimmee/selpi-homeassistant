@@ -24,6 +24,14 @@ export SELPI_CLOCK_MAX_DRIFT="$(bashio::config 'clock_max_drift')"
 export SELPI_ALLOW_CONFIG_WRITES="$(bashio::config 'allow_config_writes')"
 export SELPI_LOG_LEVEL="$(bashio::config 'log_level')"
 export SELPI_DATA_DIR=/data
+# Caching (optional; default by connection: Select.Live caches, a direct link reads fresh). Only export when set
+# so selpi's own per-connection defaults apply otherwise.
+if bashio::config.has_value 'cache_ttl'; then
+  export SELPI_CACHE_TTL="$(bashio::config 'cache_ttl')"
+fi
+if bashio::config.has_value 'stale_grace'; then
+  export SELPI_STALE_GRACE="$(bashio::config 'stale_grace')"
+fi
 # SP LINK proxy (off by default): container port 8899, mapped to a host port in the app's Network settings
 if bashio::config.true 'proxy'; then
   export SELPI_PROXY_PORT=8899

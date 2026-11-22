@@ -1,5 +1,5 @@
 name: Selectronic SP PRO
-version: "0.7.3"
+version: "0.7.4"
 slug: selpi
 description: Selectronic SP PRO - live values, settings, config backups and log downloads (local, no SP LINK)
 url: https://github.com/TesseractTimmee/selpi-homeassistant
@@ -59,6 +59,8 @@ schema:
   backup_keep: int(1,365)
   clock_sync: bool
   clock_max_drift: int(2,3600)
+  cache_ttl: int(0,86400)?
+  stale_grace: int(0,86400)?
   allow_config_writes: bool
   log_level: list(debug|info|warning)
   proxy: bool

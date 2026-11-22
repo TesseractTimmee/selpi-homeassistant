@@ -15,11 +15,15 @@ from .api import SelpiAuthError, SelpiClient, SelpiError
 from .const import (
     CONF_ADDON_SLUG,
     CONF_ESP_PRESENT,
+    CONF_GRACE,
     CONF_SCAN_INTERVAL,
     CONF_TOKEN,
+    DEFAULT_GRACE_SECONDS,
     DEFAULT_PORT,
     DOMAIN,
+    MAX_GRACE,
     MAX_SCAN_INTERVAL,
+    MIN_GRACE,
     MIN_SCAN_INTERVAL,
 )
 from .esp import esp_active
@@ -110,10 +114,19 @@ class SelpiOptionsFlow(OptionsFlow):
         runtime = getattr(entry, "runtime_data", None)
         suggested = runtime.info.get("scan_interval") if runtime else 60
         current = entry.options.get(CONF_SCAN_INTERVAL) or suggested or 60
+        # how long to keep the last values on a failed poll before entities go unavailable: default to the
+        # add-on's own stale-grace (0 on a direct/local link = fast 'unknown', longer on Select.Live).
+        grace_current = entry.options.get(CONF_GRACE)
+        if grace_current is None:
+            grace_current = runtime.info.get("stale_grace") if runtime else None
+        if grace_current is None:
+            grace_current = DEFAULT_GRACE_SECONDS
         esp_default = esp_active(entry, runtime.info if runtime else {})   # user's choice, else connection type
         schema = vol.Schema({
             vol.Required(CONF_SCAN_INTERVAL, default=current):
                 vol.All(vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL)),
+            vol.Required(CONF_GRACE, default=grace_current):
+                vol.All(vol.Coerce(int), vol.Range(min=MIN_GRACE, max=MAX_GRACE)),
             vol.Required(CONF_ESP_PRESENT, default=esp_default): bool,
         })
         return self.async_show_form(step_id="init", data_schema=schema,

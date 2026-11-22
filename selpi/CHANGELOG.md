@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.7.4
+- **Caching is now per-connection and configurable.** The caches that smooth over Select.Live's stalls were
+  applied to every connection, so a direct serial/USB (or local TCP/ESP) link — which is fast and reliable —
+  still served a stale Configuration page and kept last-known values for up to ~10 min after a dropout. Now the
+  behaviour follows the connection by default (Select.Live caches; a direct link reads fresh and drops to
+  unavailable quickly) and is overridable with two add-on options:
+  - `cache_ttl` (s): how long the Configuration/Settings page is served from the last read before re-reading
+    (`0` = always fresh; a page error still falls back to the last read).
+  - `stale_grace` (s): how long the last live value is served after the link fails before entities can go
+    unavailable (`0` = go "unknown" at once — useful on a reliable local link where a dropout is meaningful).
+  Set both `> 0` for a TCP link that is actually remote/slow to get Select.Live-style resilience over it.
+  The integration gains a matching **grace** option (Configure) that defaults from the add-on and controls how
+  long before entities go unavailable; `0` = unavailable on the first failed poll. Defaults preserve today's
+  Select.Live behaviour. (Pulls selpi app v0.7.4.)
+
 ## 0.7.3
 - **Loading indicator on the web UI.** Switching the Live screen (e.g. Now + Today → Technical) or opening a
   tab used to give no sign anything was happening — the previous table just sat there until the new data

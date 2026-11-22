@@ -48,6 +48,21 @@ Over the ESPHome link (`tcp`) the ESP forwards writes only from addresses in its
 
 `sppro_password` is the SP PRO login password. Backups live in the app's `/data` (included in HA backups).
 
+## Caching
+The Configuration/Settings pages and the live values are cached so a slow or stalled Select.Live link
+doesn't leave the UI hanging or flap the integration. The defaults follow the connection and need no
+setup: Select.Live caches, a direct link (serial, or a local TCP/ESP link) reads fresh. Two options
+override this:
+- `cache_ttl` (seconds): how long the Configuration/Settings page may be served from the last read
+  before re-reading the link. `0` = always read fresh (a page error still falls back to the last read).
+- `stale_grace` (seconds): how long the last live value is served after the link fails, before a poll
+  returns nothing (so the integration can mark entities unavailable). `0` = never serve stale — entities
+  go "unknown" as soon as the link drops (handy on a reliable local link). The integration's own
+  `grace` option (under Configure) defaults from this and decides how long before entities go unavailable.
+
+Set both above `0` for a TCP link that is actually remote/slow (not a local ESP), to get Select.Live-style
+resilience over it.
+
 ## Home Assistant integration
 The app serves an API on port 8100 for the selpi integration, which turns the SP PRO into a normal HA
 device with sensors. Install the integration from Marketplace (add

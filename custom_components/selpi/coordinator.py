@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from datetime import timedelta
 import logging
+import math
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -12,7 +13,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import SelpiAuthError, SelpiClient, SelpiError
-from .const import CONF_SCAN_INTERVAL, DOMAIN
+from .const import CONF_GRACE, CONF_SCAN_INTERVAL, DEFAULT_GRACE_SECONDS, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,9 +29,10 @@ STATIC_KEYS = frozenset({
     "kaco_mode", "number_of_kacos",
 })
 STATIC_EVERY = 60   # re-read the static values every N polls as a refresh (about hourly at a 60 s interval)
-GRACE_FAILURES = 4  # keep the last values (marked stale) through this many consecutive failed polls before going
-                    # unavailable — the add-on/link is often only briefly busy (a config read, a restart, Select.Live
-                    # latency), and dropping every sensor on one failed HTTP call is the main cause of flapping.
+# How long to keep the last values (marked stale) on consecutive failed polls before entities go unavailable is
+# the `grace` option in seconds (defaulting to the add-on's own stale_grace), turned into a poll count below.
+# 0 seconds = go unavailable on the first failed poll (fast 'unknown' on a reliable link); a longer grace rides
+# out brief add-on/link hiccups (a config read, a restart, Select.Live latency) that otherwise flap every sensor.
 AUTH_GRACE = 3      # tolerate this many consecutive 401s before asking for re-auth: the add-on's token is persistent,
                     # so a 401 during an add-on restart/update is transient and recovers on its own; only a sustained
                     # 401 is a real auth problem. Without this, one transient 401 latches the entry into reauth.
@@ -66,6 +68,13 @@ class SelpiCoordinator(DataUpdateCoordinator[SelpiData]):
         seconds = entry.options.get(CONF_SCAN_INTERVAL) or info.get("scan_interval") or 60
         super().__init__(hass, _LOGGER, config_entry=entry, name=DOMAIN,
                          update_interval=timedelta(seconds=seconds))
+        grace_seconds = entry.options.get(CONF_GRACE)
+        if grace_seconds is None:                      # not set in options: follow the add-on's own stale-grace
+            grace_seconds = info.get("stale_grace")
+        if grace_seconds is None:                      # add-on predates stale_grace: keep the old resilient default
+            grace_seconds = DEFAULT_GRACE_SECONDS
+        # seconds of grace -> failed-poll count; 0 = unavailable on the first failure (fast 'unknown')
+        self._grace_failures = 0 if grace_seconds <= 0 else max(1, math.ceil(grace_seconds / seconds))
         self.client = client
         self.keys: set[str] = set(default_keys)   # replaced by the entities that are actually added
         self._entity_keys: set[str] = set()
@@ -109,9 +118,9 @@ class SelpiCoordinator(DataUpdateCoordinator[SelpiData]):
             raise ConfigEntryAuthFailed(str(err)) from err
         except SelpiError as err:
             self._fail_count += 1
-            if self.data is not None and self._fail_count <= GRACE_FAILURES:
+            if self.data is not None and self._fail_count <= self._grace_failures:
                 _LOGGER.debug("selpi poll failed (%d/%d), keeping last values: %s",
-                              self._fail_count, GRACE_FAILURES, err)
+                              self._fail_count, self._grace_failures, err)
                 return replace(self.data, stale=True, error=str(err))   # entities stay available (stale)
             raise UpdateFailed(str(err)) from err
         self._fail_count = 0
