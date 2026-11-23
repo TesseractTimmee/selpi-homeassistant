@@ -16,6 +16,7 @@ def device_info(entry: SelpiConfigEntry) -> DeviceInfo:
         manufacturer=info.get("manufacturer") or "Selectronic",
         model=info.get("model") or "SP PRO",
         name="SP PRO",
+        serial_number=info.get("serial"),
         sw_version=info.get("firmware"),
         configuration_url=f"homeassistant://hassio/ingress/{slug}" if slug else None,
     )

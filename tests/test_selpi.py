@@ -14,9 +14,9 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.selpi.const import CONF_ADDON_SLUG, CONF_SCAN_INTERVAL, CONF_TOKEN, DOMAIN
 
 BASE = "http://local-selpi:8100/api/v1"
-INFO = {"id": "unit123", "connection": "SelectLive", "scan_interval": 60, "model": "SP PRO",
-        "manufacturer": "Selectronic", "firmware": "15.47", "versions": {"memory_map": 31}, "version_problems": [],
-        "buttons": ["generator", "silence", "on"]}
+INFO = {"id": "unit123", "connection": "SelectLive", "scan_interval": 60, "model": "SPMC482",
+        "manufacturer": "Selectronic", "serial": "SN-TEST-001", "firmware": "15.47",
+        "versions": {"memory_map": 31}, "version_problems": [], "buttons": ["generator", "silence", "on"]}
 FIELDS = [
     {"key": "load_ac_power", "name": "Load power", "unit": "kW", "kind": "number", "default": True,
      "device_class": "power", "state_class": "measurement", "precision": 3, "category": None, "note": ""},
@@ -73,7 +73,31 @@ async def test_sensors_and_device(hass: HomeAssistant, aioclient_mock):
     assert polled and "country_code" not in polled[-1] and "load_ac_power" in polled[-1]
     dev = dr.async_get(hass).async_get_device_by_identifier((DOMAIN, "unit123"), entry.entry_id)
     assert dev.sw_version == "15.47" and dev.manufacturer == "Selectronic"
+    assert dev.model == "SPMC482" and dev.serial_number == "SN-TEST-001"   # identity on the device record
     assert dev.configuration_url == "homeassistant://hassio/ingress/local_selpi"
+
+
+async def test_identity_sensors_demoted_once_on_upgrade(hass: HomeAssistant, aioclient_mock):
+    """Existing install (already past the 0.6.0 nondefault repair) with the firmware-version sensor enabled: on
+    upgrade it is disabled once — firmware/model/serial now live on the device — but a user who re-enables it
+    keeps it (the migration is one-time, flag-guarded, and never re-runs)."""
+    reg = er.async_get(hass)
+    entry = MockConfigEntry(domain=DOMAIN, data={**DATA, "nondefault_repaired": True}, unique_id="unit123")
+    entry.add_to_hass(hass)
+    old = reg.async_get_or_create("sensor", DOMAIN, "unit123_version_number", config_entry=entry,
+                                  suggested_object_id="sp_pro_firmware_version")
+    assert old.disabled_by is None
+    fields = FIELDS + [{"key": "version_number", "name": "Firmware version", "unit": "", "kind": "number",
+                        "default": False, "device_class": None, "state_class": "measurement", "precision": 0,
+                        "category": "diagnostic", "note": ""}]
+    mock_api(aioclient_mock, fields=fields)
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert reg.async_get(old.entity_id).disabled_by is er.RegistryEntryDisabler.INTEGRATION
+    reg.async_update_entity(old.entity_id, disabled_by=None)   # user re-enables it
+    await hass.config_entries.async_reload(entry.entry_id)
+    await hass.async_block_till_done()
+    assert reg.async_get(old.entity_id).disabled_by is None    # stays enabled: migration doesn't re-run
 
 
 async def test_scan_interval_from_addon_and_options(hass: HomeAssistant, aioclient_mock):

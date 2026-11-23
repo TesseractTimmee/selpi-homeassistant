@@ -46,20 +46,5 @@
  "today_total_ac_energy_kaco": "AC solar energy today",
  "d_ck_wh_in_today": "DC energy in today",
  "d_ck_wh_out_today": "DC energy out today",
- "inverter_run_hrs_total_acc": "Total run time",
- "version_number": "Firmware version",
- "unit_model_number": "Model Number",
- "unit_serial_number": "Serial Number",
- "control_pca_serial_number": "Control PCA Serial",
- "pm1_serial_number": "PM1 Serial",
- "pm2_serial_number": "PM2 Serial",
- "factory_batteryless": "Batteryless",
- "factory_export_limit": "Factory Export Limit",
- "comms_card_serial": "Comms Card Serial",
- "comms_card_software": "Comms Card Software Version",
- "kaco_mode": "Kaco Mode",
- "number_of_kacos": "Number of Kacos",
- "comms_card_stored_firmware": "Comms Card Stored Firmware",
- "grid_firmware": "Grid Firmware",
- "comms_card_firmware_update": "Comms Card Firmware Update"
+ "inverter_run_hrs_total_acc": "Total run time"
 }

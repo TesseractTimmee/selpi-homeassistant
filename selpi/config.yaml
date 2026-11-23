@@ -1,5 +1,5 @@
 name: Selectronic SP PRO
-version: "0.7.8"
+version: "0.7.9"
 slug: selpi
 description: Selectronic SP PRO - live values, settings, config backups and log downloads (local, no vendor app required)
 url: https://github.com/TesseractTimmee/selpi-homeassistant

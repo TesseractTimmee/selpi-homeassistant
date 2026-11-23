@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.9
+- **Tidier default entities; identity on the device.** Firmware, model and serial now appear on the SP PRO
+  **device** record (not as separate sensors), and the ~15 identity / factory-info sensors (serials, comms-card
+  versions, kaco mode, batteryless, etc.) are no longer enabled by default — they stay available to enable from
+  the entity list if you want them. On upgrade, existing installs have those sensors disabled **once** (a
+  one-time migration; anything you re-enable afterwards stays enabled). The real readings are unchanged. (Pulls
+  selpi app v0.7.9.)
+
 ## 0.7.8
 - **Delete a backup from the Backups page.** Each backup row now has a **delete** button (with a confirmation).
   Handy for the manual and pre-write backups, which — unlike the daily scheduled ones — are never pruned
