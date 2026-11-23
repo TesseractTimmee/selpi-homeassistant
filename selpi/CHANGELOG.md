@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.1
+- **Fixes the 0.8.0 add-on build.** The image build copied `statistics.py`, which 0.8.0 removed, so the build failed
+  with a missing-file error. Dropped it from the copy list. Add-on packaging only — same selpi app v0.8.0, no
+  functional change.
+
 ## 0.8.0
 - **Removed the legacy Select.Live statistics output.** The old `stat` / `stat-select` / `http` / `http-select`
   commands (and the `SELPI_HTTP_*` options) re-published a small, lossy subset of values in Select.Live's point-API
