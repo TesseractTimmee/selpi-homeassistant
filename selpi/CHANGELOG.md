@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.8
+- **Delete a backup from the Backups page.** Each backup row now has a **delete** button (with a confirmation).
+  Handy for the manual and pre-write backups, which — unlike the daily scheduled ones — are never pruned
+  automatically. (Pulls selpi app v0.7.8.)
+
 ## 0.7.7
 - **Full product name in the UI.** The Home Assistant sidebar entry and the add-on web page now read
   **"Selectronic SP PRO"** instead of just "SP PRO", and the add-on description no longer mentions external tools.
