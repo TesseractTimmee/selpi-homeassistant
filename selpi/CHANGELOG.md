@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.6
+- **Clearer configuration-page wording.** The banners, field badges and validation messages on the
+  Configuration page have been reworded to be clearer and product-neutral. Read-only fields now read
+  **not applicable**, **requires installer code** or **requires factory code**, and the read-only notice is
+  simply **"Configuration is read-only."** View-only (writes stay disabled); no behaviour change. (Pulls selpi
+  app v0.7.6.)
+
 ## 0.7.5
 - **Configuration page greys more fields to match SP LINK.** Three more dependent show/grey rules finish the
   parity audit against SP LINK's own field-gating: **Number of AC Solar units** is greyed unless the AC-solar
