@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.10
+- **Recovers fast from a Select.Live stall.** When Select.Live stopped answering, the add-on could stay
+  unresponsive for minutes (every request retried for ~25 s, and a reconnect left the old session held). Now a
+  **circuit breaker** serves "unavailable" instantly after a few failures and probes for recovery every 20 s, and
+  the dead link is torn down cleanly so Select.Live frees the device session sooner — so it heals within ~20 s of
+  the link returning. The integration's **Link status** sensor shows **"reconnecting"** while this is happening.
+  (Pulls selpi app v0.7.10.)
+
 ## 0.7.9
 - **Tidier default entities; identity on the device.** Firmware, model and serial now appear on the SP PRO
   **device** record (not as separate sensors), and the ~15 identity / factory-info sensors (serials, comms-card

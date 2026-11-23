@@ -113,9 +113,11 @@ class SelpiLinkSensor(_Diag):
             err = str(self.coordinator.last_exception or "add-on not reachable")
             return err[:255]
         data = self.coordinator.data
+        d = self._diag
+        if d.get("link_down"):           # breaker tripped: repeated reconnect failures (e.g. Select.Live session held)
+            return f"reconnecting: {d.get('last_error') or 'link down'}"[:255]
         if data and data.error:          # a poll failed but the last values are being kept (grace period)
             return f"retrying: {data.error}"[:255]
-        d = self._diag
         if d.get("last_error"):
             return str(d["last_error"])[:255]
         if data and data.stale:
