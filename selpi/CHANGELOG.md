@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.8.0
+- **Removed the legacy Select.Live statistics output.** The old `stat` / `stat-select` / `http` / `http-select`
+  commands (and the `SELPI_HTTP_*` options) re-published a small, lossy subset of values in Select.Live's point-API
+  shape. They are gone — the full ~300-field `/api/live` catalog supersedes them. If you fed that endpoint into
+  **Grafana/InfluxDB**, see the new **Grafana / InfluxDB migration guide** for how to point your collector at
+  `/api/live` instead.
+- **Tightened non-ingress web access.** With `SELPI_WEB_ALLOW_ANY` set, a non-Home-Assistant client now gets
+  **read-only** access to `/api/live` and `/api/status` only; all writes, controls, configuration reads and backup
+  downloads/deletes remain Home Assistant ingress only. (Pulls selpi app v0.8.0.)
+
 ## 0.7.10
 - **Recovers fast from a Select.Live stall.** When Select.Live stopped answering, the add-on could stay
   unresponsive for minutes (every request retried for ~25 s, and a reconnect left the old session held). Now a
