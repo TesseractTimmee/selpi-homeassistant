@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.7
+- **Full product name in the UI.** The Home Assistant sidebar entry and the add-on web page now read
+  **"Selectronic SP PRO"** instead of just "SP PRO", and the add-on description no longer mentions external tools.
+  No behaviour change. (Pulls selpi app v0.7.7.)
+
 ## 0.7.6
 - **Clearer configuration-page wording.** The banners, field badges and validation messages on the
   Configuration page have been reworded to be clearer and product-neutral. Read-only fields now read
