@@ -116,7 +116,9 @@ async def test_unknown_enum_code(hass: HomeAssistant, aioclient_mock):
 
 
 async def test_addon_down_makes_entities_unavailable(hass: HomeAssistant, aioclient_mock):
-    entry = await setup(hass, aioclient_mock)
+    # a reliable link reports stale_grace 0, so a failed poll goes unavailable at once (the keep-stale-through-
+    # a-few-failures path is test_stale_values_still_shown / the add-on's own grace)
+    entry = await setup(hass, aioclient_mock, info={**INFO, "stale_grace": 0})
     aioclient_mock.clear_requests()
     aioclient_mock.get(f"{BASE}/values", status=502, json={"error": "select.live timeout"})
     await entry.runtime_data.coordinator.async_refresh()
