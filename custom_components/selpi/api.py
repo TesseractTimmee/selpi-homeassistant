@@ -43,10 +43,15 @@ class SelpiClient:
     async def fields(self) -> list[dict[str, Any]]:
         return (await self._request("GET", "/fields"))["fields"]
 
-    async def values(self, keys: list[str]) -> dict[str, Any]:
+    async def values(self, keys: list[str], unit: Any = None) -> dict[str, Any]:
         # outlast the add-on's worst case (it waits up to VALUE_WAIT for the link + POLL_DEADLINE to read, plus a
-        # little coalescing slack) so the integration never gives up before the add-on answers
-        return await self._request("GET", "/values", timeout=60, keys=",".join(keys))
+        # little coalescing slack) so the integration never gives up before the add-on answers.
+        # `unit` (a Powerchain unit index, or "system") asks the add-on for that unit's values; None = the
+        # primary / single inverter.
+        params = {"keys": ",".join(keys)}
+        if unit is not None:
+            params["unit"] = str(unit)
+        return await self._request("GET", "/values", timeout=60, **params)
 
     async def diagnostics(self) -> dict[str, Any]:
         return await self._request("GET", "/diagnostics", timeout=10)

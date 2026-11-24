@@ -19,18 +19,33 @@ UNITS = {"h": UnitOfTime.HOURS}
 
 async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry,
                             async_add_entities: AddConfigEntryEntitiesCallback) -> None:
-    # When the ESPHome component also runs it publishes the same SP PRO data, so hide these by default and keep only
-    # the add-on-specific sensors (link, connection, backup) enabled; the user can still enable any they want.
-    esp = esp_active(entry, entry.runtime_data.info)
-    entities: list[SensorEntity] = [SelpiFieldSensor(entry, f, esp_present=esp) for f in entry.runtime_data.fields]
+    rt = entry.runtime_data
+    entities: list[SensorEntity] = []
+    if rt.multi:
+        # a Powerchain: field sensors per unit (on each unit's sub-device), and the roll-up fields on the System
+        # device. (The ESP-duplicate hiding is single-inverter only for now, so esp_present isn't applied here.)
+        for u in rt.units:
+            idx = u["index"]
+            if idx == "system":
+                entities += [SelpiFieldSensor(entry, f, unit="system")
+                             for f in rt.fields if f.get("aggregatable")]
+            else:
+                entities += [SelpiFieldSensor(entry, f, unit=idx) for f in rt.fields]
+    else:
+        # When the ESPHome component also runs it publishes the same SP PRO data, so hide these by default and
+        # keep only the add-on-specific sensors (link, connection, backup) enabled; the user can still enable any.
+        esp = esp_active(entry, rt.info)
+        entities += [SelpiFieldSensor(entry, f, esp_present=esp) for f in rt.fields]
+    # diagnostics live on the main device (single) / System device (multi), on the primary (diag) coordinator
     entities += [SelpiLinkSensor(entry), SelpiConnectionSensor(entry),
                  SelpiClockDriftSensor(entry), SelpiLastBackupSensor(entry)]
     async_add_entities(entities)
 
 
 class SelpiFieldSensor(SelpiEntity, SensorEntity):
-    def __init__(self, entry: SelpiConfigEntry, f: dict[str, Any], esp_present: bool = False) -> None:
-        super().__init__(entry, f["key"])
+    def __init__(self, entry: SelpiConfigEntry, f: dict[str, Any], esp_present: bool = False,
+                 unit: Any = None) -> None:
+        super().__init__(entry, f["key"], unit=unit)
         self._key = f["key"]
         self._attr_name = f["name"]
         self._attr_entity_registry_enabled_default = bool(f.get("default")) and not esp_present

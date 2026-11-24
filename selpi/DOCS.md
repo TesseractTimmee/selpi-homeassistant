@@ -80,6 +80,31 @@ The API uses the token in `/data/api_token` and is only reachable inside HA's in
 port 8100. The integration polls every 60 s over Select.Live and every 10 s over serial or TCP (change it
 under the integration's **Configure**).
 
+## Powerchain (multiple inverters)
+On a **Powerchain** system selpi discovers every inverter on the bus and presents each as its own device —
+**"L1 Manager"**, **"L2 Manager"**, a **"L1 Worker"**, and so on — all nested under a single **"SP PRO System"**
+device. A single-inverter system is unchanged: one **"SP PRO"** device, no picker.
+
+- **Topology is read-only.** Phases and roles are assigned in **SP LINK** (Selectronic's commissioning tool);
+  selpi only *reads* them (it never writes Powerchain assignment or commissioning settings). The device names
+  and the web UI's unit picker simply reflect what the inverters report.
+- **Per-inverter values** appear on each unit's device. The web dashboard gains a **unit picker** (System first,
+  then each inverter) to switch the live view.
+- **System device = whole-site roll-up.** Powers, energies and currents are **summed** across units; voltages,
+  state-of-charge and frequency are **averaged**. A total is only published when *every* unit reported (otherwise
+  it goes unavailable rather than showing a partial sum). Fields that have no whole-site meaning stay per-inverter
+  and are left off the System device: temperatures, fan speed, component-life, general-purpose inputs, per-unit
+  diagnostics (e.g. battery mid-point, ripple), peak powers, and the system-wide power limits that each unit
+  repeats.
+- Two or more **workers on the same phase** are told apart by serial number; the ESPHome component needs a
+  `serial:` per worker in that case (see the component's docs).
+- **Setting writes apply to the system.** SP PRO settings are system-wide, so a configuration write goes to the
+  manager; selpi has no per-inverter write (and never writes Powerchain assignment). The safe per-unit write
+  primitive exists in the protocol library but is intentionally not wired to any endpoint.
+
+Every field selpi exposes — key, name, unit, screen and whether it rolls up to System — is listed in
+[FIELDS.md](FIELDS.md), and served live at `/api/v1/fields`.
+
 ## SP LINK proxy (optional)
 Lets Selectronic's SP LINK (or anything that speaks the SP PRO's serial protocol) reach the SP PRO *through
 this app*, sharing its connection — handy when the SP PRO is on USB/serial at the HA machine, or behind the

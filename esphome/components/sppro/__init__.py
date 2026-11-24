@@ -65,6 +65,13 @@ CONF_SET = "set"
 CONF_DRIFT = "drift"
 CONF_BUTTONS = "buttons"
 CONF_CONTROLS = "controls"
+CONF_UNITS = "units"            # Powerchain: one block per physical inverter (phase + role + its fields)
+CONF_SYSTEM = "system"          # the whole-site aggregated device (sum power/energy, avg SoC/volts)
+CONF_PHASE = "phase"
+CONF_ROLE = "role"
+CONF_SERIAL = "serial"
+PHASES = {"L1": 1, "L2": 2, "L3": 3, "Split": 4}      # the 0xc0ee phase codes (manager = phase, worker = phase+4)
+ROLES = {"manager": 0, "worker": 1}
 CONTROLS = {"generator": 0, "output": 1}
 # fields whose words the controls need polled (their switch state), plus what shows an equalise request
 CONTROL_KEYS = ["generator_status_from_led", "ac_out_status", "days_to_equalise"]
@@ -95,6 +102,36 @@ sppro_ns = cg.esphome_ns.namespace("sppro")
 SpPro = sppro_ns.class_("SpPro", cg.PollingComponent, uart.UARTDevice)
 SpProButton = sppro_ns.class_("SpProButton", button.Button, cg.Parented.template(SpPro))
 SpProSwitch = sppro_ns.class_("SpProSwitch", switch.Switch, cg.Parented.template(SpPro))
+Agg = sppro_ns.enum("Agg", is_class=True)   # how a field rolls up to the System device
+
+# System totals: powers/energies/currents add, voltages/SoC/frequency average, everything else has no
+# whole-system value. Must match the add-on's sppro/multiphase.py (SUM_UNITS/AVG_UNITS/PER_UNIT_ONLY) so the
+# ESP and the app agree; keep PER_UNIT_ONLY in sync with that module.
+_SUM_UNITS = {"kWh", "Wh", "kW", "W", "A", "Ah", "kvar", "var", "kVA", "VA"}
+_AVG_UNITS = {"V", "%", "Hz", "°C", "C"}
+_PER_UNIT_ONLY = {
+    "battery_temperature", "control_board_temperature", "heatsink_temperature",
+    "inlet_air_temperature", "transformer_temperature",
+    "fan_speed", "fan_life", "capacitor_life_consumed_filter",
+    "capacitor_life_consumed_pm1", "capacitor_life_consumed_pm2",
+    "general_purpose1", "general_purpose2", "load_volts_high_frequency_ripple", "battery_mid_point",
+    "multi_phase_ac_source_volts_l1", "multi_phase_load_ac_volts_l1",
+    "dc_shunt1_peak_power_previous", "dc_shunt2_peak_power_previous",
+    "shunt1_peak_power_today", "shunt2_peak_power_today",
+    "sys_reg_charge_power_limit", "sys_reg_export_power_limit",
+    "fan_life_in_service_tab", "batt_soc_percent_in_service_tab",
+    "i_shunt1_in_service_tab", "i_shunt2_in_service_tab",
+}
+
+
+def _aggregation(unit, key=None):
+    if key in _PER_UNIT_ONLY:
+        return None
+    if unit in _SUM_UNITS:
+        return "sum"
+    if unit in _AVG_UNITS:
+        return "avg"
+    return None
 
 
 SCREEN_NAMES = {
@@ -134,38 +171,73 @@ def _entity_schema(f):
     return sensor.sensor_schema(**kw)
 
 
-def _expand_fields(config):
-    """Turn `fields:` (keys, or dicts with key + entity options) into validated entity configs."""
-    entries = config.get(CONF_FIELDS)
-    if entries is None:
-        entries = [{CONF_KEY: k} for k in DEFAULT_FIELDS]
-    if config[CONF_ALL_FIELDS]:
-        # every other field, minus exact repeats (same words and formula on another screen)
-        seen = {(tuple(FIELDS[e[CONF_KEY]]["words"]), FIELDS[e[CONF_KEY]]["formula"]) for e in entries}
-        for k, f in FIELDS.items():
-            if k in field_meta.HA_DROP:
-                continue
-            sig = (tuple(f["words"]), f["formula"])
-            if sig not in seen and all(e[CONF_KEY] != k for e in entries):
-                seen.add(sig)
-                entries = entries + [{CONF_KEY: k, "_auto": True}]
+def _expand_entities(entries, prefix=""):
+    """Validate a field list into entity configs, names prefixed with `prefix` (e.g. "L1 Manager"). A non-default
+    field (not in the default set) comes disabled_by_default, like the HA integration - declared but off until
+    enabled in HA (no reflash)."""
     out, names = [], set()
     for e in entries:
         f = FIELDS[e[CONF_KEY]]
-        conf = {k: v for k, v in e.items() if k not in (CONF_KEY, "_auto")}
+        conf = {k: v for k, v in e.items() if k not in (CONF_KEY, CONF_PHASE, CONF_ROLE, CONF_SERIAL)}
         if CONF_NAME not in conf:
             name = field_meta.field_name(f["key"], f["name"], DEFAULT_FIELDS.get(f["key"]))
             if _slug(name) in names:   # same label on two screens: say which
                 name = "%s (%s)" % (name, SCREEN_NAMES.get(f["screen"], f["screen"]))
             if _slug(name) in names:
                 name = "%s (%s)" % (name, f["key"])
-            conf[CONF_NAME] = name
-        names.add(_slug(conf[CONF_NAME]))
+            names.add(_slug(name))
+            conf[CONF_NAME] = ("%s %s" % (prefix, name)) if prefix else name
+        else:
+            names.add(_slug(conf[CONF_NAME]))
+        if "disabled_by_default" not in conf and e[CONF_KEY] not in DEFAULT_FIELDS:
+            conf["disabled_by_default"] = True
         conf = _entity_schema(f)(conf)
         conf[CONF_KEY] = f["key"]
         out.append(conf)
+    return out
+
+
+def _build(config):
+    """Assemble the internal unit list (single inverter = one L1 manager) + the System field set, and name
+    adaptively: the phase is dropped when the whole site is one phase, the role when a phase has no worker."""
+    raw = config.get(CONF_UNITS)
+    if raw is None:
+        raw = [{CONF_PHASE: "L1", CONF_ROLE: "manager", CONF_FIELDS: config.get(CONF_FIELDS)}]
+    elif CONF_FIELDS in config:
+        raise cv.Invalid("use either `fields:` (single inverter) or `units:` (Powerchain), not both")
+
+    by_phase_role = {}
+    for u in raw:
+        by_phase_role.setdefault((u[CONF_PHASE], u[CONF_ROLE]), []).append(u)
+    for (phase, role), us in by_phase_role.items():
+        if role == "manager" and len(us) > 1:
+            raise cv.Invalid("phase %s has %d managers; only one is allowed" % (phase, len(us)))
+        if role == "worker" and len(us) >= 2 and any(CONF_SERIAL not in w for w in us):
+            raise cv.Invalid("phase %s has %d workers; give each a `serial:` so they can be told apart "
+                             "(from `selpi live` / the add-on's /api/v1/units)" % (phase, len(us)))
+
+    phases = {u[CONF_PHASE] for u in raw}
+    multi_phase = len(phases) > 1
+    phase_has_worker = {p: any(u[CONF_PHASE] == p and u[CONF_ROLE] == "worker" for u in raw) for p in phases}
+    units = []
+    for u in raw:
+        prefix = u[CONF_PHASE] if multi_phase else ""
+        if phase_has_worker[u[CONF_PHASE]]:
+            prefix = ("%s %s" % (prefix, u[CONF_ROLE].capitalize())).strip()
+        entries = u.get(CONF_FIELDS) or [{CONF_KEY: k} for k in DEFAULT_FIELDS]
+        units.append({CONF_PHASE: u[CONF_PHASE], CONF_ROLE: u[CONF_ROLE], CONF_SERIAL: u.get(CONF_SERIAL, 0),
+                      "_entities": _expand_entities(entries, prefix)})
+
     config = dict(config)
-    config["_entities"] = out
+    config["_units"] = units
+    config["_multi"] = len(units) > 1
+    config["_system"] = []
+    sysc = config.get(CONF_SYSTEM, config["_multi"])    # default: on when multi, off when single
+    if config["_multi"] and sysc not in (False, None):
+        entries = (sysc.get(CONF_FIELDS) if isinstance(sysc, dict) and sysc.get(CONF_FIELDS) else
+                   [{CONF_KEY: k} for k in DEFAULT_FIELDS])
+        entries = [e for e in entries if _aggregation(FIELDS[e[CONF_KEY]]["unit"], e[CONF_KEY])]   # only roll-up-able fields
+        config["_system"] = _expand_entities(entries, "")
     return config
 
 
@@ -218,6 +290,16 @@ CONTROLS_SCHEMA = cv.Schema({
 })
 
 
+UNIT_SCHEMA = cv.Schema({
+    cv.Optional(CONF_PHASE, default="L1"): cv.one_of(*PHASES, space=""),
+    cv.Optional(CONF_ROLE, default="manager"): cv.one_of(*ROLES, lower=True),
+    cv.Optional(CONF_SERIAL): cv.positive_int,      # pin a specific inverter (needed for 2+ workers on a phase)
+    cv.Optional(CONF_FIELDS): cv.ensure_list(_field_entry),
+})
+# system: true/false, or a dict with its own `fields:` (only aggregatable fields are kept)
+SYSTEM_SCHEMA = cv.Any(cv.boolean, cv.Schema({cv.Optional(CONF_FIELDS): cv.ensure_list(_field_entry)}))
+
+
 def _proxy_sockets(config):
     if CONF_PROXY in config:
         socket.consume_sockets(1, "sppro", socket.SocketType.TCP_LISTEN)(config)
@@ -230,8 +312,9 @@ CONFIG_SCHEMA = cv.All(
         cv.GenerateID(): cv.declare_id(SpPro),
         cv.Required(CONF_PASSWORD): cv.string,
         cv.Optional(CONF_TIMEOUT, default="1500ms"): cv.positive_time_period_milliseconds,
-        cv.Optional(CONF_FIELDS): cv.ensure_list(_field_entry),
-        cv.Optional(CONF_ALL_FIELDS, default=False): cv.boolean,
+        cv.Optional(CONF_FIELDS): cv.ensure_list(_field_entry),          # single inverter (shorthand for one unit)
+        cv.Optional(CONF_UNITS): cv.ensure_list(UNIT_SCHEMA),            # Powerchain: one block per inverter
+        cv.Optional(CONF_SYSTEM): SYSTEM_SCHEMA,                          # whole-site totals device
         cv.Optional(CONF_ALLOW_VERSION_MISMATCH, default=False): cv.boolean,
         cv.Optional(CONF_PROXY): PROXY_SCHEMA,
         cv.Optional(CONF_CLOCK): CLOCK_SCHEMA,
@@ -244,7 +327,7 @@ CONFIG_SCHEMA = cv.All(
     })
     .extend(cv.polling_component_schema("10s"))
     .extend(uart.UART_DEVICE_SCHEMA),
-    _expand_fields,
+    _build,
     _proxy_sockets,
 )
 
@@ -292,32 +375,58 @@ async def to_code(config):
     cg.add(var.set_expected_versions(*VERIFIED_VERSIONS))
     cg.add(var.set_allow_version_mismatch(config[CONF_ALLOW_VERSION_MISMATCH]))
 
-    polled = list(config["_entities"])
+    all_entities = [e for u in config["_units"] for e in u["_entities"]] + config["_system"]
+    polled = list(all_entities)
     if CONF_CONTROLS in config:
         polled += [{CONF_KEY: k} for k in CONTROL_KEYS]
     for base, n in _blocks_for(polled):
         cg.add(var.add_block(base, n))
+    cg.add(var.set_multi(config["_multi"]))
 
     tables_done = set()
-    for e in config["_entities"]:
+
+    def enum_table(f):
+        """Emit the enum's lookup table once; return (table expr, length expr)."""
+        table = f["table"]
+        if table not in tables_done:
+            tables_done.add(table)
+            rows = sorted((int(k), v) for k, v in ENUMS.get(table, {}).items() if k.lstrip("-").isdigit())
+            body = ", ".join("{%d, %s}" % (k, _c_string(v)) for k, v in rows) or "{0, nullptr}"
+            cg.add_global(cg.RawStatement(
+                "static const esphome::sppro::EnumEntry sppro_table_%s[] = {%s};" % (table, body)))
+            cg.add_global(cg.RawStatement(
+                "static const size_t sppro_table_%s_len = %d;" % (table, len(rows))))
+        return cg.RawExpression("sppro_table_%s" % table), cg.RawExpression("sppro_table_%s_len" % table)
+
+    async def add_field(e, add_num, add_en):
         f = FIELDS[e[CONF_KEY]]
         fn = cg.RawExpression(_cpp_formula(f["formula"]))
         if f["kind"] == "enum":
             ts = await text_sensor.new_text_sensor(e)
-            table = f["table"]
-            if table not in tables_done:
-                tables_done.add(table)
-                rows = sorted((int(k), v) for k, v in ENUMS.get(table, {}).items() if k.lstrip("-").isdigit())
-                body = ", ".join("{%d, %s}" % (k, _c_string(v)) for k, v in rows) or "{0, nullptr}"
-                cg.add_global(cg.RawStatement(
-                    "static const esphome::sppro::EnumEntry sppro_table_%s[] = {%s};" % (table, body)))
-                cg.add_global(cg.RawStatement(
-                    "static const size_t sppro_table_%s_len = %d;" % (table, len(rows))))
-            cg.add(var.add_enum(ts, fn, cg.RawExpression("sppro_table_%s" % table),
-                                cg.RawExpression("sppro_table_%s_len" % table)))
+            t, length = enum_table(f)
+            add_en(ts, fn, t, length)
         else:
             s = await sensor.new_sensor(e)
-            cg.add(var.add_number(s, fn))
+            add_num(s, fn)
+
+    if not config["_multi"]:                     # single inverter: the primary sensor lists, no re-addressing
+        for e in config["_units"][0]["_entities"]:
+            await add_field(e, lambda s, fn: cg.add(var.add_number(s, fn)),
+                            lambda ts, fn, t, length: cg.add(var.add_enum(ts, fn, t, length)))
+    else:                                        # Powerchain: one addressed unit per block, + the System totals
+        for uid, u in enumerate(config["_units"]):
+            cg.add(var.add_unit(uid, PHASES[u[CONF_PHASE]], ROLES[u[CONF_ROLE]], u[CONF_SERIAL]))
+            for e in u["_entities"]:
+                await add_field(
+                    e,
+                    (lambda i: lambda s, fn: cg.add(var.add_unit_number(i, s, fn)))(uid),
+                    (lambda i: lambda ts, fn, t, length: cg.add(var.add_unit_enum(i, ts, fn, t, length)))(uid))
+        for e in config["_system"]:
+            f = FIELDS[e[CONF_KEY]]
+            fn = cg.RawExpression(_cpp_formula(f["formula"]))
+            s = await sensor.new_sensor(e)
+            agg = Agg.SUM if _aggregation(f["unit"], f["key"]) == "sum" else Agg.AVG
+            cg.add(var.add_system_number(s, fn, agg))
 
     for key, setter in ((CONF_STATUS, var.set_status_sensor), (CONF_VERSIONS, var.set_versions_sensor)):
         if key in config:

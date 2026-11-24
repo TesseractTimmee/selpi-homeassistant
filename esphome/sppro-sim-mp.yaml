@@ -1,0 +1,51 @@
+# Host build against the multiphase simulator (3 units = L1/L2/L3 managers), for testing Powerchain support:
+#   (selpi) .venv/bin/python tools/sim_sppro.py captures/sl-20261117-071605.jsonl serve 18899 testpass --multiphase 3
+#   esphome run sppro-sim-mp.yaml
+esphome:
+  name: sppro-sim-mp
+
+host:
+logger:
+  level: DEBUG
+
+external_components:
+  - source:
+      type: local
+      path: components
+
+time:
+  - platform: host
+    id: host_time
+
+tcp_uart:
+  id: sppro_link
+  role: client
+  host: 127.0.0.1
+  port: 18899
+
+sppro:
+  uart_id: sppro_link
+  password: testpass
+  update_interval: 5s
+  units:
+    - phase: L1
+      role: manager
+      fields:
+        - key: load_ac_power
+        - key: batt_soc_percent
+    - phase: L2
+      role: manager
+      fields:
+        - key: load_ac_power
+        - key: batt_soc_percent
+    - phase: L3
+      role: manager
+      fields:
+        - key: load_ac_power
+        - key: batt_soc_percent
+  system:
+    fields:
+      - key: load_ac_power        # summed across the three phases
+      - key: batt_soc_percent     # averaged
+  status:
+    name: Link status

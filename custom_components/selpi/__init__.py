@@ -21,18 +21,8 @@ from .coordinator import SelpiConfigEntry, SelpiCoordinator, SelpiRuntime
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [Platform.SENSOR, Platform.BUTTON, Platform.SWITCH]
-# field keys renamed in selpi 0.4.7 (SP LINK's "DaystoEqualise" split badly): keep the entities
-RENAMED_KEYS = {"daysto_recharge": "days_to_recharge", "daysto_equalise": "days_to_equalise"}
-NONDEFAULT_REPAIRED = "nondefault_repaired"   # one-time flag: the 0.6.0 re-enable-all bug has been undone
-IDENTITY_DEMOTED = "identity_demoted_079"     # one-time flag: identity/factory sensors demoted from default (0.7.9)
-# Identity / factory-info sensors no longer enabled by default: firmware, model and serial now live on the HA
-# device record instead, and the rest are write-once constants a user can enable from the catalog if wanted.
-DEMOTED_IDENTITY_KEYS = frozenset({
-    "version_number", "unit_model_number", "unit_serial_number", "control_pca_serial_number",
-    "pm1_serial_number", "pm2_serial_number", "factory_batteryless", "factory_export_limit",
-    "comms_card_serial", "comms_card_software", "kaco_mode", "number_of_kacos",
-    "comms_card_stored_firmware", "grid_firmware", "comms_card_firmware_update",
-})
+# Default-enabled behaviour (which sensors are on, ESP-duplicate hiding, identity sensors off by default) comes
+# from the add-on's field catalog `default` flag + the ESP check below; there is no cross-version migration.
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry) -> bool:
@@ -45,37 +35,37 @@ async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry) -> boo
         raise ConfigEntryAuthFailed(str(err)) from err
     except SelpiError as err:
         raise ConfigEntryNotReady(str(err)) from err
-    _migrate_renamed_keys(hass, entry, {f["key"] for f in fields})
     esp = esp_active(entry, info)     # option if set, else auto-detected from the connection type (TCP = ESP proxy)
-    _apply_esp_present(hass, entry, fields, esp)
-    _repair_nondefault_enabled(hass, entry, fields)
-    _demote_identity_sensors(hass, entry)
+    units = info.get("units") or []
+    multi = bool(info.get("multi"))
+    if not multi:
+        # ESP-duplicate hiding toggles the flat {prefix}_{key} sensors; a Powerchain's per-unit entities are new
+        # ({prefix}_u<idx>_<key}) and the ESP doesn't publish multiphase yet, so this is single-inverter only.
+        _apply_esp_present(hass, entry, fields, esp)
     _check_clock_conflict(hass, entry, esp, bool(info.get("clock_sync")))
-    coordinator = SelpiCoordinator(hass, entry, client, info, [f["key"] for f in fields if f.get("default")])
-    await coordinator.async_config_entry_first_refresh()
-    entry.runtime_data = SelpiRuntime(client=client, info=info, fields=fields, coordinator=coordinator)
+
+    default_keys = [f["key"] for f in fields if f.get("default")]
+    coordinators: dict = {}
+    if multi:
+        real = [u for u in units if u["index"] != "system"]
+        primary_index = real[0]["index"] if real else 0
+        for u in units:                     # a coordinator per unit (incl. the synthetic "system" totals)
+            idx = u["index"]
+            coordinators[idx] = SelpiCoordinator(hass, entry, client, info, default_keys,
+                                                 unit=idx, fetch_diag=(idx == primary_index))
+        coordinator = coordinators[primary_index]
+    else:
+        coordinator = SelpiCoordinator(hass, entry, client, info, default_keys)   # unit=None (primary/single)
+        coordinators[None] = coordinator
+    await coordinator.async_config_entry_first_refresh()   # gates setup; the primary carries the link diagnostics
+    for idx, c in coordinators.items():                    # the rest are best-effort so one flaky unit can't block
+        if c is not coordinator:
+            await c.async_refresh()
+    entry.runtime_data = SelpiRuntime(client=client, info=info, fields=fields, coordinator=coordinator,
+                                      coordinators=coordinators, units=units, multi=multi)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(_options_updated))
     return True
-
-
-def _migrate_renamed_keys(hass: HomeAssistant, entry: SelpiConfigEntry, keys: set[str]) -> None:
-    """Move sensors from renamed field keys to the new ones, keeping entity id and history. If the app was
-    updated first, an older integration may already have made a second entity for the new key (e.g.
-    sensor.sp_pro_days_to_equalise_2): that duplicate is removed so the original takes its key."""
-    reg = er.async_get(hass)
-    prefix = entry.unique_id or entry.entry_id
-    for old, new in RENAMED_KEYS.items():
-        if new not in keys:
-            continue
-        old_id = reg.async_get_entity_id("sensor", DOMAIN, f"{prefix}_{old}")
-        if old_id is None:
-            continue
-        dup = reg.async_get_entity_id("sensor", DOMAIN, f"{prefix}_{new}")
-        if dup is not None:
-            _LOGGER.info("selpi: removing %s (duplicate of %s after the %s -> %s rename)", dup, old_id, old, new)
-            reg.async_remove(dup)
-        reg.async_update_entity(old_id, new_unique_id=f"{prefix}_{new}")
 
 
 CLOCK_CONFLICT_ISSUE = "esp_clock_conflict"
@@ -111,46 +101,6 @@ def _apply_esp_present(hass: HomeAssistant, entry: SelpiConfigEntry, fields: lis
             reg.async_update_entity(eid, disabled_by=er.RegistryEntryDisabler.INTEGRATION)
         elif not esp and ent and ent.disabled_by is er.RegistryEntryDisabler.INTEGRATION:
             reg.async_update_entity(eid, disabled_by=None)
-
-
-def _repair_nondefault_enabled(hass: HomeAssistant, entry: SelpiConfigEntry, fields: list) -> None:
-    """One-time fix for the 0.6.0 bug where _apply_esp_present re-enabled every INTEGRATION-disabled entity when
-    the ESP was absent — including the infrequently-used (non-default) field sensors that are meant to stay
-    disabled. Re-disable those once; the guard flag means a sensor the user enables afterwards stays enabled."""
-    if entry.data.get(NONDEFAULT_REPAIRED):
-        return
-    reg = er.async_get(hass)
-    prefix = entry.unique_id or entry.entry_id
-    for f in fields:
-        if f.get("default"):
-            continue
-        eid = reg.async_get_entity_id("sensor", DOMAIN, f"{prefix}_{f['key']}")
-        if eid is None:
-            continue
-        ent = reg.async_get(eid)
-        if ent and ent.disabled_by is None:
-            reg.async_update_entity(eid, disabled_by=er.RegistryEntryDisabler.INTEGRATION)
-    hass.config_entries.async_update_entry(entry, data={**entry.data, NONDEFAULT_REPAIRED: True})
-
-
-def _demote_identity_sensors(hass: HomeAssistant, entry: SelpiConfigEntry) -> None:
-    """One-time: the identity / factory-info sensors (firmware, model, serials, comms-card versions, kaco mode)
-    are no longer enabled by default — firmware, model and serial now live on the device record. On an existing
-    install those entities already exist enabled, so disable the ones the integration itself enabled, once. The
-    guard flag means a sensor the user re-enables afterwards stays enabled, and this touches only these specific
-    keys (never a blanket sweep of non-default sensors), so it does not run on every upgrade."""
-    if entry.data.get(IDENTITY_DEMOTED):
-        return
-    reg = er.async_get(hass)
-    prefix = entry.unique_id or entry.entry_id
-    for key in DEMOTED_IDENTITY_KEYS:
-        eid = reg.async_get_entity_id("sensor", DOMAIN, f"{prefix}_{key}")
-        if eid is None:
-            continue
-        ent = reg.async_get(eid)
-        if ent and ent.disabled_by is None:
-            reg.async_update_entity(eid, disabled_by=er.RegistryEntryDisabler.INTEGRATION)
-    hass.config_entries.async_update_entry(entry, data={**entry.data, IDENTITY_DEMOTED: True})
 
 
 async def _options_updated(hass: HomeAssistant, entry: SelpiConfigEntry) -> None:

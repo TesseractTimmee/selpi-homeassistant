@@ -55,7 +55,10 @@ class SelpiRuntime:
     client: SelpiClient
     info: dict[str, Any]
     fields: list[dict[str, Any]]
-    coordinator: "SelpiCoordinator"
+    coordinator: "SelpiCoordinator"                # the primary (single inverter, or L1/index-0 in a Powerchain)
+    coordinators: dict[Any, "SelpiCoordinator"] = field(default_factory=dict)  # by unit index + "system" (multi)
+    units: list[dict[str, Any]] = field(default_factory=list)   # from info["units"]; [] for a single inverter
+    multi: bool = False                            # more than one unit (a Powerchain)
 
 
 class SelpiCoordinator(DataUpdateCoordinator[SelpiData]):
@@ -64,9 +67,13 @@ class SelpiCoordinator(DataUpdateCoordinator[SelpiData]):
     config_entry: SelpiConfigEntry
 
     def __init__(self, hass: HomeAssistant, entry: SelpiConfigEntry, client: SelpiClient,
-                 info: dict[str, Any], default_keys: list[str]) -> None:
+                 info: dict[str, Any], default_keys: list[str], unit: Any = None,
+                 fetch_diag: bool = True) -> None:
         seconds = entry.options.get(CONF_SCAN_INTERVAL) or info.get("scan_interval") or 60
-        super().__init__(hass, _LOGGER, config_entry=entry, name=DOMAIN,
+        self.unit = unit                 # Powerchain unit index / "system" / None (primary or single)
+        self._fetch_diag = fetch_diag     # only the primary coordinator fetches the (global) link diagnostics
+        super().__init__(hass, _LOGGER, config_entry=entry,
+                         name=DOMAIN if unit is None else f"{DOMAIN}-u{unit}",
                          update_interval=timedelta(seconds=seconds))
         grace_seconds = entry.options.get(CONF_GRACE)
         if grace_seconds is None:                      # not set in options: follow the add-on's own stale-grace
@@ -104,8 +111,8 @@ class SelpiCoordinator(DataUpdateCoordinator[SelpiData]):
         if cached and self._cycle % STATIC_EVERY != 0:
             poll -= cached
         try:
-            got = await self.client.values(sorted(poll)) if poll else {"values": {}}
-            diag = await self.client.diagnostics()
+            got = await self.client.values(sorted(poll), unit=self.unit) if poll else {"values": {}}
+            diag = await self.client.diagnostics() if self._fetch_diag else (self.data.diagnostics if self.data else {})
         except SelpiAuthError as err:
             self._auth_fail_count += 1
             # The add-on's token is persistent, so a 401 while it restarts/updates is transient and recovers on

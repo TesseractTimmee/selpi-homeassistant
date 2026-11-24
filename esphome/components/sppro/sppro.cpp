@@ -23,6 +23,11 @@ static const uint32_t CLOCK_SET = 0x1d0011;    // 7 words BCD: sec, min, hour, w
 static const uint32_t PORT_REGISTER = 0xa000;
 static const char *const BUTTON_NAMES[3] = {"generator", "ON", "silence alarm"};
 // State-aware controls (selpi sppro/controls.py): the state words they read before pressing.
+// multiphase (Powerchain) registers, decoded from SP LINK 16.11 (see selpi/sppro/multiphase.py)
+static const uint32_t MP_GATEWAY = 0xdfde;     // write a unit's serial-list index here to re-address the link
+static const uint32_t MP_SERIALLIST = 0xdf50;  // 64 x uint32 serials (128 words), by slot; 0 = empty slot
+static const uint32_t MP_SERIAL = 0xa05e;      // the addressed unit's serial (uint32)
+static const uint32_t MP_PHASEROLE = 0xc0ee;   // phase+role: 1-4 L1/L2/L3/Split manager, 5-8 worker, 0 unassigned
 static const uint32_t GENERATOR_STATUS = 0xa096;  // 0 Not Running, 1 Running, 6 Starting, 8 Stopping, ...
 static const uint32_t OUTPUT_MODE = 0xa07d;       // 0 Idle, 1 Econo, 2 On, 3 Sync
 static const char *const CONTROL_NAMES[2] = {"generator", "inverter output"};
@@ -108,12 +113,18 @@ void SpPro::setup() {
 }
 
 void SpPro::dump_config() {
+  unsigned nums = this->system_.size(), texts = 0;
+  for (auto &u : this->units_) {
+    nums += u.numbers.size();
+    texts += u.enums.size();
+  }
   ESP_LOGCONFIG(TAG,
                 "SP PRO:\n"
+                "  Units: %u%s\n"
                 "  Fields: %u numbers, %u text\n"
                 "  Blocks: %u\n"
                 "  Reply timeout: %" PRIu32 " ms",
-                (unsigned) this->numbers_.size(), (unsigned) this->enums_.size(),
+                (unsigned) this->units_.size(), this->multi_ ? " (Powerchain)" : "", nums, texts,
                 (unsigned) this->mem_.blocks().size(), this->timeout_ms_);
   for (auto &b : this->mem_.blocks())
     ESP_LOGCONFIG(TAG, "    0x%04" PRIx32 " x%u", b.base, b.n);
@@ -225,19 +236,107 @@ void SpPro::next_own_request_() {
 #endif
     if (!this->cycle_wanted_)
       return;
+    if (this->multi_ && !this->discovered_) {   // map configured units -> serial-list indices (once per session)
+      this->start_discovery_();
+      return;
+    }
     this->cycle_wanted_ = false;
     this->cycling_ = true;
     this->cycle_had_error_ = false;
+    this->unit_idx_ = 0;
     this->block_idx_ = 0;
+    this->readdressed_ = false;
+    for (auto &b : this->mem_.blocks())
+      b.valid = false;
+    for (auto &sf : this->system_) {
+      sf.acc = 0;
+      sf.count = 0;
+      sf.any_missing = false;
+    }
+  }
+  auto &blocks = this->mem_.blocks();
+  while (true) {
+    // skip configured units that weren't found on the bus (multiphase); single inverter has one unit, index -1
+    while (this->unit_idx_ < this->units_.size() && this->multi_ && this->units_[this->unit_idx_].index < 0)
+      this->unit_idx_++;
+    if (this->unit_idx_ >= this->units_.size()) {
+      this->publish_system_();
+      this->finish_cycle_();
+      return;
+    }
+    Unit &u = this->units_[this->unit_idx_];
+    if (this->multi_ && u.index >= 0 && !this->readdressed_) {
+      this->readdress_begin_(u);   // write 0xDFDE + verify serial, then re-enter here to poll this unit
+      return;
+    }
+    if (this->block_idx_ < blocks.size()) {
+      this->query_(Step::POLL, blocks[this->block_idx_].base, blocks[this->block_idx_].n);
+      return;
+    }
+    this->publish_unit_(u);        // this unit's blocks are all in: publish it and fold into the system totals
+    this->accumulate_system_();
+    this->unit_idx_++;
+    this->block_idx_ = 0;
+    this->readdressed_ = false;
     for (auto &b : this->mem_.blocks())
       b.valid = false;
   }
-  auto &blocks = this->mem_.blocks();
-  if (this->block_idx_ < blocks.size()) {
-    this->query_(Step::POLL, blocks[this->block_idx_].base, blocks[this->block_idx_].n);
-  } else {
-    this->finish_cycle_();
+}
+
+void SpPro::write_word_(Step step, uint32_t address, uint16_t value) {
+  put_header(this->tx_, 'W', address, 1);
+  this->tx_[8] = value & 0xff;
+  this->tx_[9] = value >> 8;
+  uint16_t c = crc16(this->tx_, 10);
+  this->tx_[10] = c & 0xff;
+  this->tx_[11] = c >> 8;
+  this->send_(step, this->tx_, 12, 12);   // the SP PRO echoes the write
+}
+
+void SpPro::readdress_begin_(Unit &u) {
+  this->write_word_(Step::READDRESS, MP_GATEWAY, static_cast<uint16_t>(u.index));
+}
+
+void SpPro::start_discovery_() {
+  this->disc_slot_ = 0;
+  this->disc_count_ = 0;
+  for (auto &u : this->units_)
+    u.index = -1;
+  this->query_(Step::DISC_LIST, MP_SERIALLIST, 128);
+}
+
+void SpPro::disc_advance_() {
+  // move to the next populated serial-list slot and re-address to it; when none remain, discovery is done
+  while (this->disc_slot_ < 64 && this->disc_serials_[this->disc_slot_] == 0)
+    this->disc_slot_++;
+  if (this->disc_slot_ >= 64) {
+    this->discovered_ = true;
+    int found = 0;
+    for (auto &u : this->units_)
+      if (u.index >= 0)
+        found++;
+    ESP_LOGI(TAG, "multiphase: %u units on the bus, %d of %u configured units matched", this->disc_count_, found,
+             (unsigned) this->units_.size());
+    this->next_own_request_();   // start the first poll cycle
+    return;
   }
+  this->write_word_(Step::DISC_READDR, MP_GATEWAY, static_cast<uint16_t>(this->disc_slot_));
+}
+
+void SpPro::match_unit_(uint8_t slot, uint32_t serial, uint16_t phaserole) {
+  int phase = (phaserole >= 1 && phaserole <= 4) ? phaserole : (phaserole >= 5 && phaserole <= 8 ? phaserole - 4 : 0);
+  int role = (phaserole >= 5 && phaserole <= 8) ? 1 : 0;
+  // a serial-pinned unit claims its slot by serial; otherwise the first unmatched unit of this phase+role
+  for (auto &u : this->units_)
+    if (u.index < 0 && u.serial_pin != 0 && u.serial_pin == serial) {
+      u.index = slot;
+      return;
+    }
+  for (auto &u : this->units_)
+    if (u.index < 0 && u.serial_pin == 0 && u.phase == phase && u.role == role) {
+      u.index = slot;
+      return;
+    }
 }
 
 void SpPro::on_reply_() {
@@ -262,6 +361,12 @@ void SpPro::on_reply_() {
     if (step == Step::POLL) {
       this->cycle_had_error_ = true;
       this->block_idx_++;
+    } else if (step == Step::DISC_LIST || step == Step::DISC_READDR || step == Step::DISC_ROLE ||
+               step == Step::READDRESS || step == Step::READDRESS_VERIFY) {
+      this->cycle_had_error_ = true;   // restart discovery + the cycle, don't force a re-login
+      this->cycling_ = false;
+      this->discovered_ = false;
+      this->cycle_wanted_ = true;
     } else if (step == Step::CLOCK_READ || step == Step::CLOCK_WRITE) {
       // try again next interval
 #ifdef USE_SPPRO_BUTTONS
@@ -323,6 +428,48 @@ void SpPro::on_reply_() {
       b.valid = true;
       this->block_idx_++;
       break;
+    }
+    case Step::DISC_LIST: {
+      this->disc_count_ = 0;
+      for (int i = 0; i < 64; i++) {
+        uint32_t s = data[4 * i] | (data[4 * i + 1] << 8) | (static_cast<uint32_t>(data[4 * i + 2]) << 16) |
+                     (static_cast<uint32_t>(data[4 * i + 3]) << 24);
+        this->disc_serials_[i] = s;
+        if (s != 0)
+          this->disc_count_++;
+      }
+      this->disc_advance_();
+      return;
+    }
+    case Step::DISC_READDR:
+      this->query_(Step::DISC_ROLE, MP_PHASEROLE, 1);   // now addressed to disc_slot_: read its phase/role
+      return;
+    case Step::DISC_ROLE: {
+      uint16_t pr = data[0] | (data[1] << 8);
+      this->match_unit_(static_cast<uint8_t>(this->disc_slot_), this->disc_serials_[this->disc_slot_], pr);
+      this->disc_slot_++;
+      this->disc_advance_();
+      return;
+    }
+    case Step::READDRESS:
+      this->query_(Step::READDRESS_VERIFY, MP_SERIAL, 2);   // confirm which unit we are now talking to
+      return;
+    case Step::READDRESS_VERIFY: {
+      uint32_t serial = data[0] | (data[1] << 8) | (static_cast<uint32_t>(data[2]) << 16) |
+                        (static_cast<uint32_t>(data[3]) << 24);
+      Unit &u = this->units_[this->unit_idx_];
+      if (u.serial_pin != 0 && u.serial_pin != serial) {
+        ESP_LOGW(TAG, "multiphase: unit at index %d reported serial %" PRIu32 ", expected %" PRIu32
+                 "; skipping it this cycle", u.index, serial, u.serial_pin);
+        this->count_error_();
+        this->cycle_had_error_ = true;
+        this->unit_idx_++;          // never poll a unit we can't confirm
+        this->readdressed_ = false;
+      } else {
+        this->readdressed_ = true;  // verified: the cycle loop will now poll this unit's blocks
+      }
+      this->next_own_request_();
+      return;
     }
 #ifdef USE_SPPRO_BUTTONS
     case Step::PORT_READ:
@@ -660,6 +807,16 @@ void SpPro::on_timeout_() {
       break;
     case Step::PROXY:
       break;  // the client sees its own timeout
+    case Step::DISC_LIST:
+    case Step::DISC_READDR:
+    case Step::DISC_ROLE:
+    case Step::READDRESS:
+    case Step::READDRESS_VERIFY:
+      this->cycling_ = false;      // restart discovery + the cycle next time
+      this->discovered_ = false;
+      this->cycle_wanted_ = true;
+      this->set_status_("no reply (multiphase)");
+      break;
     case Step::CLOCK_READ:
     case Step::CLOCK_WRITE:
       break;  // next interval
@@ -706,14 +863,10 @@ bool SpPro::versions_ok_() {
   return good;
 }
 
-void SpPro::finish_cycle_() {
-  this->cycling_ = false;
-  if (!this->versions_ok_() && !this->allow_mismatch_) {
-    // field addresses are only known good for the verified map versions: publish nothing
-    this->set_status_("version mismatch: " + this->versions_text_);
-    return;
-  }
-  for (auto &f : this->numbers_) {
+void SpPro::publish_unit_(Unit &u) {
+  if (!this->versions_ok_() && !this->allow_mismatch_)
+    return;  // field addresses only known good on the verified map versions: publish nothing
+  for (auto &f : u.numbers) {
     this->mem_.missing = false;
     double v = f.f(this->mem_);
     if (!this->mem_.missing && std::isfinite(v)) {
@@ -721,7 +874,7 @@ void SpPro::finish_cycle_() {
       f.sensor->publish_state(static_cast<float>(v));
     }
   }
-  for (auto &f : this->enums_) {
+  for (auto &f : u.enums) {
     this->mem_.missing = false;
     int code = static_cast<int>(f.f(this->mem_));
     if (this->mem_.missing)
@@ -730,17 +883,51 @@ void SpPro::finish_cycle_() {
     for (size_t i = 0; i < f.len; i++)
       if (f.table[i].code == code)
         label = f.table[i].label;
-    ESP_LOGV(TAG, "  %s = %d (%s)", f.sensor->get_name().c_str(), code, label ? label : "?");
-    if (label != nullptr) {
+    if (label != nullptr)
       f.sensor->publish_state(label);
-    } else {
+    else
       f.sensor->publish_state("code " + std::to_string(code));
+  }
+}
+
+void SpPro::accumulate_system_() {
+  if (this->system_.empty() || (!this->versions_ok_() && !this->allow_mismatch_))
+    return;
+  for (auto &sf : this->system_) {
+    this->mem_.missing = false;
+    double v = sf.f(this->mem_);
+    if (this->mem_.missing || !std::isfinite(v)) {
+      sf.any_missing = true;   // a contributing unit didn't report it
+    } else {
+      sf.acc += v;
+      sf.count++;
     }
   }
+}
+
+void SpPro::publish_system_() {
+  for (auto &sf : this->system_) {
+    if (sf.agg == Agg::SUM) {
+      if (!sf.any_missing && sf.count > 0) {  // all units reported: a real total (else leave unavailable)
+        ESP_LOGV(TAG, "  System %s = %.4f (sum of %d)", sf.sensor->get_name().c_str(), sf.acc, sf.count);
+        sf.sensor->publish_state(static_cast<float>(sf.acc));
+      }
+    } else if (sf.count > 0) {              // average over whoever reported
+      ESP_LOGV(TAG, "  System %s = %.4f (avg of %d)", sf.sensor->get_name().c_str(), sf.acc / sf.count, sf.count);
+      sf.sensor->publish_state(static_cast<float>(sf.acc / sf.count));
+    }
+  }
+}
+
+void SpPro::finish_cycle_() {
+  this->cycling_ = false;
 #ifdef USE_SPPRO_CONTROLS
   this->publish_controls_();
 #endif
-  this->set_status_(this->cycle_had_error_ ? "ok (some reads failed)" : "ok");
+  if (!this->versions_ok_() && !this->allow_mismatch_)
+    this->set_status_("version mismatch: " + this->versions_text_);
+  else
+    this->set_status_(this->cycle_had_error_ ? "ok (some reads failed)" : "ok");
 }
 
 #ifdef USE_SPPRO_PROXY

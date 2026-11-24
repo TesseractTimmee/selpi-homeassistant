@@ -77,29 +77,6 @@ async def test_sensors_and_device(hass: HomeAssistant, aioclient_mock):
     assert dev.configuration_url == "homeassistant://hassio/ingress/local_selpi"
 
 
-async def test_identity_sensors_demoted_once_on_upgrade(hass: HomeAssistant, aioclient_mock):
-    """Existing install (already past the 0.6.0 nondefault repair) with the firmware-version sensor enabled: on
-    upgrade it is disabled once — firmware/model/serial now live on the device — but a user who re-enables it
-    keeps it (the migration is one-time, flag-guarded, and never re-runs)."""
-    reg = er.async_get(hass)
-    entry = MockConfigEntry(domain=DOMAIN, data={**DATA, "nondefault_repaired": True}, unique_id="unit123")
-    entry.add_to_hass(hass)
-    old = reg.async_get_or_create("sensor", DOMAIN, "unit123_version_number", config_entry=entry,
-                                  suggested_object_id="sp_pro_firmware_version")
-    assert old.disabled_by is None
-    fields = FIELDS + [{"key": "version_number", "name": "Firmware version", "unit": "", "kind": "number",
-                        "default": False, "device_class": None, "state_class": "measurement", "precision": 0,
-                        "category": "diagnostic", "note": ""}]
-    mock_api(aioclient_mock, fields=fields)
-    await hass.config_entries.async_setup(entry.entry_id)
-    await hass.async_block_till_done()
-    assert reg.async_get(old.entity_id).disabled_by is er.RegistryEntryDisabler.INTEGRATION
-    reg.async_update_entity(old.entity_id, disabled_by=None)   # user re-enables it
-    await hass.config_entries.async_reload(entry.entry_id)
-    await hass.async_block_till_done()
-    assert reg.async_get(old.entity_id).disabled_by is None    # stays enabled: migration doesn't re-run
-
-
 async def test_scan_interval_from_addon_and_options(hass: HomeAssistant, aioclient_mock):
     entry = await setup(hass, aioclient_mock)
     assert entry.runtime_data.coordinator.update_interval.total_seconds() == 60
@@ -295,38 +272,3 @@ async def test_equalise_button(hass: HomeAssistant, aioclient_mock):
     await hass.services.async_call("button", "press", {"entity_id": "button.sp_pro_request_equalise"}, blocking=True)
     calls = control_calls(aioclient_mock, "equalise")
     assert len(calls) == 1 and "state" not in calls[0].query
-
-
-async def test_renamed_key_keeps_its_entity(hass: HomeAssistant, aioclient_mock):
-    reg = er.async_get(hass)
-    entry = MockConfigEntry(domain=DOMAIN, data=DATA, unique_id="unit123")
-    entry.add_to_hass(hass)
-    old = reg.async_get_or_create("sensor", DOMAIN, "unit123_daysto_recharge", config_entry=entry,
-                                  suggested_object_id="sp_pro_days_to_recharge")
-    fields = FIELDS + [{"key": "days_to_recharge", "name": "Days to Recharge", "unit": "", "kind": "number",
-                        "default": False, "device_class": None, "state_class": "measurement", "precision": 0,
-                        "category": None, "note": ""}]
-    mock_api(aioclient_mock, fields=fields)
-    await hass.config_entries.async_setup(entry.entry_id)
-    await hass.async_block_till_done()
-    assert reg.async_get(old.entity_id).unique_id == "unit123_days_to_recharge"
-
-
-async def test_renamed_key_with_a_duplicate_from_an_older_integration(hass: HomeAssistant, aioclient_mock):
-    """App updated first: the old integration already made sensor..._2 for the new key."""
-    reg = er.async_get(hass)
-    entry = MockConfigEntry(domain=DOMAIN, data=DATA, unique_id="unit123")
-    entry.add_to_hass(hass)
-    old = reg.async_get_or_create("sensor", DOMAIN, "unit123_daysto_equalise", config_entry=entry,
-                                  suggested_object_id="sp_pro_days_to_equalise")
-    dup = reg.async_get_or_create("sensor", DOMAIN, "unit123_days_to_equalise", config_entry=entry,
-                                  suggested_object_id="sp_pro_days_to_equalise_2")
-    fields = FIELDS + [{"key": "days_to_equalise", "name": "Days to equalise", "unit": "", "kind": "number",
-                        "default": True, "device_class": None, "state_class": "measurement", "precision": 0,
-                        "category": None, "note": ""}]
-    mock_api(aioclient_mock, fields=fields)
-    await hass.config_entries.async_setup(entry.entry_id)
-    await hass.async_block_till_done()
-    assert entry.state is config_entries.ConfigEntryState.LOADED
-    assert reg.async_get(old.entity_id).unique_id == "unit123_days_to_equalise"
-    assert reg.async_get(dup.entity_id) is None

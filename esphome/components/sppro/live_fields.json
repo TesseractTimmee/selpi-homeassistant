@@ -263,7 +263,7 @@
   },
   {
    "key": "ac_loadk_wh_resetable_acc",
-   "name": "AC Load kWh Resetable",
+   "name": "AC Load kWh Resettable",
    "field": "ACLoadkWhResetableAcc",
    "label": "Resettable",
    "screen": "ACHistorySubTab",
@@ -279,7 +279,7 @@
   },
   {
    "key": "ac_loadk_wh_resetable_acc_avg",
-   "name": "AC Load kWh Resetable Avg",
+   "name": "AC Load kWh Resettable Avg",
    "field": "ACLoadkWhResetableAccAvg",
    "label": "Daily Average",
    "screen": "ACHistorySubTab",
@@ -433,7 +433,7 @@
   },
   {
    "key": "ac_input_kwh_resetable_acc",
-   "name": "AC Input kWh Resetable",
+   "name": "AC Input kWh Resettable",
    "field": "ACInputKWHResetableAcc",
    "label": "Resettable",
    "screen": "ACHistorySubTab",
@@ -449,7 +449,7 @@
   },
   {
    "key": "ac_inputk_wh_resetable_acc_avg",
-   "name": "AC Input kWh Resetable Avg",
+   "name": "AC Input kWh Resettable Avg",
    "field": "ACInputkWhResetableAccAvg",
    "label": "Daily Average",
    "screen": "ACHistorySubTab",
@@ -601,7 +601,7 @@
   },
   {
    "key": "ac_input_hrs_resetable_acc",
-   "name": "AC Input Hours Resetable",
+   "name": "AC Input Hours Resettable",
    "field": "ACInputHrsResetableAcc",
    "label": "Resettable",
    "screen": "ACHistorySubTab",
@@ -617,7 +617,7 @@
   },
   {
    "key": "ac_input_hrs_resetable_acc_avg",
-   "name": "AC Input Hours Resetable Avg",
+   "name": "AC Input Hours Resettable Avg",
    "field": "ACInputHrsResetableAccAvg",
    "label": "Daily Average",
    "screen": "ACHistorySubTab",
@@ -787,7 +787,7 @@
   },
   {
    "key": "ac_exportk_wh_resetable_acc",
-   "name": "AC Export kWh Resetable",
+   "name": "AC Export kWh Resettable",
    "field": "ACExportkWhResetableAcc",
    "label": "Resettable",
    "screen": "ACHistorySubTab",
@@ -803,7 +803,7 @@
   },
   {
    "key": "ac_exportk_wh_resetable_acc_avg",
-   "name": "AC Export kWh Resetable Avg",
+   "name": "AC Export kWh Resettable Avg",
    "field": "ACExportkWhResetableAccAvg",
    "label": "Daily Average",
    "screen": "ACHistorySubTab",
@@ -957,7 +957,7 @@
   },
   {
    "key": "ac_solar_kacok_wh_resetable_acc",
-   "name": "AC Solar kWh Resetable",
+   "name": "AC Solar kWh Resettable",
    "field": "ACSolarKacokWhResetableAcc",
    "label": "",
    "screen": "ACHistorySubTab",
@@ -973,7 +973,7 @@
   },
   {
    "key": "ac_solar_kacok_wh_resetable_acc_avg",
-   "name": "AC Solar kWh Resetable Avg",
+   "name": "AC Solar kWh Resettable Avg",
    "field": "ACSolarKacokWhResetableAccAvg",
    "label": "",
    "screen": "ACHistorySubTab",
@@ -1239,7 +1239,7 @@
   },
   {
    "key": "inverter_d_ck_wh_resetable_acc",
-   "name": "Inverter DC kWh Resetable",
+   "name": "Inverter DC kWh Resettable",
    "field": "InverterDCkWhResetableAcc",
    "label": "Resettable",
    "screen": "DCHistorySubTab",
@@ -1255,7 +1255,7 @@
   },
   {
    "key": "inverter_d_ck_wh_resetable_acc_avg",
-   "name": "Inverter DC kWh Resetable Avg",
+   "name": "Inverter DC kWh Resettable Avg",
    "field": "InverterDCkWhResetableAccAvg",
    "label": "Daily Average",
    "screen": "DCHistorySubTab",
@@ -1440,7 +1440,7 @@
   },
   {
    "key": "shunt1k_wh_resetable_acc",
-   "name": "Shunt 1 kWh Resetable",
+   "name": "Shunt 1 kWh Resettable",
    "field": "Shunt1kWhResetableAcc",
    "label": "Resettable",
    "screen": "DCHistorySubTab",
@@ -1456,7 +1456,7 @@
   },
   {
    "key": "shunt1k_wh_resetable_acc_avg",
-   "name": "Shunt 1 kWh Resetable Avg",
+   "name": "Shunt 1 kWh Resettable Avg",
    "field": "Shunt1kWhResetableAccAvg",
    "label": "Daily Average",
    "screen": "DCHistorySubTab",
@@ -1641,7 +1641,7 @@
   },
   {
    "key": "shunt2k_wh_resetable_acc",
-   "name": "Shunt 2 kWh Resetable",
+   "name": "Shunt 2 kWh Resettable",
    "field": "Shunt2kWhResetableAcc",
    "label": "Resettable",
    "screen": "DCHistorySubTab",
@@ -1657,7 +1657,7 @@
   },
   {
    "key": "shunt2k_wh_resetable_acc_avg",
-   "name": "Shunt 2 kWh Resetable Avg",
+   "name": "Shunt 2 kWh Resettable Avg",
    "field": "Shunt2kWhResetableAccAvg",
    "label": "Daily Average",
    "screen": "DCHistorySubTab",
@@ -1832,7 +1832,7 @@
   },
   {
    "key": "batt_in_kwh_resetable_acc",
-   "name": "Battery In kWh Resetable",
+   "name": "Battery In kWh Resettable",
    "field": "BattInKWHResetableAcc",
    "label": "Resettable",
    "screen": "DCHistorySubTab",
@@ -1848,7 +1848,7 @@
   },
   {
    "key": "batt_in_kwh_resetable_acc_avg",
-   "name": "Battery In kWh Resetable Avg",
+   "name": "Battery In kWh Resettable Avg",
    "field": "BattInKWHResetableAccAvg",
    "label": "Daily Average",
    "screen": "DCHistorySubTab",
@@ -2024,7 +2024,7 @@
   },
   {
    "key": "batt_out_kwh_resetable_acc",
-   "name": "Battery Out kWh Resetable",
+   "name": "Battery Out kWh Resettable",
    "field": "BattOutKWHResetableAcc",
    "label": "Resettable",
    "screen": "DCHistorySubTab",
@@ -2040,7 +2040,7 @@
   },
   {
    "key": "batt_out_kwh_resetable_acc_avg",
-   "name": "Battery Out kWh Resetable Avg",
+   "name": "Battery Out kWh Resettable Avg",
    "field": "BattOutKWHResetableAccAvg",
    "label": "Daily Average",
    "screen": "DCHistorySubTab",

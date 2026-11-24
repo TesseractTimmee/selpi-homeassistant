@@ -97,6 +97,8 @@ struct EnumEntry {
   const char *label;
 };
 
+enum class Agg : uint8_t { SUM, AVG };  // how a field rolls up to the System device (see sppro/multiphase.py)
+
 uint16_t crc16(const uint8_t *data, size_t len);
 
 class SpPro : public PollingComponent, public uart::UARTDevice {
@@ -114,10 +116,23 @@ class SpPro : public PollingComponent, public uart::UARTDevice {
   }
   void set_allow_version_mismatch(bool v) { this->allow_mismatch_ = v; }
   void add_block(uint32_t base, uint16_t n) { this->mem_.add_block(base, n); }
-  void add_number(sensor::Sensor *s, Formula f) { this->numbers_.push_back({s, f}); }
-  void add_enum(text_sensor::TextSensor *t, Formula f, const EnumEntry *table, size_t len) {
-    this->enums_.push_back({t, f, table, len});
+  // Everything is a unit: a single inverter is one unit (L1 manager, index -1 = never re-addressed); a Powerchain
+  // is several, each matched to a discovered serial-list index at runtime by serial (if pinned) else phase+role,
+  // and re-addressed (0xDFDE) before its block poll. set_multi(true) turns on discovery + re-addressing. See
+  // sppro/multiphase.py.
+  void set_multi(bool m) { this->multi_ = m; }
+  void add_unit(int uid, int8_t phase, int8_t role, uint32_t serial_pin) {
+    if (static_cast<size_t>(uid) >= this->units_.size())
+      this->units_.resize(uid + 1);
+    this->units_[uid].phase = phase;
+    this->units_[uid].role = role;
+    this->units_[uid].serial_pin = serial_pin;
   }
+  void add_unit_number(int uid, sensor::Sensor *s, Formula f) { this->units_[uid].numbers.push_back({s, f}); }
+  void add_unit_enum(int uid, text_sensor::TextSensor *t, Formula f, const EnumEntry *table, size_t len) {
+    this->units_[uid].enums.push_back({t, f, table, len});
+  }
+  void add_system_number(sensor::Sensor *s, Formula f, Agg agg) { this->system_.push_back({s, f, agg}); }
   void set_status_sensor(text_sensor::TextSensor *t) { this->status_sensor_ = t; }
   void set_versions_sensor(text_sensor::TextSensor *t) { this->versions_sensor_ = t; }
   void set_errors_sensor(sensor::Sensor *s) { this->errors_sensor_ = s; }
@@ -154,7 +169,9 @@ class SpPro : public PollingComponent, public uart::UARTDevice {
  protected:
   enum class Step : uint8_t {
     NONE, LOGIN_CHALLENGE, LOGIN_ANSWER, LOGIN_CHECK, POLL, PROXY, CLOCK_READ, CLOCK_WRITE, PORT_READ, BUTTON_WRITE,
-    STATE_READ, RELEASE_READ
+    STATE_READ, RELEASE_READ,
+    // multiphase discovery (map configured units -> serial-list indices) + per-unit addressing
+    DISC_LIST, DISC_READDR, DISC_SERIAL, DISC_ROLE, READDRESS, READDRESS_VERIFY
   };
   struct NumberField {
     sensor::Sensor *sensor;
@@ -166,6 +183,30 @@ class SpPro : public PollingComponent, public uart::UARTDevice {
     const EnumEntry *table;
     size_t len;
   };
+  struct Unit {                       // one physical inverter in a Powerchain
+    int8_t phase{1};                  // 1 L1 .. 4 Split
+    int8_t role{0};                   // 0 manager, 1 worker
+    uint32_t serial_pin{0};           // configured serial to match (0 = match by phase+role)
+    int index{-1};                    // discovered serial-list index to write to 0xDFDE (-1 = not found/skip)
+    std::vector<NumberField> numbers;
+    std::vector<EnumField> enums;
+  };
+  struct SystemField {                // a whole-site total: sum (power/energy) or avg (SoC/volts) across units
+    sensor::Sensor *sensor;
+    Formula f;
+    Agg agg;
+    double acc{0};                    // accumulated across this cycle's units
+    int count{0};                     // units that reported it (for the average)
+    bool any_missing{false};          // a unit didn't report it (a sum then goes unavailable, not a wrong total)
+  };
+  void write_word_(Step step, uint32_t address, uint16_t value);
+  void start_discovery_();
+  void disc_advance_();               // move to the next populated serial-list slot, or finish discovery
+  void match_unit_(uint8_t slot, uint32_t serial, uint16_t phaserole);
+  void readdress_begin_(Unit &u);     // write 0xDFDE then verify the unit's serial before polling it
+  void publish_unit_(Unit &u);
+  void accumulate_system_();          // fold this unit's values (in mem_) into the system totals
+  void publish_system_();
 
   void send_(Step step, const uint8_t *frame, size_t len, size_t reply_len);
   void query_(Step step, uint32_t address, uint16_t words);
@@ -197,8 +238,15 @@ class SpPro : public PollingComponent, public uart::UARTDevice {
   std::vector<int> expected_;
   bool allow_mismatch_{false};
   Mem mem_;
-  std::vector<NumberField> numbers_;
-  std::vector<EnumField> enums_;
+  bool multi_{false};
+  std::vector<Unit> units_;           // always >= 1 (single inverter = one unit)
+  std::vector<SystemField> system_;   // whole-site totals (multiphase only)
+  bool discovered_{false};            // unit->index mapping done this session (multiphase)
+  size_t unit_idx_{0};                // unit being polled this cycle
+  bool readdressed_{false};           // the current unit has been re-addressed + verified this cycle
+  size_t disc_slot_{0};               // serial-list slot being scanned during discovery
+  uint32_t disc_serials_[64]{};       // serials read from 0xDF50 (by slot)
+  uint8_t disc_count_{0};             // number of populated slots
   text_sensor::TextSensor *status_sensor_{nullptr};
   text_sensor::TextSensor *versions_sensor_{nullptr};
   sensor::Sensor *errors_sensor_{nullptr};

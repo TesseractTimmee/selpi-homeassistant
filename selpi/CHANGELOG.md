@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.9.0
+- **Powerchain (multi-inverter) support.** selpi discovers every inverter on a Powerchain system and presents each
+  as its own device — "L1 Manager", "L2 Manager", … — nested under a **SP PRO System** device that shows
+  whole-site roll-ups (powers and energies **summed**, voltages / SoC / frequency **averaged**). A single inverter
+  is unchanged: still one "SP PRO" device. Phases and roles are read from the inverters (assigned in SP LINK);
+  selpi reflects the topology read-only and never writes commissioning/assignment settings.
+- **Web UI unit picker.** On a Powerchain the dashboard gains a unit selector (System first, then each inverter);
+  a single inverter hides it. The System view aggregates live values across all units.
+- **System aggregation rules.** Only whole-site-meaningful fields roll up. Per-inverter metrics (temperatures,
+  fan speed, component-life, general-purpose inputs, per-unit diagnostics, peak powers, and the system-wide power
+  limits that are replicated on every unit) stay per-inverter and are excluded from System.
+- **ESPHome component.** The `sppro` external component gains the same multiphase model (per-unit + System),
+  configured in YAML.
+- **Field-name fix.** Corrected "Resetable" → "Resettable" in ~20 history field names (matches SP LINK's label).
+- (Pulls selpi app v0.9.0.)
+
 ## 0.8.1
 - **Fixes the 0.8.0 add-on build.** The image build copied `statistics.py`, which 0.8.0 removed, so the build failed
   with a missing-file error. Dropped it from the copy list. Add-on packaging only — same selpi app v0.8.0, no

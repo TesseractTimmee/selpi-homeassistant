@@ -10,6 +10,11 @@ own protocol (the one SP LINK uses). Built on [selpi](https://github.com/Tessera
 | **Integration** (Marketplace) | `custom_components/selpi` | The SP PRO as an HA device: sensors for the live values (39 on by default, ~276 available), link status, clock drift, last backup, a backup button. Found automatically when the app runs. |
 | **ESPHome component** | `esphome/` | ESP32-S3 on the SP PRO's USB port: local link without Select.Live, frame proxy for the app and SP LINK, clock sync. |
 
+**Powerchain (multiple inverters):** each inverter appears as its own HA device ("L1 Manager", …) under a
+**SP PRO System** roll-up device; the web dashboard gets a unit picker. Topology is read from the inverters
+(assigned in SP LINK), read-only. See [the app docs](selpi/DOCS.md#powerchain-multiple-inverters) and the full
+[field reference](selpi/FIELDS.md).
+
 ## Which parts you need
 
 | Setup | Live sensors and buttons in HA | The app adds |
