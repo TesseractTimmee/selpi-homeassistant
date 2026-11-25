@@ -75,3 +75,14 @@ class SelpiClient:
         if confirm:
             params["confirm"] = confirm
         return await self._request("POST", "/button", timeout=60, **params)
+
+    async def identify(self, unit: Any = None, duration: int | None = None) -> dict[str, Any]:
+        """Flash an inverter's front panel LEDs to locate it (SP LINK's double-click identify). `unit` = a
+        Powerchain unit index; None = the primary / single inverter. A benign momentary action: no installer
+        passcode and it changes no configuration."""
+        params: dict[str, str] = {}
+        if unit is not None:
+            params["unit"] = str(unit)
+        if duration is not None:
+            params["duration"] = str(duration)
+        return await self._request("POST", "/identify", timeout=45, **params)

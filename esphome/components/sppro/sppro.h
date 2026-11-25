@@ -128,6 +128,18 @@ class SpPro : public PollingComponent, public uart::UARTDevice {
     this->units_[uid].role = role;
     this->units_[uid].serial_pin = serial_pin;
   }
+  // Single inverter: one implicit unit (index -1, never re-addressed). The codegen registers its sensors with
+  // add_number / add_enum (no add_unit call), so create unit 0 on first use.
+  void add_number(sensor::Sensor *s, Formula f) {
+    if (this->units_.empty())
+      this->units_.resize(1);
+    this->units_[0].numbers.push_back({s, f});
+  }
+  void add_enum(text_sensor::TextSensor *t, Formula f, const EnumEntry *table, size_t len) {
+    if (this->units_.empty())
+      this->units_.resize(1);
+    this->units_[0].enums.push_back({t, f, table, len});
+  }
   void add_unit_number(int uid, sensor::Sensor *s, Formula f) { this->units_[uid].numbers.push_back({s, f}); }
   void add_unit_enum(int uid, text_sensor::TextSensor *t, Formula f, const EnumEntry *table, size_t len) {
     this->units_[uid].enums.push_back({t, f, table, len});
@@ -148,6 +160,9 @@ class SpPro : public PollingComponent, public uart::UARTDevice {
 #ifdef USE_SPPRO_BUTTONS
   /// Front panel button press, sent between polls: 0 generator, 1 ON, 2 silence alarm.
   void request_button(uint8_t which);
+  /// Identify: flash the current unit's front panel LEDs (SP LINK's btnIdentify / double-click). A benign
+  /// momentary write (0xa389) - no passcode, no config change. Mirrors sppro/multiphase.py identify().
+  void request_identify();
 #endif
 #ifdef USE_SPPRO_CONTROLS
   /// State-aware controls (selpi sppro/controls.py): read the unit's state word first, press only if needed.
@@ -169,7 +184,7 @@ class SpPro : public PollingComponent, public uart::UARTDevice {
  protected:
   enum class Step : uint8_t {
     NONE, LOGIN_CHALLENGE, LOGIN_ANSWER, LOGIN_CHECK, POLL, PROXY, CLOCK_READ, CLOCK_WRITE, PORT_READ, BUTTON_WRITE,
-    STATE_READ, RELEASE_READ,
+    STATE_READ, RELEASE_READ, IDENTIFY_WRITE,
     // multiphase discovery (map configured units -> serial-list indices) + per-unit addressing
     DISC_LIST, DISC_READDR, DISC_SERIAL, DISC_ROLE, READDRESS, READDRESS_VERIFY
   };
@@ -276,6 +291,7 @@ class SpPro : public PollingComponent, public uart::UARTDevice {
   void cancel_presses_(const char *why);
   int8_t button_pending_{-1};
   uint8_t button_value_{1};  // 1 short, 2 long
+  bool identify_pending_{false};  // a flash-LEDs (identify) write to 0xa389 is queued
   uint8_t port_{0};  // SP PRO comms port of this link (low byte of 0xa000), 0 = not read yet this session
 #endif
 #ifdef USE_SPPRO_CONTROLS

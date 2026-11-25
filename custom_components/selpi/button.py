@@ -29,6 +29,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry,
         entities.append(SelpiOnButton(entry))
     if "equalise" in controls:
         entities.append(SelpiEqualiseButton(entry))
+    # Identify / flash front panel LEDs: per physical unit on a Powerchain (locate L1/L2/L3 boxes), one on the
+    # main device for a single inverter. Benign momentary action (no passcode, no config change).
+    if info.get("identify"):
+        rt = entry.runtime_data
+        real_units = [u for u in (rt.units or []) if u.get("index") != "system"]
+        if rt.multi and real_units:
+            entities += [SelpiIdentifyButton(entry, u["index"]) for u in real_units]
+        else:
+            entities.append(SelpiIdentifyButton(entry, None))
     async_add_entities(entities)
 
 
@@ -110,6 +119,26 @@ class SelpiEqualiseButton(SelpiEntity, ButtonEntity):
         except SelpiError as err:
             raise HomeAssistantError(f"{self._attr_name}: {err}") from err
         await self.coordinator.async_request_refresh()
+
+
+class SelpiIdentifyButton(SelpiEntity, ButtonEntity):
+    """Flash this inverter's front panel LEDs to locate it physically (SP LINK's double-click identify). On a
+    Powerchain it re-addresses to the unit, flashes, and restores the link. A benign momentary action: no
+    installer passcode and it changes no configuration, so it works ahead of settings write-enablement."""
+
+    _attr_icon = "mdi:led-on"
+
+    def __init__(self, entry: SelpiConfigEntry, unit) -> None:
+        super().__init__(entry, "identify", unit=unit)
+        self._attr_name = "Identify (flash LEDs)"
+        self._unit = unit
+        self._client = entry.runtime_data.client
+
+    async def async_press(self) -> None:
+        try:
+            await self._client.identify(self._unit)
+        except SelpiError as err:
+            raise HomeAssistantError(f"{self._attr_name}: {err}") from err
 
 
 class SelpiBackupButton(SelpiEntity, ButtonEntity):

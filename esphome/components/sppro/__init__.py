@@ -8,7 +8,8 @@ with selpi/sppro/ (tools/sync_fields.sh in this repo).
 
 Optional buttons: the SP PRO's front panel buttons as ESPHome buttons (generator start/stop and silence
 alarm: short press; on_idle: the ON button's long press, ON <-> IDLE, disabled by default and needing a second press within 30 s),
-pressed the way SP LINK's Quick View front panel does (see selpi docs/protocol.md).
+pressed the way SP LINK's Quick View front panel does (see selpi docs/protocol.md). Also `identify`: flash the
+SP PRO's front panel LEDs to locate it (SP LINK's btnIdentify; a benign momentary write to 0xa389, no passcode).
 
 Optional controls (state-aware, selpi sppro/controls.py): `generator` and `output` switches whose state is the
 unit's own (Generator Status / Output Mode, whatever started or stopped it); switching reads the state fresh and
@@ -75,7 +76,7 @@ ROLES = {"manager": 0, "worker": 1}
 CONTROLS = {"generator": 0, "output": 1}
 # fields whose words the controls need polled (their switch state), plus what shows an equalise request
 CONTROL_KEYS = ["generator_status_from_led", "ac_out_status", "days_to_equalise"]
-BUTTONS = {"generator": 0, "on_idle": 1, "silence": 2}   # "on" would be read as YAML true
+BUTTONS = {"generator": 0, "on_idle": 1, "silence": 2, "identify": 4}   # "on" would be read as YAML true
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 TABLE = json.load(open(os.path.join(_HERE, "live_fields.json"), encoding="utf-8"))
@@ -264,6 +265,8 @@ CLOCK_SCHEMA = cv.Schema({
 BUTTONS_SCHEMA = cv.Schema({
     cv.Optional("generator"): button.button_schema(SpProButton, icon="mdi:engine"),
     cv.Optional("silence"): button.button_schema(SpProButton, icon="mdi:volume-off"),
+    # identify: flash the SP PRO's front panel LEDs to locate it (benign momentary write, no passcode)
+    cv.Optional("identify"): button.button_schema(SpProButton, icon="mdi:led-on"),
     # ON <-> IDLE cuts the AC output: off in HA until enabled, and two presses within 30 s
     cv.Optional("on_idle"): button.button_schema(SpProButton, icon="mdi:power", entity_category=ENTITY_CATEGORY_CONFIG)
     .extend({cv.Optional("disabled_by_default", default=True): cv.boolean}),

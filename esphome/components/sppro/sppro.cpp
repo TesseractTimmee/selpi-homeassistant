@@ -25,6 +25,11 @@ static const char *const BUTTON_NAMES[3] = {"generator", "ON", "silence alarm"};
 // State-aware controls (selpi sppro/controls.py): the state words they read before pressing.
 // multiphase (Powerchain) registers, decoded from SP LINK 16.11 (see selpi/sppro/multiphase.py)
 static const uint32_t MP_GATEWAY = 0xdfde;     // write a unit's serial-list index here to re-address the link
+
+// Identify / flash front panel LEDs (SP LINK's btnIdentify_Click -> IdentifyFrontPanelLeds; see
+// selpi/sppro/multiphase.py identify()). A benign momentary write of a flash duration: 3000 -> round(3000/20) = 150.
+static const uint32_t IDENTIFY_REG = 0xa389;
+static const uint16_t IDENTIFY_VALUE = 150;
 static const uint32_t MP_SERIALLIST = 0xdf50;  // 64 x uint32 serials (128 words), by slot; 0 = empty slot
 static const uint32_t MP_SERIAL = 0xa05e;      // the addressed unit's serial (uint32)
 static const uint32_t MP_PHASEROLE = 0xc0ee;   // phase+role: 1-4 L1/L2/L3/Split manager, 5-8 worker, 0 unassigned
@@ -481,6 +486,10 @@ void SpPro::on_reply_() {
         this->cancel_presses_("unknown comms port");
       }
       break;
+    case Step::IDENTIFY_WRITE:
+      ESP_LOGI(TAG, "identify: flash LEDs sent (0x%" PRIx32 " = %u)", frame_address(this->tx_), IDENTIFY_VALUE);
+      this->identify_pending_ = false;
+      break;
     case Step::BUTTON_WRITE:
       ESP_LOGI(TAG, "button: %s %s press sent (0x%" PRIx32 " = %u)",
                BUTTON_NAMES[std::max<int>(0, this->button_pending_)], this->tx_[8] == 2 ? "long" : "short",
@@ -544,10 +553,20 @@ void SpPro::request_button(uint8_t which) {
   ESP_LOGI(TAG, "button: %s press queued", BUTTON_NAMES[which]);
 }
 
+void SpPro::request_identify() {
+  if (!this->logged_in_) {
+    ESP_LOGW(TAG, "identify: ignored, not logged in to the SP PRO");
+    return;
+  }
+  this->identify_pending_ = true;    // flashes the current unit (SP LINK's btnIdentify uses the current gateway)
+  ESP_LOGI(TAG, "identify: flash LEDs queued");
+}
+
 void SpPro::cancel_presses_(const char *why) {
   if (this->button_pending_ >= 0)
     ESP_LOGW(TAG, "button: %s press not confirmed (%s)", BUTTON_NAMES[this->button_pending_], why);
   this->button_pending_ = -1;
+  this->identify_pending_ = false;
 #ifdef USE_SPPRO_CONTROLS
   if (this->control_pending_ >= 0)
     ESP_LOGW(TAG, "%s: not changed (%s)", CONTROL_NAMES[this->control_pending_ / 2], why);
@@ -560,6 +579,16 @@ void SpPro::cancel_presses_(const char *why) {
 
 // one step of a pending press (port read first, then the write); false = nothing to do
 bool SpPro::button_step_() {
+  if (this->identify_pending_) {    // identify needs no comms-port read: write the flash register straight away
+    put_header(this->tx_, 'W', IDENTIFY_REG, 1);
+    this->tx_[8] = IDENTIFY_VALUE & 0xff;
+    this->tx_[9] = IDENTIFY_VALUE >> 8;
+    uint16_t c = crc16(this->tx_, 10);
+    this->tx_[10] = c & 0xff;
+    this->tx_[11] = c >> 8;
+    this->send_(Step::IDENTIFY_WRITE, this->tx_, 12, 12);
+    return true;
+  }
   bool work = this->button_pending_ >= 0;
 #ifdef USE_SPPRO_CONTROLS
   work = work || this->control_pending_ >= 0 || this->equalise_stage_ != 0;
@@ -605,6 +634,11 @@ void SpProButton::press_action() {
     return;
   }
 #endif
+
+  if (this->which_ == 4) {  // identify: flash this unit's front panel LEDs (benign, no passcode)
+    this->parent_->request_identify();
+    return;
+  }
 
   if (this->which_ == 1) {  // ON: ON <-> IDLE cuts the AC output, so it takes two presses
     uint32_t now = millis();
