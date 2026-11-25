@@ -15,6 +15,7 @@ else
   export SELPI_CONNECTION_SELECT_LIVE_USERNAME="$(bashio::config 'select_live_username')"
   export SELPI_CONNECTION_SELECT_LIVE_PASSWORD="$(bashio::config 'select_live_password')"
   export SELPI_CONNECTION_SELECT_LIVE_DEVICE="$(bashio::config 'select_live_device')"
+  export SELPI_CONNECTION_SELECT_LIVE_SERVER="$(bashio::config 'select_live_server')"
 fi
 export SELPI_SPPRO_PASSWORD="$(bashio::config 'sppro_password')"
 export SELPI_BACKUP_TIME="$(bashio::config 'backup_time')"

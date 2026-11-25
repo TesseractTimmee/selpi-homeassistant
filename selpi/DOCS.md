@@ -21,7 +21,8 @@ A log download writes the SP PRO's download-mode and log-search registers, as SP
 something else (SP LINK, or the installer via Select.Live) is already downloading.
 
 ## Connection
-- **`select_live`** — through Select.Live (slower; the installer's own path is unaffected).
+- **`select_live`** — through Select.Live (slower; the installer's own path is unaffected). `select_live_server`
+  picks the server: `select.live` (the original) or `select.live2` (the newer platform) — match whichever your installer/account uses.
 - **`tcp`** — raw SP PRO frames over TCP: the ESPHome SP PRO USB link (`sppro`, port 8899; read-only from HA,
   log downloads allowed), or any transparent serial-to-network bridge on the SP PRO's serial port.
 - **`serial`** — a serial/USB device on the HA machine (`serial_device`, `serial_baudrate`; the SP PRO's

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.10.3
+- **Select.Live server option.** A new `select_live_server` option lets you pick which Select.Live server to
+  connect to: `select.live` (the original, default) or `select.live2` (the newer platform) — match your account.
+- (Pulls selpi app v0.10.3.)
+
 ## 0.10.2
 - **Fix: long values on the add-on's Live page no longer get cut off.** Long status text (module status, BMS
   alarms/warnings, string-inverter support) now wraps instead of being clipped. Display only.
