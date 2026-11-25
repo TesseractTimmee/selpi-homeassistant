@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.9.1
+- **Correct validation ranges on the Configuration page.** The DC-voltage settings (charge voltages, low-DC
+  shutdowns, DC alerts, generator-start voltages, AC-coupled trip, and Initial Return Voltage) now show the real
+  range for your unit — scaled by the model's cell count (24 / 48 / 120 V) and the configured Battery Type —
+  instead of a fixed 48 V / Lead-Acid reference. e.g. "Battery 0% Load" on a 48 V lithium unit now reads
+  [39.6 - 52.8 V], not [39.6 - 48.0 V].
+- **More reliable log downloads over Select.Live.** Download mode is re-asserted on every reconnect, so a
+  mid-download link drop no longer stalls the transfer; the time budget scales with the date range + number of
+  logs instead of a flat limit that cut off large downloads.
+- **Less Select.Live connection churn.** The logged-in session is kept across polls instead of reconnecting and
+  re-authenticating about every minute; a failure still releases the session promptly so SP LINK can use the device.
+- (Pulls selpi app v0.9.1.)
+
 ## 0.9.0
 - **Powerchain (multi-inverter) support.** selpi discovers every inverter on a Powerchain system and presents each
   as its own device — "L1 Manager", "L2 Manager", … — nested under a **SP PRO System** device that shows
