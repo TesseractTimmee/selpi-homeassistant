@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.9.3
+- **Identify button to locate an inverter.** A new *Identify (flash LEDs)* button flashes a unit's front panel
+  LEDs so you can tell which physical box it is (the same thing SP LINK does when you double-click a serial). On a
+  multi-inverter Powerchain there's one per unit (on each unit's sub-device); on a single inverter, one on the main
+  device. It's a brief, harmless action — no installer passcode and it changes no settings — so it works now, ahead
+  of general settings write support.
+- **Fix: single-inverter ESPHome firmware now builds.** The ESP component's single-inverter path referenced helper
+  code that was never defined, so a lone inverter's firmware failed to compile (a 0.9.0 regression). Fixed.
+  Powerchain builds were unaffected.
+- (Pulls selpi app v0.9.3.)
+
 ## 0.9.2
 - **Select.Live reliability fix (fixes a 0.9.1 regression).** 0.9.1 made log downloads over Select.Live worse by
   re-asserting download mode with a full retry cycle on every reconnect, turning one stalled read into a
