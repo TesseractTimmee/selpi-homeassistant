@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.10.0
+- **Every SP LINK reading is now available.** The field catalogue was expanded from a curated subset to the complete
+  set SP LINK's data screens show, so you can enable any reading your system reports (most stay off by default).
+- **Many more decoded readings.** Model number and rating, hardware revision, power factor, build date/time, serial
+  numbers, software versions, BMS alarms/warnings, module status, string-inverter support and more now come through
+  as proper values instead of raw numbers.
+- **Readings are hidden when they don't apply.** BMS, AC-coupled solar (Kaco) and battery readings only appear on
+  units that have them, and readings that need newer firmware than your unit's memory map are skipped — so you no
+  longer see fields stuck at zero for hardware you don't have.
+- **Device identity.** The device now shows the SP PRO model and rating (e.g. "SPMC482 (48V DC, 7.5kW, 240V AC)") and
+  the hardware revision.
+- **ESPHome:** new `features:` and `map_version:` options to trim the default field set to your hardware, and the HA
+  device now reports manufacturer "Selectronic" / model "SP PRO" plus Model / Model Rating / Hardware Revision sensors.
+- (Pulls selpi app v0.10.0.)
+
 ## 0.9.3
 - **Identify button to locate an inverter.** A new *Identify (flash LEDs)* button flashes a unit's front panel
   LEDs so you can tell which physical box it is (the same thing SP LINK does when you double-click a serial). On a
