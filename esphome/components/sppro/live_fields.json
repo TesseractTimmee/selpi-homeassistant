@@ -3,7 +3,7 @@
  "fields": [
   {
    "key": "multi_battery_voltage",
-   "name": "MultiBatteryVoltage",
+   "name": "Multi Battery Voltage",
    "field": "MultiBatteryVoltage",
    "label": "Battery Voltage",
    "screen": "DataMultiPhase1",
@@ -52,7 +52,7 @@
   },
   {
    "key": "multi_dc_solar_power_total",
-   "name": "MultiDCSolarPowerTotal",
+   "name": "Multi DC Solar Power Total",
    "field": "MultiDCSolarPowerTotal",
    "label": "",
    "screen": "DataMultiPhase1",
@@ -119,7 +119,7 @@
   },
   {
    "key": "multi_ac_source_status_l2",
-   "name": "MultiACSourceStatusL2",
+   "name": "Multi AC Source Status L2",
    "field": "MultiACSourceStatusL2",
    "label": "AC Source Status L2",
    "screen": "DataMultiPhase1",
@@ -134,7 +134,7 @@
   },
   {
    "key": "multi_phase_load_ac_volts_l2",
-   "name": "MultiPhaseLoadAcVolts_L2",
+   "name": "Multi Phase Load Ac Volts L2",
    "field": "MultiPhaseLoadAcVolts_L2",
    "label": "Load Voltage L2",
    "screen": "DataMultiPhase1",
@@ -150,7 +150,7 @@
   },
   {
    "key": "multi_phase_ac_source_volts_l2",
-   "name": "MultiPhaseAcSourceVolts_L2",
+   "name": "Multi Phase Ac Source Volts L2",
    "field": "MultiPhaseAcSourceVolts_L2",
    "label": "AC Source Voltage L2",
    "screen": "DataMultiPhase1",
@@ -180,7 +180,7 @@
   },
   {
    "key": "multi_ac_source_status_l3",
-   "name": "MultiACSourceStatusL3",
+   "name": "Multi AC Source Status L3",
    "field": "MultiACSourceStatusL3",
    "label": "AC Source Status L3",
    "screen": "DataMultiPhase1",
@@ -195,7 +195,7 @@
   },
   {
    "key": "multi_phase_load_ac_volts_l3",
-   "name": "MultiPhaseLoadAcVolts_L3",
+   "name": "Multi Phase Load Ac Volts L3",
    "field": "MultiPhaseLoadAcVolts_L3",
    "label": "Load Voltage L3",
    "screen": "DataMultiPhase1",
@@ -211,7 +211,7 @@
   },
   {
    "key": "multi_phase_ac_source_volts_l3",
-   "name": "MultiPhaseAcSourceVolts_L3",
+   "name": "Multi Phase Ac Source Volts L3",
    "field": "MultiPhaseAcSourceVolts_L3",
    "label": "AC Source Voltage L3",
    "screen": "DataMultiPhase1",
@@ -241,7 +241,7 @@
   },
   {
    "key": "multi_ac_source_status_l4",
-   "name": "MultiACSourceStatusL4",
+   "name": "Multi AC Source Status L4",
    "field": "MultiACSourceStatusL4",
    "label": "AC Source Status Split",
    "screen": "DataMultiPhase1",
@@ -256,7 +256,7 @@
   },
   {
    "key": "multi_phase_load_ac_volts_l4",
-   "name": "MultiPhaseLoadAcVolts_L4",
+   "name": "Multi Phase Load Ac Volts L4",
    "field": "MultiPhaseLoadAcVolts_L4",
    "label": "Load Voltage Split",
    "screen": "DataMultiPhase1",
@@ -272,7 +272,7 @@
   },
   {
    "key": "multi_phase_ac_source_volts_l4",
-   "name": "MultiPhaseAcSourceVolts_L4",
+   "name": "Multi Phase Ac Source Volts L4",
    "field": "MultiPhaseAcSourceVolts_L4",
    "label": "AC Source Voltage Split",
    "screen": "DataMultiPhase1",
@@ -348,7 +348,7 @@
   },
   {
    "key": "multi_battery_current_total",
-   "name": "MultiBatteryCurrentTotal",
+   "name": "Multi Battery Current Total",
    "field": "MultiBatteryCurrentTotal",
    "label": "Battery Current Total",
    "screen": "DataMultiPhase2",
@@ -1309,7 +1309,7 @@
   },
   {
    "key": "tech_bms_battery_current",
-   "name": "TechBmsBatteryCurrent",
+   "name": "Tech Bms Battery Current",
    "field": "TechBmsBatteryCurrent",
    "label": "Battery Current",
    "screen": "Bms",
@@ -1326,7 +1326,7 @@
   },
   {
    "key": "tech_bms_charge_i_limit",
-   "name": "TechBmsChargeILimit",
+   "name": "Tech Bms Charge I Limit",
    "field": "TechBmsChargeILimit",
    "label": "Charge Current Limit",
    "screen": "Bms",
@@ -1343,7 +1343,7 @@
   },
   {
    "key": "tech_bms_discharge_i_limit",
-   "name": "TechBmsDischargeILimit",
+   "name": "Tech Bms Discharge I Limit",
    "field": "TechBmsDischargeILimit",
    "label": "Discharge Current Limit",
    "screen": "Bms",
@@ -1360,7 +1360,7 @@
   },
   {
    "key": "tech_bms_battery_temperature",
-   "name": "TechBmsBatteryTemperature",
+   "name": "Tech Bms Battery Temperature",
    "field": "TechBmsBatteryTemperature",
    "label": "Battery Temperature",
    "screen": "Bms",
@@ -1376,7 +1376,7 @@
   },
   {
    "key": "tech_bms_battery_voltage",
-   "name": "TechBmsBatteryVoltage",
+   "name": "Tech Bms Battery Voltage",
    "field": "TechBmsBatteryVoltage",
    "label": "Battery Voltage",
    "screen": "Bms",
@@ -1392,7 +1392,7 @@
   },
   {
    "key": "tech_bms_charge_v_limit",
-   "name": "TechBmsChargeVLimit",
+   "name": "Tech Bms Charge V Limit",
    "field": "TechBmsChargeVLimit",
    "label": "Charge Voltage Limit",
    "screen": "Bms",
@@ -1408,7 +1408,7 @@
   },
   {
    "key": "tech_bms_model",
-   "name": "TechBmsModel",
+   "name": "Tech Bms Model",
    "field": "TechBmsModel",
    "label": "BMS Model",
    "screen": "Bms",
@@ -1423,7 +1423,7 @@
   },
   {
    "key": "tech_bms_so_c",
-   "name": "TechBmsSoC",
+   "name": "Tech Bms SoC",
    "field": "TechBmsSoC",
    "label": "State Of Charge %",
    "screen": "Bms",
@@ -1440,7 +1440,7 @@
   },
   {
    "key": "tech_bms_serial",
-   "name": "TechBmsSerial",
+   "name": "Tech Bms Serial",
    "field": "TechBmsSerial",
    "label": "BMS Serial",
    "screen": "Bms",
@@ -1457,7 +1457,7 @@
   },
   {
    "key": "tech_bms_so_h",
-   "name": "TechBmsSoH",
+   "name": "Tech Bms SoH",
    "field": "TechBmsSoH",
    "label": "State Of Health %",
    "screen": "Bms",
@@ -1473,7 +1473,7 @@
   },
   {
    "key": "tech_bms_alarms",
-   "name": "TechBmsAlarms",
+   "name": "Tech Bms Alarms",
    "field": "TechBmsAlarms",
    "label": "Alarms",
    "screen": "Bms",
@@ -1489,7 +1489,7 @@
   },
   {
    "key": "tech_bms_warnings",
-   "name": "TechBmsWarnings",
+   "name": "Tech Bms Warnings",
    "field": "TechBmsWarnings",
    "label": "Warnings",
    "screen": "Bms",
@@ -2701,7 +2701,7 @@
   },
   {
    "key": "network_power_meter",
-   "name": "NetworkPowerMeter",
+   "name": "Network Power Meter",
    "field": "NetworkPowerMeter",
    "label": "Network Power Meter",
    "screen": "NowNetworkPowerSubTab",
@@ -3239,7 +3239,7 @@
   },
   {
    "key": "now_percent_kaco",
-   "name": "NowPercentKaco",
+   "name": "Now Percent Kaco",
    "field": "NowPercentKaco",
    "label": "",
    "screen": "NowSubTab",
@@ -3393,7 +3393,7 @@
   },
   {
    "key": "now_kaco_total_capacity",
-   "name": "NowKacoTotalCapacity",
+   "name": "Now Kaco Total Capacity",
    "field": "NowKacoTotalCapacity",
    "label": "Total Capacity",
    "screen": "Now_Today_Tech_KacoModelsCapacityAndOEM",
@@ -3458,7 +3458,7 @@
   },
   {
    "key": "cpu_load",
-   "name": "CpuLoad",
+   "name": "Cpu Load",
    "field": "CpuLoad",
    "label": "CPU Load",
    "screen": "Now_Today_Tech_KacoModelsCapacityAndOEM",
@@ -3473,7 +3473,7 @@
   },
   {
    "key": "build_date",
-   "name": "BuildDate",
+   "name": "Build Date",
    "field": "BuildDate",
    "label": "SP PRO Firmware Build Date",
    "screen": "RAndDOnlyDataSubTab",
@@ -3585,7 +3585,7 @@
   },
   {
    "key": "battery_midpoint_error",
-   "name": "BatteryMidpointError",
+   "name": "Battery Midpoint Error",
    "field": "BatteryMidpointError",
    "label": "Midpoint Error",
    "screen": "TechnicalDataSubTab",
@@ -3682,7 +3682,7 @@
   },
   {
    "key": "battery_cable_loss_percent",
-   "name": "BatteryCableLossPercent",
+   "name": "Battery Cable Loss Percent",
    "field": "BatteryCableLossPercent",
    "label": "Cable Loss %",
    "screen": "TechnicalDataSubTab",
@@ -3808,7 +3808,7 @@
   },
   {
    "key": "inverter_power_factor",
-   "name": "InverterPowerFactor",
+   "name": "Inverter Power Factor",
    "field": "InverterPowerFactor",
    "label": "Power Factor",
    "screen": "TechnicalDataSubTab",
@@ -4250,7 +4250,7 @@
   },
   {
    "key": "grid_software_version",
-   "name": "GridSoftwareVersion",
+   "name": "Grid Software Version",
    "field": "GridSoftwareVersion",
    "label": "Grid Interface SW Version",
    "screen": "TechnicalDataSubTab",
@@ -4419,7 +4419,7 @@
   },
   {
    "key": "acc_serial_number",
-   "name": "AccSerialNumber",
+   "name": "Acc Serial Number",
    "field": "AccSerialNumber",
    "label": "Comms Card Serial",
    "screen": "TechnicalDataSubTab",
@@ -4435,7 +4435,7 @@
   },
   {
    "key": "acc_revision_number",
-   "name": "AccRevisionNumber",
+   "name": "Acc Revision Number",
    "field": "AccRevisionNumber",
    "label": "Comms Card Revision",
    "screen": "TechnicalDataSubTab",
@@ -4450,7 +4450,7 @@
   },
   {
    "key": "acc_mod_status",
-   "name": "AccModStatus",
+   "name": "Acc Mod Status",
    "field": "AccModStatus",
    "label": "Comms Card Mod Status",
    "screen": "TechnicalDataSubTab",
@@ -4465,7 +4465,7 @@
   },
   {
    "key": "acc_software_version",
-   "name": "AccSoftwareVersion",
+   "name": "Acc Software Version",
    "field": "AccSoftwareVersion",
    "label": "Comms Card SW Version",
    "screen": "TechnicalDataSubTab",
@@ -4573,7 +4573,7 @@
   },
   {
    "key": "tech_data_ac_power_peak_kaco5",
-   "name": "TechDataAcPowerPeakKaco5",
+   "name": "Tech Data Ac Power Peak Kaco5",
    "field": "TechDataAcPowerPeakKaco5",
    "label": "AC Power Peak Today",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4590,7 +4590,7 @@
   },
   {
    "key": "tech_data_energy_today_kaco1",
-   "name": "TechDataEnergyTodayKaco1",
+   "name": "Tech Data Energy Today Kaco1",
    "field": "TechDataEnergyTodayKaco1",
    "label": "AC Energy Today",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4606,7 +4606,7 @@
   },
   {
    "key": "tech_data_ac_power_kaco1",
-   "name": "TechDataAcPowerKaco1",
+   "name": "Tech Data Ac Power Kaco1",
    "field": "TechDataAcPowerKaco1",
    "label": "AC Power",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4623,7 +4623,7 @@
   },
   {
    "key": "tech_data_ac_volts_kaco1",
-   "name": "TechDataAcVoltsKaco1",
+   "name": "Tech Data Ac Volts Kaco1",
    "field": "TechDataAcVoltsKaco1",
    "label": "AC Voltage",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4639,7 +4639,7 @@
   },
   {
    "key": "tech_data_ac_current_kaco1",
-   "name": "TechDataAcCurrentKaco1",
+   "name": "Tech Data Ac Current Kaco1",
    "field": "TechDataAcCurrentKaco1",
    "label": "AC Current",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4656,7 +4656,7 @@
   },
   {
    "key": "tech_data_dc_power_kaco1",
-   "name": "TechDataDcPowerKaco1",
+   "name": "Tech Data Dc Power Kaco1",
    "field": "TechDataDcPowerKaco1",
    "label": "DC Power",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4672,7 +4672,7 @@
   },
   {
    "key": "tech_data_dc_volts_kaco1",
-   "name": "TechDataDcVoltsKaco1",
+   "name": "Tech Data Dc Volts Kaco1",
    "field": "TechDataDcVoltsKaco1",
    "label": "DC Voltage",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4689,7 +4689,7 @@
   },
   {
    "key": "tech_data_temperature_kaco1",
-   "name": "TechDataTemperatureKaco1",
+   "name": "Tech Data Temperature Kaco1",
    "field": "TechDataTemperatureKaco1",
    "label": "Temperature",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4705,7 +4705,7 @@
   },
   {
    "key": "tech_data_dc_current_kaco1",
-   "name": "TechDataDcCurrentKaco1",
+   "name": "Tech Data Dc Current Kaco1",
    "field": "TechDataDcCurrentKaco1",
    "label": "DC Current",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4721,7 +4721,7 @@
   },
   {
    "key": "tech_data_ac_power_peak_kaco1",
-   "name": "TechDataAcPowerPeakKaco1",
+   "name": "Tech Data Ac Power Peak Kaco1",
    "field": "TechDataAcPowerPeakKaco1",
    "label": "AC Power Peak Today",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4737,7 +4737,7 @@
   },
   {
    "key": "tech_data_ac_power_kaco2",
-   "name": "TechDataAcPowerKaco2",
+   "name": "Tech Data Ac Power Kaco2",
    "field": "TechDataAcPowerKaco2",
    "label": "AC Power",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4753,7 +4753,7 @@
   },
   {
    "key": "tech_data_ac_volts_kaco2",
-   "name": "TechDataAcVoltsKaco2",
+   "name": "Tech Data Ac Volts Kaco2",
    "field": "TechDataAcVoltsKaco2",
    "label": "AC Voltage",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4769,7 +4769,7 @@
   },
   {
    "key": "tech_data_dc_volts_kaco2",
-   "name": "TechDataDcVoltsKaco2",
+   "name": "Tech Data Dc Volts Kaco2",
    "field": "TechDataDcVoltsKaco2",
    "label": "DC Voltage",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4785,7 +4785,7 @@
   },
   {
    "key": "tech_data_temperature_kaco2",
-   "name": "TechDataTemperatureKaco2",
+   "name": "Tech Data Temperature Kaco2",
    "field": "TechDataTemperatureKaco2",
    "label": "Temperature",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4801,7 +4801,7 @@
   },
   {
    "key": "tech_data_energy_today_kaco2",
-   "name": "TechDataEnergyTodayKaco2",
+   "name": "Tech Data Energy Today Kaco2",
    "field": "TechDataEnergyTodayKaco2",
    "label": "AC Energy Today",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4817,7 +4817,7 @@
   },
   {
    "key": "tech_data_ac_current_kaco2",
-   "name": "TechDataAcCurrentKaco2",
+   "name": "Tech Data Ac Current Kaco2",
    "field": "TechDataAcCurrentKaco2",
    "label": "AC Current",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4833,7 +4833,7 @@
   },
   {
    "key": "tech_data_dc_power_kaco2",
-   "name": "TechDataDcPowerKaco2",
+   "name": "Tech Data Dc Power Kaco2",
    "field": "TechDataDcPowerKaco2",
    "label": "DC Power",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4849,7 +4849,7 @@
   },
   {
    "key": "tech_data_dc_current_kaco2",
-   "name": "TechDataDcCurrentKaco2",
+   "name": "Tech Data Dc Current Kaco2",
    "field": "TechDataDcCurrentKaco2",
    "label": "DC Current",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4865,7 +4865,7 @@
   },
   {
    "key": "tech_data_ac_power_peak_kaco2",
-   "name": "TechDataAcPowerPeakKaco2",
+   "name": "Tech Data Ac Power Peak Kaco2",
    "field": "TechDataAcPowerPeakKaco2",
    "label": "AC Power Peak Today",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4881,7 +4881,7 @@
   },
   {
    "key": "tech_data_ac_power_kaco3",
-   "name": "TechDataAcPowerKaco3",
+   "name": "Tech Data Ac Power Kaco3",
    "field": "TechDataAcPowerKaco3",
    "label": "AC Power",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4897,7 +4897,7 @@
   },
   {
    "key": "tech_data_ac_volts_kaco3",
-   "name": "TechDataAcVoltsKaco3",
+   "name": "Tech Data Ac Volts Kaco3",
    "field": "TechDataAcVoltsKaco3",
    "label": "AC Voltage",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4913,7 +4913,7 @@
   },
   {
    "key": "tech_data_dc_volts_kaco3",
-   "name": "TechDataDcVoltsKaco3",
+   "name": "Tech Data Dc Volts Kaco3",
    "field": "TechDataDcVoltsKaco3",
    "label": "DC Voltage",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4929,7 +4929,7 @@
   },
   {
    "key": "tech_data_temperature_kaco3",
-   "name": "TechDataTemperatureKaco3",
+   "name": "Tech Data Temperature Kaco3",
    "field": "TechDataTemperatureKaco3",
    "label": "Temperature",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4945,7 +4945,7 @@
   },
   {
    "key": "tech_data_energy_today_kaco3",
-   "name": "TechDataEnergyTodayKaco3",
+   "name": "Tech Data Energy Today Kaco3",
    "field": "TechDataEnergyTodayKaco3",
    "label": "AC Energy Today",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4961,7 +4961,7 @@
   },
   {
    "key": "tech_data_ac_current_kaco3",
-   "name": "TechDataAcCurrentKaco3",
+   "name": "Tech Data Ac Current Kaco3",
    "field": "TechDataAcCurrentKaco3",
    "label": "AC Current",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4977,7 +4977,7 @@
   },
   {
    "key": "tech_data_dc_power_kaco3",
-   "name": "TechDataDcPowerKaco3",
+   "name": "Tech Data Dc Power Kaco3",
    "field": "TechDataDcPowerKaco3",
    "label": "DC Power",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -4993,7 +4993,7 @@
   },
   {
    "key": "tech_data_dc_current_kaco3",
-   "name": "TechDataDcCurrentKaco3",
+   "name": "Tech Data Dc Current Kaco3",
    "field": "TechDataDcCurrentKaco3",
    "label": "DC Current",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5009,7 +5009,7 @@
   },
   {
    "key": "tech_data_ac_power_peak_kaco3",
-   "name": "TechDataAcPowerPeakKaco3",
+   "name": "Tech Data Ac Power Peak Kaco3",
    "field": "TechDataAcPowerPeakKaco3",
    "label": "AC Power Peak Today",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5025,7 +5025,7 @@
   },
   {
    "key": "tech_data_ac_power_kaco4",
-   "name": "TechDataAcPowerKaco4",
+   "name": "Tech Data Ac Power Kaco4",
    "field": "TechDataAcPowerKaco4",
    "label": "AC Power",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5041,7 +5041,7 @@
   },
   {
    "key": "tech_data_ac_volts_kaco4",
-   "name": "TechDataAcVoltsKaco4",
+   "name": "Tech Data Ac Volts Kaco4",
    "field": "TechDataAcVoltsKaco4",
    "label": "AC Voltage",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5057,7 +5057,7 @@
   },
   {
    "key": "tech_data_dc_volts_kaco4",
-   "name": "TechDataDcVoltsKaco4",
+   "name": "Tech Data Dc Volts Kaco4",
    "field": "TechDataDcVoltsKaco4",
    "label": "DC Voltage",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5073,7 +5073,7 @@
   },
   {
    "key": "tech_data_temperature_kaco4",
-   "name": "TechDataTemperatureKaco4",
+   "name": "Tech Data Temperature Kaco4",
    "field": "TechDataTemperatureKaco4",
    "label": "Temperature",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5089,7 +5089,7 @@
   },
   {
    "key": "tech_data_energy_today_kaco4",
-   "name": "TechDataEnergyTodayKaco4",
+   "name": "Tech Data Energy Today Kaco4",
    "field": "TechDataEnergyTodayKaco4",
    "label": "AC Energy Today",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5105,7 +5105,7 @@
   },
   {
    "key": "tech_data_ac_current_kaco4",
-   "name": "TechDataAcCurrentKaco4",
+   "name": "Tech Data Ac Current Kaco4",
    "field": "TechDataAcCurrentKaco4",
    "label": "AC Current",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5121,7 +5121,7 @@
   },
   {
    "key": "tech_data_dc_power_kaco4",
-   "name": "TechDataDcPowerKaco4",
+   "name": "Tech Data Dc Power Kaco4",
    "field": "TechDataDcPowerKaco4",
    "label": "DC Power",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5137,7 +5137,7 @@
   },
   {
    "key": "tech_data_dc_current_kaco4",
-   "name": "TechDataDcCurrentKaco4",
+   "name": "Tech Data Dc Current Kaco4",
    "field": "TechDataDcCurrentKaco4",
    "label": "DC Current",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5153,7 +5153,7 @@
   },
   {
    "key": "tech_data_ac_power_peak_kaco4",
-   "name": "TechDataAcPowerPeakKaco4",
+   "name": "Tech Data Ac Power Peak Kaco4",
    "field": "TechDataAcPowerPeakKaco4",
    "label": "AC Power Peak Today",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5169,7 +5169,7 @@
   },
   {
    "key": "tech_data_ac_power_kaco5",
-   "name": "TechDataAcPowerKaco5",
+   "name": "Tech Data Ac Power Kaco5",
    "field": "TechDataAcPowerKaco5",
    "label": "AC Power",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5185,7 +5185,7 @@
   },
   {
    "key": "tech_data_ac_volts_kaco5",
-   "name": "TechDataAcVoltsKaco5",
+   "name": "Tech Data Ac Volts Kaco5",
    "field": "TechDataAcVoltsKaco5",
    "label": "AC Voltage",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5201,7 +5201,7 @@
   },
   {
    "key": "tech_data_dc_volts_kaco5",
-   "name": "TechDataDcVoltsKaco5",
+   "name": "Tech Data Dc Volts Kaco5",
    "field": "TechDataDcVoltsKaco5",
    "label": "DC Voltage",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5217,7 +5217,7 @@
   },
   {
    "key": "tech_data_temperature_kaco5",
-   "name": "TechDataTemperatureKaco5",
+   "name": "Tech Data Temperature Kaco5",
    "field": "TechDataTemperatureKaco5",
    "label": "Temperature",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5233,7 +5233,7 @@
   },
   {
    "key": "tech_data_energy_today_kaco5",
-   "name": "TechDataEnergyTodayKaco5",
+   "name": "Tech Data Energy Today Kaco5",
    "field": "TechDataEnergyTodayKaco5",
    "label": "AC Energy Today",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5249,7 +5249,7 @@
   },
   {
    "key": "tech_data_ac_current_kaco5",
-   "name": "TechDataAcCurrentKaco5",
+   "name": "Tech Data Ac Current Kaco5",
    "field": "TechDataAcCurrentKaco5",
    "label": "AC Current",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5265,7 +5265,7 @@
   },
   {
    "key": "tech_data_dc_power_kaco5",
-   "name": "TechDataDcPowerKaco5",
+   "name": "Tech Data Dc Power Kaco5",
    "field": "TechDataDcPowerKaco5",
    "label": "DC Power",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5281,7 +5281,7 @@
   },
   {
    "key": "tech_data_dc_current_kaco5",
-   "name": "TechDataDcCurrentKaco5",
+   "name": "Tech Data Dc Current Kaco5",
    "field": "TechDataDcCurrentKaco5",
    "label": "DC Current",
    "screen": "TechnicalDataSubTab2_Kaco",
@@ -5598,7 +5598,7 @@
   },
   {
    "key": "today_ac_energy_kaco1",
-   "name": "TodayAcEnergyKaco1",
+   "name": "Today Ac Energy Kaco1",
    "field": "TodayAcEnergyKaco1",
    "label": "Energy #1",
    "screen": "TodaySubTab",
@@ -5614,7 +5614,7 @@
   },
   {
    "key": "today_ac_energy_kaco2",
-   "name": "TodayAcEnergyKaco2",
+   "name": "Today Ac Energy Kaco2",
    "field": "TodayAcEnergyKaco2",
    "label": "Energy #2",
    "screen": "TodaySubTab",
@@ -5630,7 +5630,7 @@
   },
   {
    "key": "today_ac_energy_kaco3",
-   "name": "TodayAcEnergyKaco3",
+   "name": "Today Ac Energy Kaco3",
    "field": "TodayAcEnergyKaco3",
    "label": "Energy #3",
    "screen": "TodaySubTab",
@@ -5646,7 +5646,7 @@
   },
   {
    "key": "today_ac_energy_kaco4",
-   "name": "TodayAcEnergyKaco4",
+   "name": "Today Ac Energy Kaco4",
    "field": "TodayAcEnergyKaco4",
    "label": "Energy #4",
    "screen": "TodaySubTab",
@@ -5662,7 +5662,7 @@
   },
   {
    "key": "today_ac_energy_kaco5",
-   "name": "TodayAcEnergyKaco5",
+   "name": "Today Ac Energy Kaco5",
    "field": "TodayAcEnergyKaco5",
    "label": "Energy #5",
    "screen": "TodaySubTab",
@@ -5678,7 +5678,7 @@
   },
   {
    "key": "today_total_ac_peak_kaco",
-   "name": "TodayTotalAcPeakKaco",
+   "name": "Today Total Ac Peak Kaco",
    "field": "TodayTotalAcPeakKaco",
    "label": "",
    "screen": "TodaySubTab",
@@ -5755,7 +5755,7 @@
   },
   {
    "key": "present_ac_input_disconnection",
-   "name": "PresentACInputDisconnection",
+   "name": "Present AC Input Disconnection",
    "field": "PresentACInputDisconnection",
    "label": "",
    "screen": "ServiceSettings",
@@ -5770,7 +5770,7 @@
   },
   {
    "key": "present_expansion_card_enabled",
-   "name": "PresentExpansionCardEnabled",
+   "name": "Present Expansion Card Enabled",
    "field": "PresentExpansionCardEnabled",
    "label": "",
    "screen": "ServiceSettings",
@@ -5785,7 +5785,7 @@
   },
   {
    "key": "synch_overload_shutdown_count_trips",
-   "name": "SynchOverloadShutdownCountTrips",
+   "name": "Synch Overload Shutdown Count Trips",
    "field": "SynchOverloadShutdownCountTrips",
    "label": "",
    "screen": "ServiceSettings",
@@ -5815,7 +5815,7 @@
   },
   {
    "key": "active_anti_islanding_sensitivity_percent",
-   "name": "ActiveAntiIslandingSensitivityPercent",
+   "name": "Active Anti Islanding Sensitivity Percent",
    "field": "ActiveAntiIslandingSensitivityPercent",
    "label": "",
    "screen": "ServiceSettings",
@@ -5830,7 +5830,7 @@
   },
   {
    "key": "allow_power_override",
-   "name": "AllowPowerOverride",
+   "name": "Allow Power Override",
    "field": "AllowPowerOverride",
    "label": "",
    "screen": "ServiceSettings",
@@ -5845,7 +5845,7 @@
   },
   {
    "key": "independent_grid_disconnect",
-   "name": "IndependentGridDisconnect",
+   "name": "Independent Grid Disconnect",
    "field": "IndependentGridDisconnect",
    "label": "",
    "screen": "ServiceSettings",
@@ -6115,7 +6115,7 @@
   },
   {
    "key": "aemo_ride_through",
-   "name": "AemoRideThrough",
+   "name": "Aemo Ride Through",
    "field": "AemoRideThrough",
    "label": "",
    "screen": "ServiceSettings",
@@ -6130,7 +6130,7 @@
   },
   {
    "key": "active_power_disconnect",
-   "name": "ActivePowerDisconnect",
+   "name": "Active Power Disconnect",
    "field": "ActivePowerDisconnect",
    "label": "",
    "screen": "ServiceSettings",
@@ -6205,7 +6205,7 @@
   },
   {
    "key": "csip_default_export_limit",
-   "name": "CsipDefaultExportLimit",
+   "name": "Csip Default Export Limit",
    "field": "CsipDefaultExportLimit",
    "label": "Export Power Limit",
    "screen": "ServiceSettings",

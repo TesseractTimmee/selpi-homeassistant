@@ -14,9 +14,9 @@ import re
 # SP LINK's own labels are Title Case ("Battery Volts", "AC Generator RMS Amps") but the hand-picked
 # defaults were sentence case ("Load power"), so entity lists read inconsistently. Normalise to Title
 # Case (HA's usual device style), preserving SP PRO acronyms and units.
-_ACRONYMS = {'AC', 'DC', 'RMS', 'SOC', 'PCA', 'PM', 'RD', 'PV', 'RTU', 'DTR', 'DCD', 'OEM', 'LED', 'DRM',
+_ACRONYMS = {'AC', 'DC', 'RMS', 'SOC', 'SOH', 'PCA', 'PM', 'RD', 'PV', 'RTU', 'DTR', 'DCD', 'OEM', 'LED', 'DRM',
              'MPPT', 'BMS', 'ID', 'IP', 'KW', 'KWH', 'KVA', 'KVAR', 'WH', 'AH', 'HZ', 'VA'}
-_ACRONYM_CANON = {'SOC': 'SoC', 'KW': 'kW', 'KWH': 'kWh', 'KVA': 'kVA', 'KVAR': 'kvar', 'WH': 'Wh',
+_ACRONYM_CANON = {'SOC': 'SoC', 'SOH': 'SoH', 'KW': 'kW', 'KWH': 'kWh', 'KVA': 'kVA', 'KVAR': 'kvar', 'WH': 'Wh',
                   'AH': 'Ah', 'HZ': 'Hz'}
 
 
@@ -45,6 +45,7 @@ NAME_OVERRIDES = {
     'now_ac_power_kaco3': 'AC Solar Power 3', 'now_ac_power_kaco4': 'AC Solar Power 4',
     'now_ac_power_kaco5': 'AC Solar Power 5',
     'battery_volts_in_tech_tab': 'Battery Voltage',       # tech-tab twin of battery_volts; shown on web only
+    'now_percent_kaco': 'AC Solar %', 'now_kaco_total_capacity': 'AC Solar Capacity',   # 'Kaco' is the brand; shown as AC Solar
 }
 
 

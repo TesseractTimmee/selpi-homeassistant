@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.10.1
+- **Fix: field names.** Several readings added in 0.10.0 showed their names unspaced (e.g. "Nowpercentkaco"); they
+  now display properly (e.g. "AC Solar %", "Multi DC Solar Power Total", "Tech BMS SoH"). Display only.
+- (Pulls selpi app v0.10.1.)
+
 ## 0.10.0
 - **Every SP LINK reading is now available.** The field catalogue was expanded from a curated subset to the complete
   set SP LINK's data screens show, so you can enable any reading your system reports (most stay off by default).
