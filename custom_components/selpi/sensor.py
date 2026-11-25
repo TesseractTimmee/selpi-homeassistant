@@ -20,6 +20,19 @@ UNITS = {"h": UnitOfTime.HOURS}
 async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry,
                             async_add_entities: AddConfigEntryEntitiesCallback) -> None:
     rt = entry.runtime_data
+    # gate: skip fields whose feature group (bms / ac_solar / battery) is absent, or that need a newer memory-map
+    # version than this unit's (None = not probed -> keep). Mirrors sppro.live.field_available on the add-on.
+    _feats = rt.info.get("features")
+    _mapv = rt.info.get("map_version")
+
+    def _avail(f: dict[str, Any]) -> bool:
+        if f.get("feature") and _feats is not None and f["feature"] not in _feats:
+            return False
+        if f.get("needs_map_version") and _mapv is not None and _mapv < f["needs_map_version"]:
+            return False
+        return True
+
+    rt_fields = [f for f in rt.fields if _avail(f)]
     entities: list[SensorEntity] = []
     if rt.multi:
         # a Powerchain: field sensors per unit (on each unit's sub-device), and the roll-up fields on the System
@@ -28,14 +41,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry,
             idx = u["index"]
             if idx == "system":
                 entities += [SelpiFieldSensor(entry, f, unit="system")
-                             for f in rt.fields if f.get("aggregatable")]
+                             for f in rt_fields if f.get("aggregatable")]
             else:
-                entities += [SelpiFieldSensor(entry, f, unit=idx) for f in rt.fields]
+                entities += [SelpiFieldSensor(entry, f, unit=idx) for f in rt_fields]
     else:
         # When the ESPHome component also runs it publishes the same SP PRO data, so hide these by default and
         # keep only the add-on-specific sensors (link, connection, backup) enabled; the user can still enable any.
         esp = esp_active(entry, rt.info)
-        entities += [SelpiFieldSensor(entry, f, esp_present=esp) for f in rt.fields]
+        entities += [SelpiFieldSensor(entry, f, esp_present=esp) for f in rt_fields]
     # diagnostics live on the main device (single) / System device (multi), on the primary (diag) coordinator
     entities += [SelpiLinkSensor(entry), SelpiConnectionSensor(entry),
                  SelpiClockDriftSensor(entry), SelpiLastBackupSensor(entry)]

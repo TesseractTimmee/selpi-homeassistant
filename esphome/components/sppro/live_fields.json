@@ -1,6 +1,22 @@
 {
- "source": "SP LINK 15.40, memory map version 31",
+ "source": "SP LINK 16.11 (manifest) + selpi overlay",
  "fields": [
+  {
+   "key": "multi_battery_voltage",
+   "name": "MultiBatteryVoltage",
+   "field": "MultiBatteryVoltage",
+   "label": "Battery Voltage",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa318"
+   ],
+   "formula": "{0xa318}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "",
+   "feature": "battery"
+  },
   {
    "key": "multi_battery_so_c",
    "name": "Multi Battery SoC",
@@ -14,7 +30,8 @@
    "unit": "%",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertUnSignedPercentageValueToString"
+   "converter": "fnConvertUnSignedPercentageValueToString",
+   "feature": "battery"
   },
   {
    "key": "multi_battery_charger_stage",
@@ -29,7 +46,29 @@
    "unit": "",
    "kind": "enum",
    "table": "charger_status",
-   "converter": "fnConvertChargerStatusValueToString"
+   "converter": "fnConvertChargerStatusValueToString",
+   "needs_map_version": 24,
+   "feature": "battery"
+  },
+  {
+   "key": "multi_dc_solar_power_total",
+   "name": "MultiDCSolarPowerTotal",
+   "field": "MultiDCSolarPowerTotal",
+   "label": "",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa318",
+    "0xa2c5",
+    "0xa2c9",
+    "0xa2cd",
+    "0xa2d1"
+   ],
+   "formula": "(s16({0xa318}) * {scale:DcVolts} / 327680) * ((s16({0xa2c5}) + s16({0xa2c9}) + s16({0xa2cd}) + s16({0xa2d1})) * {scale:DcCurrent} / 40960) / 1000",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCVoltageAndIntegerMultiphaseDCSolarCurrentValueToPowerString",
+   "note": "Multiphase DC solar total (legacy: SP LINK populates it only for memory map < 24; modern firmware reports DC solar per unit)."
   },
   {
    "key": "multi_ac_source_status_l1",
@@ -44,7 +83,8 @@
    "unit": "",
    "kind": "enum",
    "table": "ac_source_status",
-   "converter": "fnConvertAcSourceStatusValueToString"
+   "converter": "fnConvertAcSourceStatusValueToString",
+   "needs_map_version": 24
   },
   {
    "key": "multi_phase_load_ac_volts_l1",
@@ -76,6 +116,189 @@
    "kind": "number",
    "table": null,
    "converter": "fnConvertUnSignedACVoltageValueToString"
+  },
+  {
+   "key": "multi_ac_source_status_l2",
+   "name": "MultiACSourceStatusL2",
+   "field": "MultiACSourceStatusL2",
+   "label": "AC Source Status L2",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa2b9"
+   ],
+   "formula": "{0xa2b9}",
+   "unit": "",
+   "kind": "enum",
+   "table": null,
+   "converter": "fnConvertAcSourceStatusValueToString"
+  },
+  {
+   "key": "multi_phase_load_ac_volts_l2",
+   "name": "MultiPhaseLoadAcVolts_L2",
+   "field": "MultiPhaseLoadAcVolts_L2",
+   "label": "Load Voltage L2",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa2ba",
+    "0xa2bb"
+   ],
+   "formula": "{0xa2ba} * {scale:AcVolts} / 327680.0",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACLoadVoltageValueClampedToSourceVoltageInSyncToString"
+  },
+  {
+   "key": "multi_phase_ac_source_volts_l2",
+   "name": "MultiPhaseAcSourceVolts_L2",
+   "field": "MultiPhaseAcSourceVolts_L2",
+   "label": "AC Source Voltage L2",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa2bb"
+   ],
+   "formula": "({0xa2bb} * ({scale:AcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACVoltageValueToString"
+  },
+  {
+   "key": "multi_ac_coupled_percent_l2",
+   "name": "AC Coupled Target L2",
+   "field": "MultiAcCoupledPercentL2",
+   "label": "AC Coupled %",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa2cb"
+   ],
+   "formula": "{0xa2cb} / 10.0",
+   "unit": "%",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessDeciNumberValueToString"
+  },
+  {
+   "key": "multi_ac_source_status_l3",
+   "name": "MultiACSourceStatusL3",
+   "field": "MultiACSourceStatusL3",
+   "label": "AC Source Status L3",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa2bd"
+   ],
+   "formula": "{0xa2bd}",
+   "unit": "",
+   "kind": "enum",
+   "table": null,
+   "converter": "fnConvertAcSourceStatusValueToString"
+  },
+  {
+   "key": "multi_phase_load_ac_volts_l3",
+   "name": "MultiPhaseLoadAcVolts_L3",
+   "field": "MultiPhaseLoadAcVolts_L3",
+   "label": "Load Voltage L3",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa2be",
+    "0xa2bf"
+   ],
+   "formula": "{0xa2be} * {scale:AcVolts} / 327680.0",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACLoadVoltageValueClampedToSourceVoltageInSyncToString"
+  },
+  {
+   "key": "multi_phase_ac_source_volts_l3",
+   "name": "MultiPhaseAcSourceVolts_L3",
+   "field": "MultiPhaseAcSourceVolts_L3",
+   "label": "AC Source Voltage L3",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa2bf"
+   ],
+   "formula": "({0xa2bf} * ({scale:AcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACVoltageValueToString"
+  },
+  {
+   "key": "multi_ac_coupled_percent_l3",
+   "name": "AC Coupled Target L3",
+   "field": "MultiAcCoupledPercentL3",
+   "label": "AC Coupled %",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa2cf"
+   ],
+   "formula": "{0xa2cf} / 10.0",
+   "unit": "%",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessDeciNumberValueToString"
+  },
+  {
+   "key": "multi_ac_source_status_l4",
+   "name": "MultiACSourceStatusL4",
+   "field": "MultiACSourceStatusL4",
+   "label": "AC Source Status Split",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa2c1"
+   ],
+   "formula": "{0xa2c1}",
+   "unit": "",
+   "kind": "enum",
+   "table": null,
+   "converter": "fnConvertAcSourceStatusValueToString"
+  },
+  {
+   "key": "multi_phase_load_ac_volts_l4",
+   "name": "MultiPhaseLoadAcVolts_L4",
+   "field": "MultiPhaseLoadAcVolts_L4",
+   "label": "Load Voltage Split",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa2c2",
+    "0xa2c3"
+   ],
+   "formula": "{0xa2c2} * {scale:AcVolts} / 327680.0",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACLoadVoltageValueClampedToSourceVoltageInSyncToString"
+  },
+  {
+   "key": "multi_phase_ac_source_volts_l4",
+   "name": "MultiPhaseAcSourceVolts_L4",
+   "field": "MultiPhaseAcSourceVolts_L4",
+   "label": "AC Source Voltage Split",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa2c3"
+   ],
+   "formula": "({0xa2c3} * ({scale:AcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACVoltageValueToString"
+  },
+  {
+   "key": "multi_ac_coupled_percent_l4",
+   "name": "AC Coupled Target L4",
+   "field": "MultiAcCoupledPercentL4",
+   "label": "AC Coupled %",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa2d3"
+   ],
+   "formula": "{0xa2d3} / 10.0",
+   "unit": "%",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessDeciNumberValueToString"
   },
   {
    "key": "multi_ac_out_status",
@@ -120,7 +343,25 @@
    "unit": "Hz",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertSignedACFrequencyValueInCentiHzToString"
+   "converter": "fnConvertSignedACFrequencyValueInCentiHzToString",
+   "needs_map_version": 24
+  },
+  {
+   "key": "multi_battery_current_total",
+   "name": "MultiBatteryCurrentTotal",
+   "field": "MultiBatteryCurrentTotal",
+   "label": "Battery Current Total",
+   "screen": "DataMultiPhase2",
+   "words": [
+    "0xa084",
+    "0xa085"
+   ],
+   "formula": "u32({0xa084},{0xa085})",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert2UShortsInto1Uint",
+   "feature": "battery"
   },
   {
    "key": "ac_loadk_wh_previous_acc",
@@ -290,7 +531,24 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "needs_map_version": 28
+  },
+  {
+   "key": "ac_load_kwh_total_acc",
+   "name": "AC Load kWh Total",
+   "field": "ACLoadKWHTotalAcc",
+   "label": "Total Accumulated",
+   "screen": "ACHistorySubTab2",
+   "words": [
+    "0xa37e",
+    "0xa37f"
+   ],
+   "formula": "abs((u32({0xa37e},{0xa37f}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
   },
   {
    "key": "ac_inputk_wh_previous",
@@ -460,7 +718,24 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "needs_map_version": 25
+  },
+  {
+   "key": "ac_input_kwh_total_acc",
+   "name": "AC Input kWh Total",
+   "field": "ACInputKWHTotalAcc",
+   "label": "Total Accumulated",
+   "screen": "ACHistorySubTab2",
+   "words": [
+    "0xa36e",
+    "0xa36f"
+   ],
+   "formula": "abs((u32({0xa36e},{0xa36f}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
   },
   {
    "key": "ac_input_hrs_previous_acc",
@@ -814,209 +1089,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
-  },
-  {
-   "key": "ac_solar_kacok_wh_previous",
-   "name": "AC Solar kWh Previous",
-   "field": "ACSolarKacokWhPrevious",
-   "label": "",
-   "screen": "ACHistorySubTab",
-   "words": [
-    "0xa1ca"
-   ],
-   "formula": "abs(({0xa1ca} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
-   "unit": "kWh",
-   "kind": "number",
-   "table": null,
-   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
-  },
-  {
-   "key": "ac_solar_kacok_wh7_day_acc",
-   "name": "AC Solar kWh 7 Day",
-   "field": "ACSolarKacokWh7DayAcc",
-   "label": "",
-   "screen": "ACHistorySubTab",
-   "words": [
-    "0xa21d",
-    "0xa21e"
-   ],
-   "formula": "abs((u32({0xa21d},{0xa21e}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
-   "unit": "kWh",
-   "kind": "number",
-   "table": null,
-   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
-  },
-  {
-   "key": "ac_solar_kacok_wh7_day_acc_avg",
-   "name": "AC Solar kWh 7 Day Avg",
-   "field": "ACSolarKacokWh7DayAccAvg",
-   "label": "",
-   "screen": "ACHistorySubTab",
-   "words": [
-    "0xa21f"
-   ],
-   "formula": "abs(({0xa21f} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
-   "unit": "kWh",
-   "kind": "number",
-   "table": null,
-   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
-  },
-  {
-   "key": "ac_solar_kacok_wh30_day_acc",
-   "name": "AC Solar kWh 30 Day",
-   "field": "ACSolarKacokWh30DayAcc",
-   "label": "",
-   "screen": "ACHistorySubTab",
-   "words": [
-    "0xa220",
-    "0xa221"
-   ],
-   "formula": "abs((u32({0xa220},{0xa221}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
-   "unit": "kWh",
-   "kind": "number",
-   "table": null,
-   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
-  },
-  {
-   "key": "ac_solar_kacok_wh30_day_acc_avg",
-   "name": "AC Solar kWh 30 Day Avg",
-   "field": "ACSolarKacokWh30DayAccAvg",
-   "label": "",
-   "screen": "ACHistorySubTab",
-   "words": [
-    "0xa222"
-   ],
-   "formula": "abs(({0xa222} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
-   "unit": "kWh",
-   "kind": "number",
-   "table": null,
-   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
-  },
-  {
-   "key": "ac_solar_kacok_wh365_day_acc",
-   "name": "AC Solar kWh 365 Day",
-   "field": "ACSolarKacokWh365DayAcc",
-   "label": "",
-   "screen": "ACHistorySubTab",
-   "words": [
-    "0xa223",
-    "0xa224"
-   ],
-   "formula": "abs((u32({0xa223},{0xa224}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
-   "unit": "kWh",
-   "kind": "number",
-   "table": null,
-   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
-  },
-  {
-   "key": "ac_solar_kacok_wh365_day_acc_avg",
-   "name": "AC Solar kWh 365 Day Avg",
-   "field": "ACSolarKacokWh365DayAccAvg",
-   "label": "",
-   "screen": "ACHistorySubTab",
-   "words": [
-    "0xa225"
-   ],
-   "formula": "abs(({0xa225} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
-   "unit": "kWh",
-   "kind": "number",
-   "table": null,
-   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
-  },
-  {
-   "key": "ac_solar_kacok_wh_year_acc",
-   "name": "AC Solar kWh Year",
-   "field": "ACSolarKacokWhYearAcc",
-   "label": "",
-   "screen": "ACHistorySubTab",
-   "words": [
-    "0xa226",
-    "0xa227"
-   ],
-   "formula": "abs((u32({0xa226},{0xa227}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
-   "unit": "kWh",
-   "kind": "number",
-   "table": null,
-   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
-  },
-  {
-   "key": "ac_solar_kacok_wh_year_acc_avg",
-   "name": "AC Solar kWh Year Avg",
-   "field": "ACSolarKacokWhYearAccAvg",
-   "label": "",
-   "screen": "ACHistorySubTab",
-   "words": [
-    "0xa228"
-   ],
-   "formula": "abs(({0xa228} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
-   "unit": "kWh",
-   "kind": "number",
-   "table": null,
-   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
-  },
-  {
-   "key": "ac_solar_kacok_wh_resetable_acc",
-   "name": "AC Solar kWh Resettable",
-   "field": "ACSolarKacokWhResetableAcc",
-   "label": "",
-   "screen": "ACHistorySubTab",
-   "words": [
-    "0xa229",
-    "0xa22a"
-   ],
-   "formula": "abs((u32({0xa229},{0xa22a}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
-   "unit": "kWh",
-   "kind": "number",
-   "table": null,
-   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
-  },
-  {
-   "key": "ac_solar_kacok_wh_resetable_acc_avg",
-   "name": "AC Solar kWh Resettable Avg",
-   "field": "ACSolarKacokWhResetableAccAvg",
-   "label": "",
-   "screen": "ACHistorySubTab",
-   "words": [
-    "0xa22b"
-   ],
-   "formula": "abs(({0xa22b} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
-   "unit": "kWh",
-   "kind": "number",
-   "table": null,
-   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
-  },
-  {
-   "key": "ac_load_kwh_total_acc",
-   "name": "AC Load kWh Total",
-   "field": "ACLoadKWHTotalAcc",
-   "label": "Total Accumulated",
-   "screen": "ACHistorySubTab2",
-   "words": [
-    "0xa37e",
-    "0xa37f"
-   ],
-   "formula": "abs((u32({0xa37e},{0xa37f}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
-   "unit": "kWh",
-   "kind": "number",
-   "table": null,
-   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
-  },
-  {
-   "key": "ac_input_kwh_total_acc",
-   "name": "AC Input kWh Total",
-   "field": "ACInputKWHTotalAcc",
-   "label": "Total Accumulated",
-   "screen": "ACHistorySubTab2",
-   "words": [
-    "0xa36e",
-    "0xa36f"
-   ],
-   "formula": "abs((u32({0xa36e},{0xa36f}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
-   "unit": "kWh",
-   "kind": "number",
-   "table": null,
-   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "needs_map_version": 25
   },
   {
    "key": "ac_exportk_wh_total_acc",
@@ -1035,6 +1109,188 @@
    "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
   },
   {
+   "key": "ac_solar_kacok_wh_previous",
+   "name": "AC Solar kWh Previous",
+   "field": "ACSolarKacokWhPrevious",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa1ca"
+   ],
+   "formula": "abs(({0xa1ca} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "ac_solar_kacok_wh7_day_acc",
+   "name": "AC Solar kWh 7 Day",
+   "field": "ACSolarKacokWh7DayAcc",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa21d",
+    "0xa21e"
+   ],
+   "formula": "abs((u32({0xa21d},{0xa21e}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "ac_solar_kacok_wh7_day_acc_avg",
+   "name": "AC Solar kWh 7 Day Avg",
+   "field": "ACSolarKacokWh7DayAccAvg",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa21f"
+   ],
+   "formula": "abs(({0xa21f} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "ac_solar_kacok_wh30_day_acc",
+   "name": "AC Solar kWh 30 Day",
+   "field": "ACSolarKacokWh30DayAcc",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa220",
+    "0xa221"
+   ],
+   "formula": "abs((u32({0xa220},{0xa221}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "ac_solar_kacok_wh30_day_acc_avg",
+   "name": "AC Solar kWh 30 Day Avg",
+   "field": "ACSolarKacokWh30DayAccAvg",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa222"
+   ],
+   "formula": "abs(({0xa222} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "ac_solar_kacok_wh365_day_acc",
+   "name": "AC Solar kWh 365 Day",
+   "field": "ACSolarKacokWh365DayAcc",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa223",
+    "0xa224"
+   ],
+   "formula": "abs((u32({0xa223},{0xa224}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "ac_solar_kacok_wh365_day_acc_avg",
+   "name": "AC Solar kWh 365 Day Avg",
+   "field": "ACSolarKacokWh365DayAccAvg",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa225"
+   ],
+   "formula": "abs(({0xa225} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "ac_solar_kacok_wh_year_acc",
+   "name": "AC Solar kWh Year",
+   "field": "ACSolarKacokWhYearAcc",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa226",
+    "0xa227"
+   ],
+   "formula": "abs((u32({0xa226},{0xa227}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "ac_solar_kacok_wh_year_acc_avg",
+   "name": "AC Solar kWh Year Avg",
+   "field": "ACSolarKacokWhYearAccAvg",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa228"
+   ],
+   "formula": "abs(({0xa228} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "ac_solar_kacok_wh_resetable_acc",
+   "name": "AC Solar kWh Resettable",
+   "field": "ACSolarKacokWhResetableAcc",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa229",
+    "0xa22a"
+   ],
+   "formula": "abs((u32({0xa229},{0xa22a}) * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "ac_solar_kacok_wh_resetable_acc_avg",
+   "name": "AC Solar kWh Resettable Avg",
+   "field": "ACSolarKacokWhResetableAccAvg",
+   "label": "",
+   "screen": "ACHistorySubTab",
+   "words": [
+    "0xa22b"
+   ],
+   "formula": "abs(({0xa22b} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar",
+   "needs_map_version": 25
+  },
+  {
    "key": "ac_solar_kacok_wh_total_acc",
    "name": "AC Solar kWh Total",
    "field": "ACSolarKacokWhTotalAcc",
@@ -1048,7 +1304,204 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString"
+   "converter": "fnConvert32BitUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_bms_battery_current",
+   "name": "TechBmsBatteryCurrent",
+   "field": "TechBmsBatteryCurrent",
+   "label": "Battery Current",
+   "screen": "Bms",
+   "words": [
+    "0xa280",
+    "0xa281"
+   ],
+   "formula": "(s32(u32({0xa280},{0xa281})) * ({scale:DcCurrent} / 327680.0))",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCBatteryCurrentValueToString",
+   "feature": "bms"
+  },
+  {
+   "key": "tech_bms_charge_i_limit",
+   "name": "TechBmsChargeILimit",
+   "field": "TechBmsChargeILimit",
+   "label": "Charge Current Limit",
+   "screen": "Bms",
+   "words": [
+    "0xa27b",
+    "0xa27c"
+   ],
+   "formula": "(s32(u32({0xa27b},{0xa27c})) * ({scale:DcCurrent} / 327680.0))",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCBatteryCurrentValueToString",
+   "feature": "bms"
+  },
+  {
+   "key": "tech_bms_discharge_i_limit",
+   "name": "TechBmsDischargeILimit",
+   "field": "TechBmsDischargeILimit",
+   "label": "Discharge Current Limit",
+   "screen": "Bms",
+   "words": [
+    "0xa27d",
+    "0xa27e"
+   ],
+   "formula": "(s32(u32({0xa27d},{0xa27e})) * ({scale:DcCurrent} / 327680.0))",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCBatteryCurrentValueToString",
+   "feature": "bms"
+  },
+  {
+   "key": "tech_bms_battery_temperature",
+   "name": "TechBmsBatteryTemperature",
+   "field": "TechBmsBatteryTemperature",
+   "label": "Battery Temperature",
+   "screen": "Bms",
+   "words": [
+    "0xa282"
+   ],
+   "formula": "s16({0xa282}) * {scale:Temperature} / 32768.0",
+   "unit": "\u00b0C",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedTemperatureValueToString",
+   "feature": "bms"
+  },
+  {
+   "key": "tech_bms_battery_voltage",
+   "name": "TechBmsBatteryVoltage",
+   "field": "TechBmsBatteryVoltage",
+   "label": "Battery Voltage",
+   "screen": "Bms",
+   "words": [
+    "0xa27f"
+   ],
+   "formula": "(s16({0xa27f}) * ({scale:DcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCVoltageValueToString",
+   "feature": "bms"
+  },
+  {
+   "key": "tech_bms_charge_v_limit",
+   "name": "TechBmsChargeVLimit",
+   "field": "TechBmsChargeVLimit",
+   "label": "Charge Voltage Limit",
+   "screen": "Bms",
+   "words": [
+    "0xa27a"
+   ],
+   "formula": "(s16({0xa27a}) * ({scale:DcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCVoltageValueToString",
+   "feature": "bms"
+  },
+  {
+   "key": "tech_bms_model",
+   "name": "TechBmsModel",
+   "field": "TechBmsModel",
+   "label": "BMS Model",
+   "screen": "Bms",
+   "words": [
+    "0xa276"
+   ],
+   "formula": "{0xa276}",
+   "unit": "",
+   "kind": "enum",
+   "table": "bms_model",
+   "converter": "fnConvertBMSModelValueToString"
+  },
+  {
+   "key": "tech_bms_so_c",
+   "name": "TechBmsSoC",
+   "field": "TechBmsSoC",
+   "label": "State Of Charge %",
+   "screen": "Bms",
+   "words": [
+    "0xa285",
+    "0xa287"
+   ],
+   "formula": "{0xa285} / 256.0",
+   "unit": "%",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedSOCPercentageValueToString",
+   "feature": "bms"
+  },
+  {
+   "key": "tech_bms_serial",
+   "name": "TechBmsSerial",
+   "field": "TechBmsSerial",
+   "label": "BMS Serial",
+   "screen": "Bms",
+   "words": [
+    "0xa277",
+    "0xa278"
+   ],
+   "formula": "(({0xa277} & 255) * 16777216) + (({0xa277} >> 8) * 65536) + (({0xa278} & 255) * 256) + ({0xa278} >> 8)",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertLG32bitBigEndianSerialNumberToString",
+   "feature": "bms"
+  },
+  {
+   "key": "tech_bms_so_h",
+   "name": "TechBmsSoH",
+   "field": "TechBmsSoH",
+   "label": "State Of Health %",
+   "screen": "Bms",
+   "words": [
+    "0xa286"
+   ],
+   "formula": "{0xa286} / 256.0",
+   "unit": "%",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedSOCPercentageValueToString",
+   "feature": "bms"
+  },
+  {
+   "key": "tech_bms_alarms",
+   "name": "TechBmsAlarms",
+   "field": "TechBmsAlarms",
+   "label": "Alarms",
+   "screen": "Bms",
+   "words": [
+    "0xa283"
+   ],
+   "formula": "{0xa283}",
+   "unit": "",
+   "kind": "bitfield",
+   "table": "bms_alarms",
+   "converter": "fnConvertLGBmsAlarmsValueToList",
+   "feature": "bms"
+  },
+  {
+   "key": "tech_bms_warnings",
+   "name": "TechBmsWarnings",
+   "field": "TechBmsWarnings",
+   "label": "Warnings",
+   "screen": "Bms",
+   "words": [
+    "0xa284"
+   ],
+   "formula": "{0xa284}",
+   "unit": "",
+   "kind": "bitfield",
+   "table": "bms_warnings",
+   "converter": "fnConvertLGBmsWarningsValueToList",
+   "feature": "bms"
   },
   {
    "key": "d_ck_wh_in",
@@ -1700,7 +2153,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_in_kwh7_day_acc",
@@ -1716,7 +2170,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_in_kwh7_day_acc_avg",
@@ -1732,7 +2187,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_in_kwh30_day_acc",
@@ -1748,7 +2204,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_in_kwh30_day_acc_avg",
@@ -1764,7 +2221,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_in_kwh365_day_acc",
@@ -1780,7 +2238,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_in_kwh365_day_acc_avg",
@@ -1796,7 +2255,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_in_kwh_year_acc",
@@ -1812,7 +2272,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_in_kwh_year_acc_avg",
@@ -1828,7 +2289,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_in_kwh_resetable_acc",
@@ -1844,7 +2306,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_in_kwh_resetable_acc_avg",
@@ -1860,7 +2323,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_in_kwh_total_acc",
@@ -1876,7 +2340,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_out_kwh_previous_acc",
@@ -1892,7 +2357,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_out_kwh7_day_acc",
@@ -1908,7 +2374,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_out_kwh7_day_acc_avg",
@@ -1924,7 +2391,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_out_kwh30_day_acc",
@@ -1940,7 +2408,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_out_kwh30_day_acc_avg",
@@ -1956,7 +2425,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_out_kwh365_day_acc",
@@ -1972,7 +2442,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_out_kwh365_day_acc_avg",
@@ -1988,7 +2459,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_out_kwh_year_acc",
@@ -2004,7 +2476,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_out_kwh_year_acc_avg",
@@ -2020,7 +2493,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_out_kwh_resetable_acc",
@@ -2036,7 +2510,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_out_kwh_resetable_acc_avg",
@@ -2052,7 +2527,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_out_kwh_total_acc",
@@ -2068,7 +2544,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "float_hrs_previous_acc",
@@ -2216,11 +2693,32 @@
    "words": [
     "0xa1b2"
    ],
-   "formula": "{0xa1b2}",
+   "formula": "((((({0xa1b2}>>12)&15)*10)+(({0xa1b2}>>8)&15))*100 + ((({0xa1b2}>>4)&15)*10)+({0xa1b2}&15)) if ({0xa1b2}) < 65534 else (1//0)",
    "unit": "",
-   "kind": "raw",
+   "kind": "number",
    "table": null,
    "converter": "fnConvertTimethatfloatwasachievedToString"
+  },
+  {
+   "key": "network_power_meter",
+   "name": "NetworkPowerMeter",
+   "field": "NetworkPowerMeter",
+   "label": "Network Power Meter",
+   "screen": "NowNetworkPowerSubTab",
+   "words": [
+    "0xa3eb",
+    "0xa3ed",
+    "0xa3ee",
+    "0xa3f0",
+    "0xa3f1",
+    "0xa3f3",
+    "0xa3f4"
+   ],
+   "formula": "abs((s32(u32({0xa3eb},{0xa3ed})) * ({scale:AcVolts} * (({scale:AcCurrent} / 26214400.0) / 1000.0))))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedACPowerValueToString"
   },
   {
    "key": "ac_out_status",
@@ -2250,7 +2748,8 @@
    "unit": "",
    "kind": "enum",
    "table": "ac_source_status",
-   "converter": "fnConvertAcSourceStatusValueToString"
+   "converter": "fnConvertAcSourceStatusValueToString",
+   "needs_map_version": 10
   },
   {
    "key": "generator_status_from_led",
@@ -2296,7 +2795,8 @@
    "unit": "kW",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitSignedACPowerValueToString"
+   "converter": "fnConvert32bitSignedACPowerValueToString",
+   "needs_map_version": 20
   },
   {
    "key": "ac_inverter_rms_volts",
@@ -2357,7 +2857,8 @@
    "unit": "%",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertUnSignedSOCPercentageValueToString"
+   "converter": "fnConvertUnSignedSOCPercentageValueToString",
+   "feature": "battery"
   },
   {
    "key": "battery_volts",
@@ -2372,7 +2873,8 @@
    "unit": "V",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertSignedDCVoltageValueToString"
+   "converter": "fnConvertSignedDCVoltageValueToString",
+   "feature": "battery"
   },
   {
    "key": "dc_battery_current",
@@ -2388,7 +2890,8 @@
    "unit": "A",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitSignedDCBatteryCurrentValueToString"
+   "converter": "fnConvert32bitSignedDCBatteryCurrentValueToString",
+   "feature": "battery"
   },
   {
    "key": "dc_current",
@@ -2479,7 +2982,8 @@
    "unit": "kW",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitSignedDCBatteryPowerValueToStringSupressingNegValues"
+   "converter": "fnConvert32bitSignedDCBatteryPowerValueToStringSupressingNegValues",
+   "feature": "battery"
   },
   {
    "key": "15_min_batt_load",
@@ -2495,7 +2999,8 @@
    "unit": "kW",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitSignedDCBatteryPowerValueToStringSupressingNegValues"
+   "converter": "fnConvert32bitSignedDCBatteryPowerValueToStringSupressingNegValues",
+   "feature": "battery"
   },
   {
    "key": "charge_status_now",
@@ -2525,7 +3030,8 @@
    "unit": "kW",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertSignedACPowerValueToString"
+   "converter": "fnConvertSignedACPowerValueToString",
+   "needs_map_version": 20
   },
   {
    "key": "ac_generator_power5min_avg",
@@ -2647,7 +3153,9 @@
    "unit": "kW",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign"
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign",
+   "feature": "ac_solar",
+   "needs_map_version": 20
   },
   {
    "key": "now_ac_power_kaco1",
@@ -2662,7 +3170,8 @@
    "unit": "kW",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign"
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign",
+   "feature": "ac_solar"
   },
   {
    "key": "now_ac_power_kaco2",
@@ -2677,7 +3186,8 @@
    "unit": "kW",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign"
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign",
+   "feature": "ac_solar"
   },
   {
    "key": "now_ac_power_kaco3",
@@ -2692,7 +3202,8 @@
    "unit": "kW",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign"
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign",
+   "feature": "ac_solar"
   },
   {
    "key": "now_ac_power_kaco4",
@@ -2707,7 +3218,8 @@
    "unit": "kW",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign"
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign",
+   "feature": "ac_solar"
   },
   {
    "key": "now_ac_power_kaco5",
@@ -2722,7 +3234,56 @@
    "unit": "kW",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign"
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "now_percent_kaco",
+   "name": "NowPercentKaco",
+   "field": "NowPercentKaco",
+   "label": "",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa0a2",
+    "0xa0a1"
+   ],
+   "formula": "{0xa0a2} / 10.0",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessDeciNumberValueToString",
+   "feature": "ac_solar",
+   "needs_map_version": 15
+  },
+  {
+   "key": "sys_reg_active_schedule",
+   "name": "System Regulation Active Schedule",
+   "field": "SysRegActiveSchedule",
+   "label": "System Regulation Status",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa070"
+   ],
+   "formula": "{0xa070}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": ""
+  },
+  {
+   "key": "sys_reg_input_power_limit",
+   "name": "System Regulation Input Power Limit",
+   "field": "SysRegInputPowerLimit",
+   "label": "System Regulation Status",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa071"
+   ],
+   "formula": "(s16({0xa071}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToString"
   },
   {
    "key": "sys_reg_export_power_limit",
@@ -2755,6 +3316,99 @@
    "converter": "fnConvertSignedACPowerValueToString"
   },
   {
+   "key": "sys_reg_support_power_limit",
+   "name": "System Regulation Support Power Limit",
+   "field": "SysRegSupportPowerLimit",
+   "label": "System Regulation Status",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa074"
+   ],
+   "formula": "(s16({0xa074}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToString"
+  },
+  {
+   "key": "sys_reg_export_on_demand_target",
+   "name": "System Regulation Export On Demand Target",
+   "field": "SysRegExportOnDemandTarget",
+   "label": "System Regulation Status",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa078"
+   ],
+   "formula": "s16({0xa078}) / 100.0",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueInDecaWattsToString",
+   "needs_map_version": 19
+  },
+  {
+   "key": "sys_reg_charger_status",
+   "name": "System Regulation Charger Status",
+   "field": "SysRegChargerStatus",
+   "label": "System Regulation Status",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa075"
+   ],
+   "formula": "{0xa075}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": ""
+  },
+  {
+   "key": "sys_reg_inverter_lockout_status",
+   "name": "System Regulation Inverter Lockout Status",
+   "field": "SysRegInverterLockoutStatus",
+   "label": "System Regulation Status",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa076"
+   ],
+   "formula": "{0xa076}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": ""
+  },
+  {
+   "key": "sys_reg_source_disconnect_status",
+   "name": "System Regulation Source Disconnect Status",
+   "field": "SysRegSourceDisconnectStatus",
+   "label": "System Regulation Status",
+   "screen": "NowSubTab",
+   "words": [
+    "0xa077"
+   ],
+   "formula": "{0xa077}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": ""
+  },
+  {
+   "key": "now_kaco_total_capacity",
+   "name": "NowKacoTotalCapacity",
+   "field": "NowKacoTotalCapacity",
+   "label": "Total Capacity",
+   "screen": "Now_Today_Tech_KacoModelsCapacityAndOEM",
+   "words": [
+    "0xa39e",
+    "0xa39f"
+   ],
+   "formula": "u32({0xa39e},{0xa39f}) / 1000.0",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitUnsignedValueInkWToString",
+   "feature": "ac_solar"
+  },
+  {
    "key": "country_code",
    "name": "Country Code",
    "field": "CountryCode",
@@ -2765,9 +3419,10 @@
    ],
    "formula": "{0xa38c}",
    "unit": "",
-   "kind": "raw",
-   "table": null,
-   "converter": "fnConvertCountryCodeValueToString"
+   "kind": "enum",
+   "table": "country_code",
+   "converter": "fnConvertCountryCodeValueToString",
+   "needs_map_version": 16
   },
   {
    "key": "power_control_mode_enabled",
@@ -2780,9 +3435,10 @@
    ],
    "formula": "{0xa38d}",
    "unit": "",
-   "kind": "raw",
-   "table": null,
-   "converter": "fnConvertFactorySettingBooleanValueToString"
+   "kind": "enum",
+   "table": "factory_boolean",
+   "converter": "fnConvertFactorySettingBooleanValueToString",
+   "needs_map_version": 16
   },
   {
    "key": "disable_splink_login_password",
@@ -2795,9 +3451,41 @@
    ],
    "formula": "{0xa38e}",
    "unit": "",
-   "kind": "raw",
+   "kind": "enum",
+   "table": "factory_boolean",
+   "converter": "fnConvertFactorySettingBooleanValueToString",
+   "needs_map_version": 16
+  },
+  {
+   "key": "cpu_load",
+   "name": "CpuLoad",
+   "field": "CpuLoad",
+   "label": "CPU Load",
+   "screen": "Now_Today_Tech_KacoModelsCapacityAndOEM",
+   "words": [
+    "0xa386"
+   ],
+   "formula": "{0xa386} / 10.0",
+   "unit": "",
+   "kind": "number",
    "table": null,
-   "converter": "fnConvertFactorySettingBooleanValueToString"
+   "converter": "fnConvertUnitlessDeciNumberValueToString"
+  },
+  {
+   "key": "build_date",
+   "name": "BuildDate",
+   "field": "BuildDate",
+   "label": "SP PRO Firmware Build Date",
+   "screen": "RAndDOnlyDataSubTab",
+   "words": [
+    "0xa033",
+    "0xa034"
+   ],
+   "formula": "(((({0xa034}>>12)&15)*1000)+((({0xa034}>>8)&15)*100)+((({0xa034}>>4)&15)*10)+({0xa034}&15))*10000 + (((({0xa033}>>4)&15)*10)+({0xa033}&15))*100 + (((({0xa033}>>12)&15)*10)+(({0xa033}>>8)&15))",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertDateThatWasStoredInBCDToString"
   },
   {
    "key": "build_time",
@@ -2808,9 +3496,9 @@
    "words": [
     "0xa035"
    ],
-   "formula": "{0xa035}",
+   "formula": "(((({0xa035}>>12)&15)*10)+(({0xa035}>>8)&15))*100 + ((({0xa035}>>4)&15)*10)+({0xa035}&15)",
    "unit": "",
-   "kind": "raw",
+   "kind": "number",
    "table": null,
    "converter": "fnConvertTimeThatWasStoredInBCDToString"
   },
@@ -2844,7 +3532,8 @@
    "unit": "A",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitSignedDCBatteryCurrentValueToString"
+   "converter": "fnConvert32bitSignedDCBatteryCurrentValueToString",
+   "feature": "battery"
   },
   {
    "key": "battery_volts_in_tech_tab",
@@ -2859,7 +3548,8 @@
    "unit": "V",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertSignedDCVoltageValueToString"
+   "converter": "fnConvertSignedDCVoltageValueToString",
+   "feature": "battery"
   },
   {
    "key": "dc_volts",
@@ -2890,7 +3580,25 @@
    "kind": "number",
    "table": null,
    "converter": "fnConvertSignedDCVoltageValueToString",
-   "note": "not wired on a managed (BMS) battery; value meaningless there"
+   "note": "not wired on a managed (BMS) battery; value meaningless there",
+   "feature": "battery"
+  },
+  {
+   "key": "battery_midpoint_error",
+   "name": "BatteryMidpointError",
+   "field": "BatteryMidpointError",
+   "label": "Midpoint Error",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa046",
+    "0xa05b"
+   ],
+   "formula": "(s16({0xa046}) * ({scale:DcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedDCVoltageValueToString",
+   "feature": "battery"
   },
   {
    "key": "battery_soc_tech",
@@ -2905,7 +3613,8 @@
    "unit": "%",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertUnSignedSOCPercentageValueToString"
+   "converter": "fnConvertUnSignedSOCPercentageValueToString",
+   "feature": "battery"
   },
   {
    "key": "charge_index",
@@ -2916,9 +3625,9 @@
    "words": [
     "0xa049"
    ],
-   "formula": "{0xa049}",
+   "formula": "{0xa049} / 2048.0",
    "unit": "",
-   "kind": "raw",
+   "kind": "number",
    "table": null,
    "converter": "fnConvertChargeIndexValueToString"
   },
@@ -2935,7 +3644,8 @@
    "unit": "",
    "kind": "enum",
    "table": "charger_status",
-   "converter": "fnConvertChargerStatusValueToString"
+   "converter": "fnConvertChargerStatusValueToString",
+   "feature": "battery"
   },
   {
    "key": "dc_battery_power",
@@ -2951,41 +3661,8 @@
    "unit": "kW",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitSignedDCBatteryPowerValueToString"
-  },
-  {
-   "key": "dc_battery_power_in",
-   "name": "DC Battery Power In",
-   "field": null,
-   "label": "Battery power in (charging)",
-   "screen": "TechnicalDataSubTab",
-   "words": [
-    "0xa02f",
-    "0xa030"
-   ],
-   "formula": "max(0 - (s32(u32({0xa02f}, {0xa030})) * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)), 0)",
-   "unit": "kW",
-   "kind": "number",
-   "table": null,
-   "converter": null,
-   "derived": "selpi: dc_battery_power split by sign before averaging (SP PRO: negative = charging)"
-  },
-  {
-   "key": "dc_battery_power_out",
-   "name": "DC Battery Power Out",
-   "field": null,
-   "label": "Battery power out (discharging)",
-   "screen": "TechnicalDataSubTab",
-   "words": [
-    "0xa02f",
-    "0xa030"
-   ],
-   "formula": "max(s32(u32({0xa02f}, {0xa030})) * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0), 0)",
-   "unit": "kW",
-   "kind": "number",
-   "table": null,
-   "converter": null,
-   "derived": "selpi: dc_battery_power split by sign before averaging (SP PRO: negative = charging)"
+   "converter": "fnConvert32bitSignedDCBatteryPowerValueToString",
+   "feature": "battery"
   },
   {
    "key": "battery_cable_loss",
@@ -3000,7 +3677,26 @@
    "unit": "kW",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertUnSignedDCPowerValueToStringInWatts"
+   "converter": "fnConvertUnSignedDCPowerValueToStringInWatts",
+   "feature": "battery"
+  },
+  {
+   "key": "battery_cable_loss_percent",
+   "name": "BatteryCableLossPercent",
+   "field": "BatteryCableLossPercent",
+   "label": "Cable Loss %",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa02f",
+    "0xa030",
+    "0xa04a"
+   ],
+   "formula": "s32(u32({0xa02f}, {0xa030})) * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedDCBatteryPowerValueToString",
+   "feature": "battery"
   },
   {
    "key": "days_to_recharge",
@@ -3111,6 +3807,23 @@
    "converter": "fnConvertSignedACApparentPowerValueToString"
   },
   {
+   "key": "inverter_power_factor",
+   "name": "InverterPowerFactor",
+   "field": "InverterPowerFactor",
+   "label": "Power Factor",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa058",
+    "0xa059",
+    "0xa05a"
+   ],
+   "formula": "abs((s32(u32({0xa058},{0xa059})) * ({scale:AcVolts} * {scale:AcCurrent} / 26214400.0 / 1000.0))) / sqrt((s32(u32({0xa058},{0xa059})) * ({scale:AcVolts} * {scale:AcCurrent} / 26214400.0 / 1000.0))*(s32(u32({0xa058},{0xa059})) * ({scale:AcVolts} * {scale:AcCurrent} / 26214400.0 / 1000.0)) + (s16({0xa05a}) * ({scale:AcVolts} * {scale:AcCurrent} / 3276800.0 / 1000.0))*(s16({0xa05a}) * ({scale:AcVolts} * {scale:AcCurrent} / 3276800.0 / 1000.0)))",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerFactorValueToString"
+  },
+  {
    "key": "ac_source_power",
    "name": "AC Source Power",
    "field": "AcSourcePower",
@@ -3123,93 +3836,8 @@
    "unit": "kW",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertSignedACPowerValueToString"
-  },
-  {
-   "key": "ac_source_power_in",
-   "name": "AC Source Power In",
-   "field": null,
-   "label": "AC source power in (import)",
-   "screen": "TechnicalDataSubTab",
-   "words": [
-    "0xa0ab"
-   ],
-   "formula": "max(0 - ((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))), 0)",
-   "unit": "kW",
-   "kind": "number",
-   "table": null,
-   "converter": null,
-   "derived": "selpi: ac_source_power split by sign before averaging (SP PRO: negative = import)"
-  },
-  {
-   "key": "ac_source_power_out",
-   "name": "AC Source Power Out",
-   "field": null,
-   "label": "AC source power out (export)",
-   "screen": "TechnicalDataSubTab",
-   "words": [
-    "0xa0ab"
-   ],
-   "formula": "max((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0))), 0)",
-   "unit": "kW",
-   "kind": "number",
-   "table": null,
-   "converter": null,
-   "derived": "selpi: ac_source_power split by sign before averaging (SP PRO: negative = import)"
-  },
-  {
-   "key": "grid_power_in",
-   "name": "Grid Power In",
-   "field": null,
-   "label": "Grid power in (import)",
-   "screen": "TechnicalDataSubTab",
-   "words": [
-    "0xa0ab",
-    "0xa096",
-    "0xa07d"
-   ],
-   "formula": "((1 - (({0xa096} == 1) + ({0xa096} == 6) + ({0xa096} == 8))) * ({0xa07d} == 3)) * (max(0 - ((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))), 0))",
-   "unit": "kW",
-   "kind": "number",
-   "table": null,
-   "converter": null,
-   "derived": "selpi: AC source power in while synchronised (Output Mode 3 Sync) and Generator Status is not a generator state (1 Running, 6 Starting, 8 Stopping): the grid; else 0"
-  },
-  {
-   "key": "grid_power_out",
-   "name": "Grid Power Out",
-   "field": null,
-   "label": "Grid power out (export)",
-   "screen": "TechnicalDataSubTab",
-   "words": [
-    "0xa0ab",
-    "0xa096",
-    "0xa07d"
-   ],
-   "formula": "((1 - (({0xa096} == 1) + ({0xa096} == 6) + ({0xa096} == 8))) * ({0xa07d} == 3)) * (max((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0))), 0))",
-   "unit": "kW",
-   "kind": "number",
-   "table": null,
-   "converter": null,
-   "derived": "selpi: AC source power out while synchronised (Output Mode 3 Sync) and Generator Status is not a generator state (1 Running, 6 Starting, 8 Stopping): the grid; else 0"
-  },
-  {
-   "key": "generator_power_in",
-   "name": "Generator Power In",
-   "field": null,
-   "label": "Generator power in",
-   "screen": "TechnicalDataSubTab",
-   "words": [
-    "0xa0ab",
-    "0xa096",
-    "0xa07d"
-   ],
-   "formula": "((({0xa096} == 1) + ({0xa096} == 6) + ({0xa096} == 8)) * ({0xa07d} == 3)) * (max(0 - ((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))), 0))",
-   "unit": "kW",
-   "kind": "number",
-   "table": null,
-   "converter": null,
-   "derived": "selpi: AC source power in while synchronised (Output Mode 3 Sync) and Generator Status is 1 Running, 6 Starting (two-stage start: loads first) or 8 Stopping; else 0"
+   "converter": "fnConvertSignedACPowerValueToString",
+   "needs_map_version": 20
   },
   {
    "key": "ac_source_reactive_power",
@@ -3236,7 +3864,7 @@
     "0xa03d"
    ],
    "formula": "s16({0xa03d}) * {scale:Temperature} / 32768.0",
-   "unit": "°C",
+   "unit": "\u00b0C",
    "kind": "number",
    "table": null,
    "converter": "fnConvertSignedTemperatureValueToString"
@@ -3252,7 +3880,7 @@
     "0xa038"
    ],
    "formula": "max(s16({0xa037}), s16({0xa038})) * {scale:Temperature} / 32768.0",
-   "unit": "°C",
+   "unit": "\u00b0C",
    "kind": "number",
    "table": null,
    "converter": "fnConvertSignedHottestTemperatureValueToString"
@@ -3267,7 +3895,7 @@
     "0xa03b"
    ],
    "formula": "s16({0xa03b}) * {scale:Temperature} / 32768.0",
-   "unit": "°C",
+   "unit": "\u00b0C",
    "kind": "number",
    "table": null,
    "converter": "fnConvertSignedTemperatureValueToString"
@@ -3282,7 +3910,7 @@
     "0xa03e"
    ],
    "formula": "s16({0xa03e}) * {scale:Temperature} / 32768.0",
-   "unit": "°C",
+   "unit": "\u00b0C",
    "kind": "number",
    "table": null,
    "converter": "fnConvertSignedTemperatureValueToString"
@@ -3297,10 +3925,11 @@
     "0xa03c"
    ],
    "formula": "s16({0xa03c}) * {scale:Temperature} / 32768.0",
-   "unit": "°C",
+   "unit": "\u00b0C",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertSignedBattTemperatureValueToString"
+   "converter": "fnConvertSignedBattTemperatureValueToString",
+   "feature": "battery"
   },
   {
    "key": "fan_speed",
@@ -3521,10 +4150,10 @@
    "words": [
     "0xa05d"
    ],
-   "formula": "{0xa05d}",
+   "formula": "{0xa05d} & 255",
    "unit": "",
-   "kind": "raw",
-   "table": null,
+   "kind": "enum",
+   "table": "sp_pro_model_number",
    "converter": "fnConvertInverterModelValueToModelNumberString"
   },
   {
@@ -3534,13 +4163,12 @@
    "label": "Model Ratings",
    "screen": "TechnicalDataSubTab",
    "words": [
-    "0xa05d",
-    "0xa060"
+    "0xa05d"
    ],
-   "formula": "{0xa05d}",
+   "formula": "{0xa05d} & 255",
    "unit": "",
-   "kind": "raw",
-   "table": null,
+   "kind": "enum",
+   "table": "sp_pro_model_ratings",
    "converter": "fnConvertInverterModelValueToModelDescriptionString"
   },
   {
@@ -3553,9 +4181,9 @@
     "0xa05e",
     "0xa05f"
    ],
-   "formula": "{0xa05e}",
+   "formula": "u32({0xa05e},{0xa05f})",
    "unit": "",
-   "kind": "raw",
+   "kind": "number",
    "table": null,
    "converter": "fnConvert32BitSerialNumberValueToString"
   },
@@ -3585,8 +4213,8 @@
    ],
    "formula": "{0xa061}",
    "unit": "",
-   "kind": "raw",
-   "table": null,
+   "kind": "bitfield",
+   "table": "mod_status",
    "converter": "fnConvertModStatusNumberToString"
   },
   {
@@ -3612,14 +4240,28 @@
    "label": "String Inverters Supported",
    "screen": "TechnicalDataSubTab",
    "words": [
-    "0xa032",
     "0xa015"
    ],
-   "formula": "{0xa032}",
+   "formula": "{0xa015}",
    "unit": "",
-   "kind": "raw",
-   "table": null,
+   "kind": "bitfield",
+   "table": "string_inverter_support",
    "converter": "fnConvertStringInverterSupportValueToString"
+  },
+  {
+   "key": "grid_software_version",
+   "name": "GridSoftwareVersion",
+   "field": "GridSoftwareVersion",
+   "label": "Grid Interface SW Version",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa036"
+   ],
+   "formula": "{0xa036} / 100.0",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSoftwareVersionNumberValueToString"
   },
   {
    "key": "inverter_run_hrs_total_acc",
@@ -3647,9 +4289,9 @@
     "0xa062",
     "0xa063"
    ],
-   "formula": "{0xa062}",
+   "formula": "u32({0xa062},{0xa063})",
    "unit": "",
-   "kind": "raw",
+   "kind": "number",
    "table": null,
    "converter": "fnConvert32BitSerialNumberValueToString"
   },
@@ -3679,8 +4321,8 @@
    ],
    "formula": "{0xa065}",
    "unit": "",
-   "kind": "raw",
-   "table": null,
+   "kind": "bitfield",
+   "table": "mod_status",
    "converter": "fnConvertModStatusNumberToString"
   },
   {
@@ -3693,9 +4335,9 @@
     "0xa066",
     "0xa067"
    ],
-   "formula": "{0xa066}",
+   "formula": "u32({0xa066},{0xa067})",
    "unit": "",
-   "kind": "raw",
+   "kind": "number",
    "table": null,
    "converter": "fnConvert32BitSerialNumberValueToString"
   },
@@ -3725,8 +4367,8 @@
    ],
    "formula": "{0xa069}",
    "unit": "",
-   "kind": "raw",
-   "table": null,
+   "kind": "bitfield",
+   "table": "mod_status",
    "converter": "fnConvertModStatusNumberToString"
   },
   {
@@ -3739,9 +4381,9 @@
     "0xa06a",
     "0xa06b"
    ],
-   "formula": "{0xa06a}",
+   "formula": "u32({0xa06a},{0xa06b})",
    "unit": "",
-   "kind": "raw",
+   "kind": "number",
    "table": null,
    "converter": "fnConvert32BitSerialNumberValueToString"
   },
@@ -3771,9 +4413,70 @@
    ],
    "formula": "{0xa06d}",
    "unit": "",
-   "kind": "raw",
-   "table": null,
+   "kind": "bitfield",
+   "table": "mod_status",
    "converter": "fnConvertModStatusNumberToString"
+  },
+  {
+   "key": "acc_serial_number",
+   "name": "AccSerialNumber",
+   "field": "AccSerialNumber",
+   "label": "Comms Card Serial",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa017",
+    "0xa018"
+   ],
+   "formula": "u32({0xa017},{0xa018})",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32BitSerialNumberValueToString"
+  },
+  {
+   "key": "acc_revision_number",
+   "name": "AccRevisionNumber",
+   "field": "AccRevisionNumber",
+   "label": "Comms Card Revision",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa019"
+   ],
+   "formula": "{0xa019}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "acc_mod_status",
+   "name": "AccModStatus",
+   "field": "AccModStatus",
+   "label": "Comms Card Mod Status",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa01a"
+   ],
+   "formula": "{0xa01a}",
+   "unit": "",
+   "kind": "bitfield",
+   "table": "mod_status",
+   "converter": "fnConvertModStatusNumberToString"
+  },
+  {
+   "key": "acc_software_version",
+   "name": "AccSoftwareVersion",
+   "field": "AccSoftwareVersion",
+   "label": "Comms Card SW Version",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa01b"
+   ],
+   "formula": "{0xa01b} / 100.0",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSoftwareVersionNumberValueToString"
   },
   {
    "key": "capacitor_life_consumed_pm1",
@@ -3834,7 +4537,8 @@
    "kind": "number",
    "table": null,
    "converter": "fnConvertUnSigned14bitPercentageValueToString",
-   "note": "unconfirmed: SP LINK formula gives ~80 % and it varies between reads; PM1/PM2 read 0.31 %. Compare with SP LINK Technical tab"
+   "note": "unconfirmed: SP LINK formula gives ~80 % and it varies between reads; PM1/PM2 read 0.31 %. Compare with SP LINK Technical tab",
+   "needs_map_version": 22
   },
   {
    "key": "load_volts_high_frequency_ripple",
@@ -3849,7 +4553,8 @@
    "unit": "V",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertSignedACVoltageValueToString"
+   "converter": "fnConvertSignedACVoltageValueToString",
+   "needs_map_version": 22
   },
   {
    "key": "ac_inverter_rms_volts_tech",
@@ -3865,6 +4570,730 @@
    "kind": "number",
    "table": null,
    "converter": "fnConvertSignedACVoltageValueToString"
+  },
+  {
+   "key": "tech_data_ac_power_peak_kaco5",
+   "name": "TechDataAcPowerPeakKaco5",
+   "field": "TechDataAcPowerPeakKaco5",
+   "label": "AC Power Peak Today",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3b8",
+    "0xa3eb"
+   ],
+   "formula": "{0xa3b8}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": "",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_energy_today_kaco1",
+   "name": "TechDataEnergyTodayKaco1",
+   "field": "TechDataEnergyTodayKaco1",
+   "label": "AC Energy Today",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3ec"
+   ],
+   "formula": "({0xa3ec} * ({scale:AcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACVoltageValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_power_kaco1",
+   "name": "TechDataAcPowerKaco1",
+   "field": "TechDataAcPowerKaco1",
+   "label": "AC Power",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3ed",
+    "0xa3ee"
+   ],
+   "formula": "(s32(u32({0xa3ed},{0xa3ee})) * ({scale:AcVolts} * (({scale:AcCurrent} / 26214400.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedACPowerValueToStringUsingRnDSignConv",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_volts_kaco1",
+   "name": "TechDataAcVoltsKaco1",
+   "field": "TechDataAcVoltsKaco1",
+   "label": "AC Voltage",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3ef"
+   ],
+   "formula": "({0xa3ef} * ({scale:AcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACVoltageValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_current_kaco1",
+   "name": "TechDataAcCurrentKaco1",
+   "field": "TechDataAcCurrentKaco1",
+   "label": "AC Current",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3f0",
+    "0xa3f1"
+   ],
+   "formula": "(s32(u32({0xa3f0},{0xa3f1})) * ({scale:AcVolts} * (({scale:AcCurrent} / 26214400.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedACPowerValueToStringUsingRnDSignConv",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_dc_power_kaco1",
+   "name": "TechDataDcPowerKaco1",
+   "field": "TechDataDcPowerKaco1",
+   "label": "DC Power",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3f2"
+   ],
+   "formula": "({0xa3f2} * ({scale:AcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACVoltageValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_dc_volts_kaco1",
+   "name": "TechDataDcVoltsKaco1",
+   "field": "TechDataDcVoltsKaco1",
+   "label": "DC Voltage",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3f3",
+    "0xa3f4"
+   ],
+   "formula": "(s32(u32({0xa3f3},{0xa3f4})) * ({scale:AcVolts} * (({scale:AcCurrent} / 26214400.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvert32bitSignedACPowerValueToStringUsingRnDSignConv",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_temperature_kaco1",
+   "name": "TechDataTemperatureKaco1",
+   "field": "TechDataTemperatureKaco1",
+   "label": "Temperature",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3c0"
+   ],
+   "formula": "s16({0xa3c0}) * {scale:Temperature} / 32768.0",
+   "unit": "\u00b0C",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedTemperatureValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_dc_current_kaco1",
+   "name": "TechDataDcCurrentKaco1",
+   "field": "TechDataDcCurrentKaco1",
+   "label": "DC Current",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3bd"
+   ],
+   "formula": "{0xa3bd} * {scale:DcCurrent} / 327680.0",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedDCCurrentValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_power_peak_kaco1",
+   "name": "TechDataAcPowerPeakKaco1",
+   "field": "TechDataAcPowerPeakKaco1",
+   "label": "AC Power Peak Today",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3c2"
+   ],
+   "formula": "({0xa3c2} * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_power_kaco2",
+   "name": "TechDataAcPowerKaco2",
+   "field": "TechDataAcPowerKaco2",
+   "label": "AC Power",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3c4"
+   ],
+   "formula": "({0xa3c4} * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_volts_kaco2",
+   "name": "TechDataAcVoltsKaco2",
+   "field": "TechDataAcVoltsKaco2",
+   "label": "AC Voltage",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3c8"
+   ],
+   "formula": "({0xa3c8} * ({scale:AcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACVoltageValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_dc_volts_kaco2",
+   "name": "TechDataDcVoltsKaco2",
+   "field": "TechDataDcVoltsKaco2",
+   "label": "DC Voltage",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3c6"
+   ],
+   "formula": "{0xa3c6} * {scale:DcVolts} / 81920.0",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedDCVoltageValueFormKacoToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_temperature_kaco2",
+   "name": "TechDataTemperatureKaco2",
+   "field": "TechDataTemperatureKaco2",
+   "label": "Temperature",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3ca"
+   ],
+   "formula": "s16({0xa3ca}) * {scale:Temperature} / 32768.0",
+   "unit": "\u00b0C",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedTemperatureValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_energy_today_kaco2",
+   "name": "TechDataEnergyTodayKaco2",
+   "field": "TechDataEnergyTodayKaco2",
+   "label": "AC Energy Today",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3c3"
+   ],
+   "formula": "abs(({0xa3c3} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_current_kaco2",
+   "name": "TechDataAcCurrentKaco2",
+   "field": "TechDataAcCurrentKaco2",
+   "label": "AC Current",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3c9"
+   ],
+   "formula": "{0xa3c9} * {scale:AcCurrent} / 327680.0",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedACCurrentValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_dc_power_kaco2",
+   "name": "TechDataDcPowerKaco2",
+   "field": "TechDataDcPowerKaco2",
+   "label": "DC Power",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3c5"
+   ],
+   "formula": "{0xa3c5} * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedDCPowerValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_dc_current_kaco2",
+   "name": "TechDataDcCurrentKaco2",
+   "field": "TechDataDcCurrentKaco2",
+   "label": "DC Current",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3c7"
+   ],
+   "formula": "{0xa3c7} * {scale:DcCurrent} / 327680.0",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedDCCurrentValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_power_peak_kaco2",
+   "name": "TechDataAcPowerPeakKaco2",
+   "field": "TechDataAcPowerPeakKaco2",
+   "label": "AC Power Peak Today",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3cc"
+   ],
+   "formula": "({0xa3cc} * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_power_kaco3",
+   "name": "TechDataAcPowerKaco3",
+   "field": "TechDataAcPowerKaco3",
+   "label": "AC Power",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3ce"
+   ],
+   "formula": "({0xa3ce} * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_volts_kaco3",
+   "name": "TechDataAcVoltsKaco3",
+   "field": "TechDataAcVoltsKaco3",
+   "label": "AC Voltage",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3d2"
+   ],
+   "formula": "({0xa3d2} * ({scale:AcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACVoltageValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_dc_volts_kaco3",
+   "name": "TechDataDcVoltsKaco3",
+   "field": "TechDataDcVoltsKaco3",
+   "label": "DC Voltage",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3d0"
+   ],
+   "formula": "{0xa3d0} * {scale:DcVolts} / 81920.0",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedDCVoltageValueFormKacoToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_temperature_kaco3",
+   "name": "TechDataTemperatureKaco3",
+   "field": "TechDataTemperatureKaco3",
+   "label": "Temperature",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3d4"
+   ],
+   "formula": "s16({0xa3d4}) * {scale:Temperature} / 32768.0",
+   "unit": "\u00b0C",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedTemperatureValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_energy_today_kaco3",
+   "name": "TechDataEnergyTodayKaco3",
+   "field": "TechDataEnergyTodayKaco3",
+   "label": "AC Energy Today",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3cd"
+   ],
+   "formula": "abs(({0xa3cd} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_current_kaco3",
+   "name": "TechDataAcCurrentKaco3",
+   "field": "TechDataAcCurrentKaco3",
+   "label": "AC Current",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3d3"
+   ],
+   "formula": "{0xa3d3} * {scale:AcCurrent} / 327680.0",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedACCurrentValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_dc_power_kaco3",
+   "name": "TechDataDcPowerKaco3",
+   "field": "TechDataDcPowerKaco3",
+   "label": "DC Power",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3cf"
+   ],
+   "formula": "{0xa3cf} * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedDCPowerValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_dc_current_kaco3",
+   "name": "TechDataDcCurrentKaco3",
+   "field": "TechDataDcCurrentKaco3",
+   "label": "DC Current",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3d1"
+   ],
+   "formula": "{0xa3d1} * {scale:DcCurrent} / 327680.0",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedDCCurrentValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_power_peak_kaco3",
+   "name": "TechDataAcPowerPeakKaco3",
+   "field": "TechDataAcPowerPeakKaco3",
+   "label": "AC Power Peak Today",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3d6"
+   ],
+   "formula": "({0xa3d6} * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_power_kaco4",
+   "name": "TechDataAcPowerKaco4",
+   "field": "TechDataAcPowerKaco4",
+   "label": "AC Power",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3d8"
+   ],
+   "formula": "({0xa3d8} * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_volts_kaco4",
+   "name": "TechDataAcVoltsKaco4",
+   "field": "TechDataAcVoltsKaco4",
+   "label": "AC Voltage",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3dc"
+   ],
+   "formula": "({0xa3dc} * ({scale:AcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACVoltageValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_dc_volts_kaco4",
+   "name": "TechDataDcVoltsKaco4",
+   "field": "TechDataDcVoltsKaco4",
+   "label": "DC Voltage",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3da"
+   ],
+   "formula": "{0xa3da} * {scale:DcVolts} / 81920.0",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedDCVoltageValueFormKacoToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_temperature_kaco4",
+   "name": "TechDataTemperatureKaco4",
+   "field": "TechDataTemperatureKaco4",
+   "label": "Temperature",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3de"
+   ],
+   "formula": "s16({0xa3de}) * {scale:Temperature} / 32768.0",
+   "unit": "\u00b0C",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedTemperatureValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_energy_today_kaco4",
+   "name": "TechDataEnergyTodayKaco4",
+   "field": "TechDataEnergyTodayKaco4",
+   "label": "AC Energy Today",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3d7"
+   ],
+   "formula": "abs(({0xa3d7} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_current_kaco4",
+   "name": "TechDataAcCurrentKaco4",
+   "field": "TechDataAcCurrentKaco4",
+   "label": "AC Current",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3dd"
+   ],
+   "formula": "{0xa3dd} * {scale:AcCurrent} / 327680.0",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedACCurrentValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_dc_power_kaco4",
+   "name": "TechDataDcPowerKaco4",
+   "field": "TechDataDcPowerKaco4",
+   "label": "DC Power",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3d9"
+   ],
+   "formula": "{0xa3d9} * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedDCPowerValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_dc_current_kaco4",
+   "name": "TechDataDcCurrentKaco4",
+   "field": "TechDataDcCurrentKaco4",
+   "label": "DC Current",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3db"
+   ],
+   "formula": "{0xa3db} * {scale:DcCurrent} / 327680.0",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedDCCurrentValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_power_peak_kaco4",
+   "name": "TechDataAcPowerPeakKaco4",
+   "field": "TechDataAcPowerPeakKaco4",
+   "label": "AC Power Peak Today",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3e0"
+   ],
+   "formula": "({0xa3e0} * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_power_kaco5",
+   "name": "TechDataAcPowerKaco5",
+   "field": "TechDataAcPowerKaco5",
+   "label": "AC Power",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3e2"
+   ],
+   "formula": "({0xa3e2} * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_volts_kaco5",
+   "name": "TechDataAcVoltsKaco5",
+   "field": "TechDataAcVoltsKaco5",
+   "label": "AC Voltage",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3e6"
+   ],
+   "formula": "({0xa3e6} * ({scale:AcVolts} / 327680.0))",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACVoltageValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_dc_volts_kaco5",
+   "name": "TechDataDcVoltsKaco5",
+   "field": "TechDataDcVoltsKaco5",
+   "label": "DC Voltage",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3e4"
+   ],
+   "formula": "{0xa3e4} * {scale:DcVolts} / 81920.0",
+   "unit": "V",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedDCVoltageValueFormKacoToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_temperature_kaco5",
+   "name": "TechDataTemperatureKaco5",
+   "field": "TechDataTemperatureKaco5",
+   "label": "Temperature",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3e8"
+   ],
+   "formula": "s16({0xa3e8}) * {scale:Temperature} / 32768.0",
+   "unit": "\u00b0C",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedTemperatureValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_energy_today_kaco5",
+   "name": "TechDataEnergyTodayKaco5",
+   "field": "TechDataEnergyTodayKaco5",
+   "label": "AC Energy Today",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3e1"
+   ],
+   "formula": "abs(({0xa3e1} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_ac_current_kaco5",
+   "name": "TechDataAcCurrentKaco5",
+   "field": "TechDataAcCurrentKaco5",
+   "label": "AC Current",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3e7"
+   ],
+   "formula": "{0xa3e7} * {scale:AcCurrent} / 327680.0",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedACCurrentValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_dc_power_kaco5",
+   "name": "TechDataDcPowerKaco5",
+   "field": "TechDataDcPowerKaco5",
+   "label": "DC Power",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3e3"
+   ],
+   "formula": "{0xa3e3} * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedDCPowerValueToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "tech_data_dc_current_kaco5",
+   "name": "TechDataDcCurrentKaco5",
+   "field": "TechDataDcCurrentKaco5",
+   "label": "DC Current",
+   "screen": "TechnicalDataSubTab2_Kaco",
+   "words": [
+    "0xa3e5"
+   ],
+   "formula": "{0xa3e5} * {scale:DcCurrent} / 327680.0",
+   "unit": "A",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnsignedDCCurrentValueToString",
+   "feature": "ac_solar"
   },
   {
    "key": "d_ck_wh_in_today",
@@ -3973,7 +5402,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_outk_wh_acc",
@@ -3989,7 +5419,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "batt_netk_wh",
@@ -4007,7 +5438,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvert32bitUnSignedDCBattEnergyValueInKwhToString"
+   "converter": "fnConvert32bitUnSignedDCBattEnergyValueInKwhToString",
+   "feature": "battery"
   },
   {
    "key": "float_hrs_acc",
@@ -4033,9 +5465,9 @@
    "words": [
     "0xa0bd"
    ],
-   "formula": "{0xa0bd}",
+   "formula": "((((({0xa0bd}>>12)&15)*10)+(({0xa0bd}>>8)&15))*100 + ((({0xa0bd}>>4)&15)*10)+({0xa0bd}&15)) if ({0xa0bd}) < 65534 else (1//0)",
    "unit": "",
-   "kind": "raw",
+   "kind": "number",
    "table": null,
    "converter": "fnConvertTimethatfloatwasachievedToString"
   },
@@ -4052,7 +5484,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "needs_map_version": 25
   },
   {
    "key": "ac_inputk_wh_acc",
@@ -4067,7 +5500,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "needs_map_version": 25
   },
   {
    "key": "ac_input_hrs_acc",
@@ -4112,7 +5546,8 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "needs_map_version": 25
   },
   {
    "key": "shunt1_peak_power_today",
@@ -4157,7 +5592,105 @@
    "unit": "kWh",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertUnSignedACEnergyValueInkWhToString"
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar",
+   "needs_map_version": 25
+  },
+  {
+   "key": "today_ac_energy_kaco1",
+   "name": "TodayAcEnergyKaco1",
+   "field": "TodayAcEnergyKaco1",
+   "label": "Energy #1",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0c7"
+   ],
+   "formula": "abs(({0xa0c7} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "today_ac_energy_kaco2",
+   "name": "TodayAcEnergyKaco2",
+   "field": "TodayAcEnergyKaco2",
+   "label": "Energy #2",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0c8"
+   ],
+   "formula": "abs(({0xa0c8} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "today_ac_energy_kaco3",
+   "name": "TodayAcEnergyKaco3",
+   "field": "TodayAcEnergyKaco3",
+   "label": "Energy #3",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0c9"
+   ],
+   "formula": "abs(({0xa0c9} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "today_ac_energy_kaco4",
+   "name": "TodayAcEnergyKaco4",
+   "field": "TodayAcEnergyKaco4",
+   "label": "Energy #4",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0ca"
+   ],
+   "formula": "abs(({0xa0ca} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "today_ac_energy_kaco5",
+   "name": "TodayAcEnergyKaco5",
+   "field": "TodayAcEnergyKaco5",
+   "label": "Energy #5",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0cb"
+   ],
+   "formula": "abs(({0xa0cb} * (24.0 * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))))",
+   "unit": "kWh",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnSignedACEnergyValueInkWhToString",
+   "feature": "ac_solar"
+  },
+  {
+   "key": "today_total_ac_peak_kaco",
+   "name": "TodayTotalAcPeakKaco",
+   "field": "TodayTotalAcPeakKaco",
+   "label": "",
+   "screen": "TodaySubTab",
+   "words": [
+    "0xa0c6"
+   ],
+   "formula": "({0xa0c6} * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertSignedACPowerValueToStringAndRemoveSign",
+   "feature": "ac_solar"
   },
   {
    "key": "fan_life_in_service_tab",
@@ -4217,7 +5750,53 @@
    "unit": "%",
    "kind": "number",
    "table": null,
-   "converter": "fnConvertUnSignedSOCPercentageValueToString"
+   "converter": "fnConvertUnSignedSOCPercentageValueToString",
+   "feature": "battery"
+  },
+  {
+   "key": "present_ac_input_disconnection",
+   "name": "PresentACInputDisconnection",
+   "field": "PresentACInputDisconnection",
+   "label": "",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc205"
+   ],
+   "formula": "{0xc205}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": ""
+  },
+  {
+   "key": "present_expansion_card_enabled",
+   "name": "PresentExpansionCardEnabled",
+   "field": "PresentExpansionCardEnabled",
+   "label": "",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc206"
+   ],
+   "formula": "{0xc206}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": ""
+  },
+  {
+   "key": "synch_overload_shutdown_count_trips",
+   "name": "SynchOverloadShutdownCountTrips",
+   "field": "SynchOverloadShutdownCountTrips",
+   "label": "",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc20a"
+   ],
+   "formula": "{0xc20a}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": ""
   },
   {
    "key": "emulated_inductance_percent",
@@ -4233,6 +5812,51 @@
    "kind": "number",
    "table": null,
    "converter": "fnConvertUnitlessDeciNumberValueToString"
+  },
+  {
+   "key": "active_anti_islanding_sensitivity_percent",
+   "name": "ActiveAntiIslandingSensitivityPercent",
+   "field": "ActiveAntiIslandingSensitivityPercent",
+   "label": "",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc20c"
+   ],
+   "formula": "{0xc20c}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
+   "key": "allow_power_override",
+   "name": "AllowPowerOverride",
+   "field": "AllowPowerOverride",
+   "label": "",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc20e"
+   ],
+   "formula": "{0xc20e}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": ""
+  },
+  {
+   "key": "independent_grid_disconnect",
+   "name": "IndependentGridDisconnect",
+   "field": "IndependentGridDisconnect",
+   "label": "",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc20f"
+   ],
+   "formula": "{0xc20f}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": ""
   },
   {
    "key": "ac_solar_integral_gain_connected_to_source",
@@ -4490,6 +6114,36 @@
    "converter": "fnConvertUnitlessNumberValueToString"
   },
   {
+   "key": "aemo_ride_through",
+   "name": "AemoRideThrough",
+   "field": "AemoRideThrough",
+   "label": "",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc223"
+   ],
+   "formula": "{0xc223}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": ""
+  },
+  {
+   "key": "active_power_disconnect",
+   "name": "ActivePowerDisconnect",
+   "field": "ActivePowerDisconnect",
+   "label": "",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc224"
+   ],
+   "formula": "{0xc224}",
+   "unit": "",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessNumberValueToString"
+  },
+  {
    "key": "ac_solar_filter_rising_sync",
    "name": "AC Solar Filter Rising Sync",
    "field": "AcSolarFilterRisingSync",
@@ -4550,6 +6204,143 @@
    "converter": "fnConvertUnitlessNumberValueToString"
   },
   {
+   "key": "csip_default_export_limit",
+   "name": "CsipDefaultExportLimit",
+   "field": "CsipDefaultExportLimit",
+   "label": "Export Power Limit",
+   "screen": "ServiceSettings",
+   "words": [
+    "0xc202"
+   ],
+   "formula": "{0xc202}",
+   "unit": "",
+   "kind": "raw",
+   "table": null,
+   "converter": ""
+  },
+  {
+   "key": "dc_battery_power_in",
+   "name": "DC Battery Power In",
+   "field": null,
+   "label": "Battery power in (charging)",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa02f",
+    "0xa030"
+   ],
+   "formula": "max(0 - (s32(u32({0xa02f}, {0xa030})) * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0)), 0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": null,
+   "derived": "selpi: dc_battery_power split by sign before averaging (SP PRO: negative = charging)",
+   "feature": "battery"
+  },
+  {
+   "key": "dc_battery_power_out",
+   "name": "DC Battery Power Out",
+   "field": null,
+   "label": "Battery power out (discharging)",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa02f",
+    "0xa030"
+   ],
+   "formula": "max(s32(u32({0xa02f}, {0xa030})) * ({scale:DcVolts} * {scale:DcCurrent} / 3276800.0 / 1000.0), 0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": null,
+   "derived": "selpi: dc_battery_power split by sign before averaging (SP PRO: negative = charging)",
+   "feature": "battery"
+  },
+  {
+   "key": "ac_source_power_in",
+   "name": "AC Source Power In",
+   "field": null,
+   "label": "AC source power in (import)",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa0ab"
+   ],
+   "formula": "max(0 - ((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))), 0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": null,
+   "derived": "selpi: ac_source_power split by sign before averaging (SP PRO: negative = import)"
+  },
+  {
+   "key": "ac_source_power_out",
+   "name": "AC Source Power Out",
+   "field": null,
+   "label": "AC source power out (export)",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa0ab"
+   ],
+   "formula": "max((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0))), 0)",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": null,
+   "derived": "selpi: ac_source_power split by sign before averaging (SP PRO: negative = import)"
+  },
+  {
+   "key": "grid_power_in",
+   "name": "Grid Power In",
+   "field": null,
+   "label": "Grid power in (import)",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa0ab",
+    "0xa096",
+    "0xa07d"
+   ],
+   "formula": "((1 - (({0xa096} == 1) + ({0xa096} == 6) + ({0xa096} == 8))) * ({0xa07d} == 3)) * (max(0 - ((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))), 0))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": null,
+   "derived": "selpi: AC source power in while synchronised (Output Mode 3 Sync) and Generator Status is not a generator state (1 Running, 6 Starting, 8 Stopping): the grid; else 0"
+  },
+  {
+   "key": "grid_power_out",
+   "name": "Grid Power Out",
+   "field": null,
+   "label": "Grid power out (export)",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa0ab",
+    "0xa096",
+    "0xa07d"
+   ],
+   "formula": "((1 - (({0xa096} == 1) + ({0xa096} == 6) + ({0xa096} == 8))) * ({0xa07d} == 3)) * (max((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0))), 0))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": null,
+   "derived": "selpi: AC source power out while synchronised (Output Mode 3 Sync) and Generator Status is not a generator state (1 Running, 6 Starting, 8 Stopping): the grid; else 0"
+  },
+  {
+   "key": "generator_power_in",
+   "name": "Generator Power In",
+   "field": null,
+   "label": "Generator power in",
+   "screen": "TechnicalDataSubTab",
+   "words": [
+    "0xa0ab",
+    "0xa096",
+    "0xa07d"
+   ],
+   "formula": "((({0xa096} == 1) + ({0xa096} == 6) + ({0xa096} == 8)) * ({0xa07d} == 3)) * (max(0 - ((s16({0xa0ab}) * ({scale:AcVolts} * (({scale:AcCurrent} / 3276800.0) / 1000.0)))), 0))",
+   "unit": "kW",
+   "kind": "number",
+   "table": null,
+   "converter": null,
+   "derived": "selpi: AC source power in while synchronised (Output Mode 3 Sync) and Generator Status is 1 Running, 6 Starting (two-stage start: loads first) or 8 Stopping; else 0"
+  },
+  {
    "key": "factory_batteryless",
    "name": "Batteryless",
    "field": "FactoryBatterylessMode",
@@ -4573,9 +6364,9 @@
    "words": [
     "0xa0aa"
    ],
-   "formula": "('No factory limit' if {0xa0aa} == 65535 else {0xa0aa} / 10.0)",
-   "unit": "",
-   "kind": "raw",
+   "formula": "{0xa0aa} / 10.0",
+   "unit": "kW",
+   "kind": "number",
    "table": null,
    "converter": "fnConvertDeciUnitsNumberOrFFFFBlankToString"
   },
@@ -4591,7 +6382,7 @@
    ],
    "formula": "u32({0xa017},{0xa018})",
    "unit": "",
-   "kind": "raw",
+   "kind": "number",
    "table": null,
    "converter": "fnConvert32BitSerialNumberValueToString"
   },
@@ -4685,6 +6476,21 @@
    "kind": "raw",
    "table": null,
    "converter": null
+  },
+  {
+   "key": "multi_ac_coupled_percent_l1",
+   "name": "AC Coupled Target L1",
+   "field": "MultiAcCoupledPercentL1",
+   "label": "AC Coupled %",
+   "screen": "DataMultiPhase1",
+   "words": [
+    "0xa2c7"
+   ],
+   "formula": "{0xa2c7} / 10.0",
+   "unit": "%",
+   "kind": "number",
+   "table": null,
+   "converter": "fnConvertUnitlessDeciNumberValueToString"
   }
  ],
  "blocks": {
@@ -4758,6 +6564,24 @@
    [
     "0xa015",
     33
+   ]
+  ],
+  "Bms": [
+   [
+    "0xa275",
+    20
+   ]
+  ],
+  "NowNetworkPowerSubTab": [
+   [
+    "0xa3eb",
+    10
+   ]
+  ],
+  "TechnicalDataSubTab2_Kaco": [
+   [
+    "0xa3b8",
+    61
    ]
   ]
  }

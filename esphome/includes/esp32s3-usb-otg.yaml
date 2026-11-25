@@ -4,6 +4,9 @@ esphome:
   name: ${node_name}
   name_add_mac_suffix: false
   friendly_name: ${friendly_name}
+  project:                      # HA splits name at the dot -> device manufacturer "Selectronic", model "SP PRO".
+    name: "Selectronic.SP PRO"  # the exact product (SPMC482 ...) and Hardware Revision come through as the
+    version: "1"                # default-on "Model" / "Model Rating" / "Hardware Revision" diagnostic sensors.
   on_boot:
     - priority: 900   # before usb_host starts: route and power the USB-A host port
       then:

@@ -746,5 +746,110 @@
   "11": "Fronius GEN24 Primo",
   "12": "Fronius GEN24 Symo",
   "13": "Fronius Verto"
+ },
+ "bms_model": {
+  "0": "None",
+  "1": "LG Chem",
+  "2": "BYD",
+  "3": "Sonnenschein",
+  "4": "ZCell",
+  "5": "Pylontech",
+  "6": "genZ",
+  "7": "PowerPlus",
+  "8": "Cegasa 48V",
+  "9": "Cegasa 144V",
+  "10": "Ecoult",
+  "11": "Murata",
+  "12": "ZYC",
+  "13": "Dyness",
+  "14": "Discover",
+  "15": "River Gum",
+  "16": "AERL",
+  "17": "XESS"
+ },
+ "bms_alarms": {
+  "0": "Sub Relay Command",
+  "1": "High Battery Voltage",
+  "2": "Low Battery Voltage",
+  "3": "High Battery Temperature",
+  "4": "Low Battery Temperature",
+  "5": "High Battery Charge Temperature",
+  "6": "Low Battery Charge Temperature",
+  "7": "High Discharge Current",
+  "8": "High Charge Current",
+  "9": "Communication Fault",
+  "11": "BMS internal Fault",
+  "12": "Imbalance in Cell Voltage",
+  "14": "Overload"
+ },
+ "bms_warnings": {
+  "1": "High Battery Voltage",
+  "2": "Low Battery Voltage",
+  "3": "High Battery Temperature",
+  "4": "Low Battery Temperature",
+  "5": "High Battery Charge Temperature",
+  "6": "Low Battery Charge Temperature",
+  "7": "High Discharge Current",
+  "8": "High Charge Current",
+  "9": "Communication Fault",
+  "11": "BMS internal Fault",
+  "12": "Imbalance in Cell Voltage",
+  "13": "Sub Pack 1 Error",
+  "14": "Sub Pack 2 Error"
+ },
+ "factory_boolean": {
+  "0": "Disabled",
+  "1": "Enabled"
+ },
+ "country_code": {
+  "0": "Australia",
+  "1": "Germany",
+  "2": "USA"
+ },
+ "mod_status": {
+  "0": "1",
+  "1": "2",
+  "2": "3",
+  "3": "4",
+  "4": "5",
+  "5": "6",
+  "6": "7",
+  "7": "8",
+  "8": "9",
+  "9": "10",
+  "10": "11",
+  "11": "12",
+  "12": "13",
+  "13": "14",
+  "14": "15",
+  "15": "16"
+ },
+ "string_inverter_support": {
+  "0": "Powador",
+  "1": "ABB / FIMER",
+  "2": "Fronius",
+  "3": "SelectSun"
+ },
+ "sp_pro_model_number": {
+  "0": "SPMC482",
+  "1": "SPMC481",
+  "2": "SPMC241",
+  "3": "SPLC1202",
+  "4": "SPMC1201",
+  "5": "SPMC240",
+  "6": "SPLC1201",
+  "7": "SPLC1200",
+  "8": "SPMC480"
+ },
+ "sp_pro_model_ratings": {
+  "0": "48V DC, 7.5kW, 240V AC",
+  "1": "48V DC, 5kW, 240V AC",
+  "2": "24V DC, 4.5kW, 240V AC",
+  "3": "120V DC, 20kW, 240V AC",
+  "4": "120V DC, 7.5kW, 240V AC",
+  "5": "24V DC, 3kW, 240V AC",
+  "6": "120V DC, 18kW, 240V AC",
+  "7": "120V DC, 15kW, 240V AC",
+  "8": "48V DC, 3.5kW, 240V AC"
  }
 }

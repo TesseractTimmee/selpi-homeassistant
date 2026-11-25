@@ -51,6 +51,9 @@ AUTO_LOAD = ["button", "sensor", "switch", "text_sensor", "md5", "socket"]
 
 CONF_FIELDS = "fields"
 CONF_ALL_FIELDS = "all_fields"
+CONF_FEATURES = "features"          # feature groups this unit has; the default field set drops fields needing others
+CONF_MAP_VERSION = "map_version"    # this unit's memory-map version; drops default fields that need a newer one
+FEATURES = ("ac_solar", "bms", "battery")   # mirrors sppro.live FEATURE_PROBE + batteryless
 CONF_PROXY = "proxy"
 CONF_ALLOWED_IPS = "allowed_ips"
 CONF_WRITE_IPS = "write_ips"
@@ -94,6 +97,18 @@ VERIFIED_VERSIONS = [48, 14, 31, 3, 3, 5]
 # A sensible default set (HA names), shared with the selpi add-on's HA API (sppro/default_fields.json).
 # Any key from live_fields.json can be added under `fields:`.
 DEFAULT_FIELDS = json.load(open(os.path.join(_HERE, "default_fields.json"), encoding="utf-8"))
+
+
+def _field_available(f, features, map_version):
+    """Whether a field applies to this unit (mirrors sppro.live.field_available). None = unspecified -> keep.
+    Used only for the default field set; fields listed explicitly in YAML are always honoured."""
+    feat = f.get("feature")
+    if feat and features is not None and feat not in features:
+        return False
+    need = f.get("needs_map_version")
+    if need and map_version is not None and map_version < need:
+        return False
+    return True
 
 # state_class string (from field_meta.hints) -> ESPHome constant
 _STATE_CLASS = {"measurement": STATE_CLASS_MEASUREMENT, "total": STATE_CLASS_TOTAL,
@@ -217,6 +232,10 @@ def _build(config):
             raise cv.Invalid("phase %s has %d workers; give each a `serial:` so they can be told apart "
                              "(from `selpi live` / the add-on's /api/v1/units)" % (phase, len(us)))
 
+    feats = config.get(CONF_FEATURES)          # None = keep all; a list gates the default field set
+    mapv = config.get(CONF_MAP_VERSION)
+    default_entries = [{CONF_KEY: k} for k in DEFAULT_FIELDS if _field_available(FIELDS[k], feats, mapv)]
+
     phases = {u[CONF_PHASE] for u in raw}
     multi_phase = len(phases) > 1
     phase_has_worker = {p: any(u[CONF_PHASE] == p and u[CONF_ROLE] == "worker" for u in raw) for p in phases}
@@ -225,7 +244,7 @@ def _build(config):
         prefix = u[CONF_PHASE] if multi_phase else ""
         if phase_has_worker[u[CONF_PHASE]]:
             prefix = ("%s %s" % (prefix, u[CONF_ROLE].capitalize())).strip()
-        entries = u.get(CONF_FIELDS) or [{CONF_KEY: k} for k in DEFAULT_FIELDS]
+        entries = u.get(CONF_FIELDS) or default_entries
         units.append({CONF_PHASE: u[CONF_PHASE], CONF_ROLE: u[CONF_ROLE], CONF_SERIAL: u.get(CONF_SERIAL, 0),
                       "_entities": _expand_entities(entries, prefix)})
 
@@ -236,7 +255,7 @@ def _build(config):
     sysc = config.get(CONF_SYSTEM, config["_multi"])    # default: on when multi, off when single
     if config["_multi"] and sysc not in (False, None):
         entries = (sysc.get(CONF_FIELDS) if isinstance(sysc, dict) and sysc.get(CONF_FIELDS) else
-                   [{CONF_KEY: k} for k in DEFAULT_FIELDS])
+                   default_entries)
         entries = [e for e in entries if _aggregation(FIELDS[e[CONF_KEY]]["unit"], e[CONF_KEY])]   # only roll-up-able fields
         config["_system"] = _expand_entities(entries, "")
     return config
@@ -319,6 +338,8 @@ CONFIG_SCHEMA = cv.All(
         cv.Optional(CONF_UNITS): cv.ensure_list(UNIT_SCHEMA),            # Powerchain: one block per inverter
         cv.Optional(CONF_SYSTEM): SYSTEM_SCHEMA,                          # whole-site totals device
         cv.Optional(CONF_ALLOW_VERSION_MISMATCH, default=False): cv.boolean,
+        cv.Optional(CONF_FEATURES): cv.ensure_list(cv.one_of(*FEATURES, lower=True)),   # gate the default field set
+        cv.Optional(CONF_MAP_VERSION): cv.positive_int,
         cv.Optional(CONF_PROXY): PROXY_SCHEMA,
         cv.Optional(CONF_CLOCK): CLOCK_SCHEMA,
         cv.Optional(CONF_BUTTONS): BUTTONS_SCHEMA,

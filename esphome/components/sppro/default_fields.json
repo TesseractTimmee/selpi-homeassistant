@@ -46,5 +46,10 @@
  "today_total_ac_energy_kaco": "AC solar energy today",
  "d_ck_wh_in_today": "DC energy in today",
  "d_ck_wh_out_today": "DC energy out today",
- "inverter_run_hrs_total_acc": "Total run time"
+ "inverter_run_hrs_total_acc": "Total run time",
+ "sys_reg_active_schedule": "Solar Hybrid Priority",
+ "sys_reg_export_on_demand_target": "Export On Demand Target",
+ "unit_model_number": "Model",
+ "unit_model_ratings": "Model Rating",
+ "unit_rev_number": "Hardware Revision"
 }

@@ -18,11 +18,16 @@ def device_info(entry: SelpiConfigEntry, unit: Any = None) -> DeviceInfo:
     info = rt.info
     slug = entry.data.get(CONF_ADDON_SLUG)
     prefix = entry.unique_id or entry.entry_id
-    common = dict(manufacturer=info.get("manufacturer") or "Selectronic", model=info.get("model") or "SP PRO",
+    _model = info.get("model") or "SP PRO"
+    _ratings = info.get("model_ratings")        # e.g. "48V DC, 7.5kW, 240V AC" - a model description, NOT a hw rev
+    model = "%s (%s)" % (_model, _ratings) if _ratings else _model   # product string: "SPMC482 (48V DC, 7.5kW, 240V AC)"
+    common = dict(manufacturer=info.get("manufacturer") or "Selectronic", model=model,
                   configuration_url=f"homeassistant://hassio/ingress/{slug}" if slug else None)
     if not rt.multi:
+        hw = info.get("hw")
         return DeviceInfo(identifiers={(DOMAIN, prefix)}, name="SP PRO",
-                          serial_number=info.get("serial"), sw_version=info.get("firmware"), **common)
+                          serial_number=info.get("serial"), sw_version=info.get("firmware"),
+                          hw_version=(f"Rev {hw}" if hw is not None else None), **common)   # unit_rev_number
     if unit is None or unit == "system":
         return DeviceInfo(identifiers={(DOMAIN, prefix)}, name="SP PRO System", **common)
     u = next((x for x in rt.units if x["index"] == unit), {})
