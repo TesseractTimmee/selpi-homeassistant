@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.10.2
+- **Fix: long values on the add-on's Live page no longer get cut off.** Long status text (module status, BMS
+  alarms/warnings, string-inverter support) now wraps instead of being clipped. Display only.
+- (Pulls selpi app v0.10.2.)
+
 ## 0.10.1
 - **Fix: field names.** Several readings added in 0.10.0 showed their names unspaced (e.g. "Nowpercentkaco"); they
   now display properly (e.g. "AC Solar %", "Multi DC Solar Power Total", "Tech BMS SoH"). Display only.
