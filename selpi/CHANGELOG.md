@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.2
+- **Select.Live reliability fix (fixes a 0.9.1 regression).** 0.9.1 made log downloads over Select.Live worse by
+  re-asserting download mode with a full retry cycle on every reconnect, turning one stalled read into a
+  multi-minute cascade; that is removed (download mode survives a Select.Live reconnect on its own).
+- **No more spurious serial login over Select.Live.** A brief stall (a silent read) was mistaken for a login
+  prompt and fired the SP PRO 0x1f0000 serial login that Select.Live doesn't use, producing "multiple logins"
+  errors and extra traffic on an already-struggling link. A silent read over Select.Live is now treated as a
+  transient stall, as SP LINK does.
+- **Stalls ride out on the same connection** instead of reconnecting: a read timeout no longer drops the session
+  and opens a new one (which left the device bound to the old, dying session), it retries on the existing one.
+- (Pulls selpi app v0.9.2.)
+
 ## 0.9.1
 - **Correct validation ranges on the Configuration page.** The DC-voltage settings (charge voltages, low-DC
   shutdowns, DC alerts, generator-start voltages, AC-coupled trip, and Initial Return Voltage) now show the real
