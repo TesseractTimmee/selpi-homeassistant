@@ -14,6 +14,10 @@ MAX_SCAN_INTERVAL = 3600
 # block + the Technical power-flow block). 15 s default is a safe cadence over Select.Live even once the link is
 # kept warm; 5 s minimum for a local ESP/serial link. Leave it >= the main interval to effectively disable it.
 MIN_FAST_SCAN_INTERVAL = 5
+# Over Select.Live (Selectronic's cloud relay) a read is a slow round-trip, and the live blocks (Now 85 words,
+# Technical 154) are large; a sub-15 s fast poll floods the link and stalls it. A local link (serial/TCP/ESP)
+# has no such limit and keeps MIN_FAST_SCAN_INTERVAL. The add-on reports its connection type in info.
+MIN_FAST_SCAN_INTERVAL_SELECT_LIVE = 15
 MAX_FAST_SCAN_INTERVAL = 3600
 DEFAULT_FAST_SCAN_INTERVAL = 15
 MIN_GRACE = 0                      # 0 = go unavailable on the first failed poll (fast 'unknown' on a reliable link)

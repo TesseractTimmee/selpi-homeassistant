@@ -14,7 +14,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .api import SelpiAuthError, SelpiClient, SelpiError
 from .const import (CONF_FAST_SCAN_INTERVAL, CONF_GRACE, CONF_SCAN_INTERVAL, DEFAULT_FAST_SCAN_INTERVAL,
-                    DEFAULT_GRACE_SECONDS, DOMAIN)
+                    DEFAULT_GRACE_SECONDS, DOMAIN, MIN_FAST_SCAN_INTERVAL_SELECT_LIVE)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -73,6 +73,8 @@ class SelpiCoordinator(DataUpdateCoordinator[SelpiData]):
                  fetch_diag: bool = True, fast: bool = False) -> None:
         if fast:
             seconds = entry.options.get(CONF_FAST_SCAN_INTERVAL) or DEFAULT_FAST_SCAN_INTERVAL
+            if info.get("connection") == "SelectLive" and seconds < MIN_FAST_SCAN_INTERVAL_SELECT_LIVE:
+                seconds = MIN_FAST_SCAN_INTERVAL_SELECT_LIVE   # cloud can't sustain a faster live poll
         else:
             seconds = entry.options.get(CONF_SCAN_INTERVAL) or info.get("scan_interval") or 60
         self.unit = unit                 # Powerchain unit index / "system" / None (primary or single)

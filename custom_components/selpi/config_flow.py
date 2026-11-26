@@ -27,6 +27,7 @@ from .const import (
     MAX_GRACE,
     MAX_SCAN_INTERVAL,
     MIN_FAST_SCAN_INTERVAL,
+    MIN_FAST_SCAN_INTERVAL_SELECT_LIVE,
     MIN_GRACE,
     MIN_SCAN_INTERVAL,
 )
@@ -119,6 +120,10 @@ class SelpiOptionsFlow(OptionsFlow):
         suggested = runtime.info.get("scan_interval") if runtime else 60
         current = entry.options.get(CONF_SCAN_INTERVAL) or suggested or 60
         fast_current = entry.options.get(CONF_FAST_SCAN_INTERVAL) or DEFAULT_FAST_SCAN_INTERVAL
+        # Select.Live (cloud) can't sustain a sub-15 s live poll; floor the minimum there. Local links keep 5 s.
+        select_live = bool(runtime and runtime.info.get("connection") == "SelectLive")
+        min_fast = MIN_FAST_SCAN_INTERVAL_SELECT_LIVE if select_live else MIN_FAST_SCAN_INTERVAL
+        fast_current = max(fast_current, min_fast)
         # how long to keep the last values on a failed poll before entities go unavailable: default to the
         # add-on's own stale-grace (0 on a direct/local link = fast 'unknown', longer on Select.Live).
         grace_current = entry.options.get(CONF_GRACE)
@@ -131,7 +136,7 @@ class SelpiOptionsFlow(OptionsFlow):
             vol.Required(CONF_SCAN_INTERVAL, default=current):
                 vol.All(vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL, max=MAX_SCAN_INTERVAL)),
             vol.Required(CONF_FAST_SCAN_INTERVAL, default=fast_current):
-                vol.All(vol.Coerce(int), vol.Range(min=MIN_FAST_SCAN_INTERVAL, max=MAX_FAST_SCAN_INTERVAL)),
+                vol.All(vol.Coerce(int), vol.Range(min=min_fast, max=MAX_FAST_SCAN_INTERVAL)),
             vol.Required(CONF_GRACE, default=grace_current):
                 vol.All(vol.Coerce(int), vol.Range(min=MIN_GRACE, max=MAX_GRACE)),
             vol.Required(CONF_ESP_PRESENT, default=esp_default): bool,
