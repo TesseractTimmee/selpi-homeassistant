@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.10.4
+- **Faster, quieter polling: the calibration-scale block is now cached.** The scale block (0xa028) holds the
+  unit's calibration factors, which are constant at runtime, but it was re-read on every poll. Over Select.Live
+  that one block is flaky, and its retries dominated poll time and spammed the log. It's now read once and cached
+  (per inverter, refreshed occasionally), so each poll is lighter and more reliable — and it clears the way for a
+  faster cadence on the fast-changing readings.
+- (Pulls selpi app v0.10.4.)
+
 ## 0.10.3
 - **Select.Live server option.** A new `select_live_server` option lets you pick which Select.Live server to
   connect to: `select.live` (the original, default) or `select.live2` (the newer platform) — match your account.
