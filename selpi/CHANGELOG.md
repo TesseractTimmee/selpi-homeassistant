@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.10.5
+- **Configurable fast poll for live power/SoC.** A new **Fast poll interval** (integration → Configure; default
+  15 s, min 5 s) polls just the live power / voltage / frequency / SoC readings on their own faster coordinator,
+  while everything else (energy, history, diagnostics, identity) stays on the main interval. Covers the Modbus
+  ~5 s set and live power-chart inputs.
+- **Reliable Select.Live polling.** The add-on now reconnects pre-emptively when the Select.Live link has been
+  idle long enough for Select.Live to drop it (~60 s), so the first read of each poll is no longer wasted on a
+  dead socket (which, since 0.10.4's scale-cache, had landed on the live power block). A fast poll keeps the link
+  warm, so this mainly helps the main 60 s poll.
+- (Pulls selpi app v0.10.5.)
+
 ## 0.10.4
 - **Faster, quieter polling: the calibration-scale block is now cached.** The scale block (0xa028) holds the
   unit's calibration factors, which are constant at runtime, but it was re-read on every poll. Over Select.Live

@@ -44,25 +44,34 @@ async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry) -> boo
         _apply_esp_present(hass, entry, fields, esp)
     _check_clock_conflict(hass, entry, esp, bool(info.get("clock_sync")))
 
-    default_keys = [f["key"] for f in fields if f.get("default")]
+    # split the default-enabled fields into the fast poll (the live power/volt/freq/SoC block, add-on `fast` flag)
+    # and the slow poll (everything else). Each gets its own coordinator per unit; sensors attach to the matching
+    # one. Keeping each screen's fields together on one coordinator avoids reading a block on both polls.
+    default_fast = [f["key"] for f in fields if f.get("default") and f.get("fast")]
+    default_slow = [f["key"] for f in fields if f.get("default") and not f.get("fast")]
     coordinators: dict = {}
+    fast_coordinators: dict = {}
     if multi:
         real = [u for u in units if u["index"] != "system"]
         primary_index = real[0]["index"] if real else 0
-        for u in units:                     # a coordinator per unit (incl. the synthetic "system" totals)
+        for u in units:                     # a slow + a fast coordinator per unit (incl. the synthetic "system")
             idx = u["index"]
-            coordinators[idx] = SelpiCoordinator(hass, entry, client, info, default_keys,
+            coordinators[idx] = SelpiCoordinator(hass, entry, client, info, default_slow,
                                                  unit=idx, fetch_diag=(idx == primary_index))
+            fast_coordinators[idx] = SelpiCoordinator(hass, entry, client, info, default_fast,
+                                                      unit=idx, fetch_diag=False, fast=True)
         coordinator = coordinators[primary_index]
     else:
-        coordinator = SelpiCoordinator(hass, entry, client, info, default_keys)   # unit=None (primary/single)
+        coordinator = SelpiCoordinator(hass, entry, client, info, default_slow)   # unit=None (primary/single)
         coordinators[None] = coordinator
+        fast_coordinators[None] = SelpiCoordinator(hass, entry, client, info, default_fast, fetch_diag=False, fast=True)
     await coordinator.async_config_entry_first_refresh()   # gates setup; the primary carries the link diagnostics
-    for idx, c in coordinators.items():                    # the rest are best-effort so one flaky unit can't block
-        if c is not coordinator:
+    for c in (*coordinators.values(), *fast_coordinators.values()):   # the rest are best-effort (one flaky unit
+        if c is not coordinator:                                      # or an empty fast set can't block setup)
             await c.async_refresh()
     entry.runtime_data = SelpiRuntime(client=client, info=info, fields=fields, coordinator=coordinator,
-                                      coordinators=coordinators, units=units, multi=multi)
+                                      coordinators=coordinators, fast_coordinators=fast_coordinators,
+                                      units=units, multi=multi)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(entry.add_update_listener(_options_updated))
     return True

@@ -58,7 +58,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: SelpiConfigEntry,
 class SelpiFieldSensor(SelpiEntity, SensorEntity):
     def __init__(self, entry: SelpiConfigEntry, f: dict[str, Any], esp_present: bool = False,
                  unit: Any = None) -> None:
-        super().__init__(entry, f["key"], unit=unit)
+        rt = entry.runtime_data
+        # a "fast" field (live power/volt/freq/SoC block) rides the fast coordinator; everything else the slow one
+        coordinator = (rt.fast_coordinators.get(unit) if f.get("fast") else rt.coordinators.get(unit))
+        super().__init__(entry, f["key"], unit=unit, coordinator=coordinator)
         self._key = f["key"]
         self._attr_name = f["name"]
         self._attr_entity_registry_enabled_default = bool(f.get("default")) and not esp_present

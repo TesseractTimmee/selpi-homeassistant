@@ -13,7 +13,8 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import SelpiAuthError, SelpiClient, SelpiError
-from .const import CONF_GRACE, CONF_SCAN_INTERVAL, DEFAULT_GRACE_SECONDS, DOMAIN
+from .const import (CONF_FAST_SCAN_INTERVAL, CONF_GRACE, CONF_SCAN_INTERVAL, DEFAULT_FAST_SCAN_INTERVAL,
+                    DEFAULT_GRACE_SECONDS, DOMAIN)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -56,7 +57,8 @@ class SelpiRuntime:
     info: dict[str, Any]
     fields: list[dict[str, Any]]
     coordinator: "SelpiCoordinator"                # the primary (single inverter, or L1/index-0 in a Powerchain)
-    coordinators: dict[Any, "SelpiCoordinator"] = field(default_factory=dict)  # by unit index + "system" (multi)
+    coordinators: dict[Any, "SelpiCoordinator"] = field(default_factory=dict)  # slow, by unit index + "system"
+    fast_coordinators: dict[Any, "SelpiCoordinator"] = field(default_factory=dict)  # fast poll, same keys
     units: list[dict[str, Any]] = field(default_factory=list)   # from info["units"]; [] for a single inverter
     multi: bool = False                            # more than one unit (a Powerchain)
 
@@ -68,12 +70,17 @@ class SelpiCoordinator(DataUpdateCoordinator[SelpiData]):
 
     def __init__(self, hass: HomeAssistant, entry: SelpiConfigEntry, client: SelpiClient,
                  info: dict[str, Any], default_keys: list[str], unit: Any = None,
-                 fetch_diag: bool = True) -> None:
-        seconds = entry.options.get(CONF_SCAN_INTERVAL) or info.get("scan_interval") or 60
+                 fetch_diag: bool = True, fast: bool = False) -> None:
+        if fast:
+            seconds = entry.options.get(CONF_FAST_SCAN_INTERVAL) or DEFAULT_FAST_SCAN_INTERVAL
+        else:
+            seconds = entry.options.get(CONF_SCAN_INTERVAL) or info.get("scan_interval") or 60
         self.unit = unit                 # Powerchain unit index / "system" / None (primary or single)
-        self._fetch_diag = fetch_diag     # only the primary coordinator fetches the (global) link diagnostics
+        self.fast = fast                 # the fast-poll coordinator (live power block) vs the main (slow) one
+        self._fetch_diag = fetch_diag     # only the primary (slow) coordinator fetches the global link diagnostics
+        name = DOMAIN if unit is None else f"{DOMAIN}-u{unit}"
         super().__init__(hass, _LOGGER, config_entry=entry,
-                         name=DOMAIN if unit is None else f"{DOMAIN}-u{unit}",
+                         name=name + ("-fast" if fast else ""),
                          update_interval=timedelta(seconds=seconds))
         grace_seconds = entry.options.get(CONF_GRACE)
         if grace_seconds is None:                      # not set in options: follow the add-on's own stale-grace

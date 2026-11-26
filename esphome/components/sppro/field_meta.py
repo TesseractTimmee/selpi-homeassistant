@@ -108,3 +108,14 @@ def hints(f):
 # both, per screen). battery: keep battery_volts; inverter RMS = "Load Voltage": keep the tech twin,
 # drop the unnamed main; charge status: keep the Now reading. Verify the pairs equal on hardware.
 HA_DROP = {'battery_volts_in_tech_tab', 'ac_inverter_rms_volts', 'charge_status'}
+
+
+# --- fast-poll screens ---------------------------------------------------------------------------
+# Screens whose readings change fast enough to warrant a separate, faster poll: the instantaneous "Now" block
+# (load/inverter/solar power, SoC, battery volts, frequency, AC-source volts/Hz) and the Technical block's power
+# flows (grid power, battery power, reactive power). Together these cover the Modbus ~5 s set and the inputs to
+# live power charts; everything else (energy accumulators, history, diagnostics, identity) stays on the slow
+# poll. A field is "fast" iff its screen is here. Classification is by screen, not a field list, because reads
+# are whole-block: over Select.Live the cost is per round trip, not per register, so reading each screen's one
+# contiguous block beats many scattered partial reads of just the power registers.
+FAST_SCREENS = {'NowSubTab', 'TechnicalDataSubTab'}

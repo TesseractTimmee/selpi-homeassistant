@@ -37,9 +37,10 @@
     "step": {
       "init": {
         "title": "Polling",
-        "description": "How often to ask the add-on for new values. Suggested for this connection: {suggested} s (Select.Live is a cloud round trip each time: keep it at 60 s or more).",
+        "description": "How often to ask the add-on for new values. The fast poll covers only the live power/voltage/frequency/SoC readings; everything else uses the main interval. Suggested main interval for this connection: {suggested} s (Select.Live is a cloud round trip each time: keep the main interval at 60 s or more; the fast poll keeps the link warm, so it can go lower).",
         "data": {
-          "scan_interval": "Poll interval (seconds)",
+          "scan_interval": "Main poll interval (seconds)",
+          "fast_scan_interval": "Fast poll interval for live power/voltage/frequency/SoC (seconds)",
           "grace": "Keep last values this many seconds before entities go unavailable (0 = go unavailable immediately)",
           "esp_present": "Also running the ESPHome component (hide its duplicate SP PRO data sensors)"
         }
